@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Writing Marker</title>
+<style>
+  :root{
+    --ink:#1C2321;
+    --ink-soft:#4B5551;
+    --muted:#8A938E;
+    --line:#DDE3DD;
+    --paper:#F7F8F4;
+    --card:#FFFFFF;
+    --forest:#204B3D;
+    --forest-dark:#153327;
+    --leaf:#5C8C6B;
+    --leaf-soft:#E7F0E9;
+    --amber:#B8863B;
+    --amber-soft:#F5EBDA;
+    --danger:#A6432F;
+    --danger-soft:#F5E4E0;
+    --radius:12px;
+    --radius-sm:8px;
+    --shadow:0 1px 2px rgba(28,35,33,0.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{
+    font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--paper);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* Top bar */
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:16px 18px;
+    background:var(--forest);
+    color:#F2F5F1;
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  .topbar .back-btn{
+    background:none;
+    border:none;
+    color:#F2F5F1;
+    font-size:22px;
+    line-height:1;
+    padding:6px 8px 6px 0;
+    margin-left:-8px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+  }
+  .topbar .title{
+    font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+    font-size:19px;
+    font-weight:600;
+    letter-spacing:0.2px;
+    flex:1;
+  }
+  .topbar .title small{
+    display:block;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:12.5px;
+    font-weight:400;
+    color:#C6D6CC;
+    margin-top:1px;
+  }
+  .topbar-action{
+    background:rgba(255,255,255,0.12);
+    border:none;
+    color:#F2F5F1;
+    font-size:14px;
+    font-weight:600;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+
+  /* Content */
+  .content{
+    flex:1;
+    padding:18px 18px 32px;
+  }
+  .content.no-pad{padding:0 0 32px;}
+
+  /* Home hero */
+  .home-hero{
+    padding:6px 0 22px;
+  }
+  .home-hero .brand{
+    font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+    font-size:30px;
+    font-weight:700;
+    color:var(--forest-dark);
+    margin:0 0 4px;
+  }
+  .home-hero .tag{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    margin:0;
+  }
+
+  .btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    border:none;
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-primary{
+    background:var(--forest);
+    color:#F5F8F5;
+  }
+  .btn-primary:active{background:var(--forest-dark);}
+  .btn-secondary{
+    background:var(--card);
+    color:var(--forest);
+    border:1.5px solid var(--forest);
+  }
+  .btn-secondary:active{background:var(--leaf-soft);}
+  .btn-text{
+    background:none;
+    border:none;
+    color:var(--forest);
+    font-weight:600;
+    font-size:15px;
+    padding:10px 4px;
+    cursor:pointer;
+    font-family:inherit;
+    width:auto;
+  }
+  .btn-danger-text{
+    background:none;
+    border:none;
+    color:var(--danger);
+    font-weight:600;
+    font-size:15px;
+    padding:10px 4px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-row{display:flex;gap:10px;margin-top:6px;}
+  .btn-row .btn{width:auto;flex:1;}
+
+  .stack{display:flex;flex-direction:column;gap:12px;}
+
+  .section-label{
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:26px 0 10px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--muted);
+  }
+  .empty-state .glyph{
+    font-size:30px;
+    margin-bottom:10px;
+    color:var(--leaf);
+  }
+  .empty-state p{margin:0;font-size:14.5px;line-height:1.5;}
+
+  /* List rows - ledger style */
+  .ledger{
+    background:var(--card);
+    border-radius:var(--radius);
+    border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .ledger-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:16px 16px;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    background:var(--card);
+  }
+  .ledger-row:last-child{border-bottom:none;}
+  .ledger-row:active{background:var(--leaf-soft);}
+  .ledger-row .main{flex:1;min-width:0;}
+  .ledger-row .rtitle{
+    font-size:15.5px;
+    font-weight:600;
+    color:var(--ink);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .ledger-row .rsub{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .chev{
+    color:var(--muted);
+    font-size:18px;
+    flex-shrink:0;
+  }
+
+  .badge{
+    font-size:12px;
+    font-weight:600;
+    padding:4px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .badge-pending{background:var(--paper);color:var(--muted);border:1px solid var(--line);}
+  .badge-done{background:var(--leaf-soft);color:var(--forest-dark);}
+  .badge-warn{background:var(--amber-soft);color:#7A5A22;}
+
+  /* Cards */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+
+  /* Form elements */
+  .field{margin-bottom:18px;}
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:7px;
+  }
+  .field input[type=text],
+  .field textarea,
+  .field select{
+    width:100%;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:13px 14px;
+    font-size:15.5px;
+    font-family:inherit;
+    color:var(--ink);
+    background:var(--card);
+  }
+  .field input[type=text]:focus,
+  .field textarea:focus,
+  .field select:focus{
+    outline:none;
+    border-color:var(--forest);
+  }
+  .field textarea{resize:vertical;min-height:78px;}
+  .field select{appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 6 6-6' stroke='%234B5551' stroke-width='1.6' fill='none' fill-rule='evenodd'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    padding-right:36px;
+  }
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px;}
+
+  /* Progress */
+  .progress-block{
+    padding:2px 0 18px;
+  }
+  .progress-block .count{
+    font-size:14px;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .progress-bar{
+    height:7px;
+    background:var(--line);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .progress-bar > div{
+    height:100%;
+    background:var(--leaf);
+    border-radius:6px;
+  }
+
+  /* Segmented control */
+  .segmented{
+    display:flex;
+    background:var(--line);
+    border-radius:10px;
+    padding:3px;
+    margin-bottom:18px;
+  }
+  .segmented button{
+    flex:1;
+    border:none;
+    background:transparent;
+    padding:10px 8px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink-soft);
+    border-radius:8px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .segmented button.active{
+    background:var(--card);
+    color:var(--forest-dark);
+    box-shadow:var(--shadow);
+  }
+
+  .class-header{
+    padding:2px 0 18px;
+  }
+  .class-header h2{margin:0 0 4px;font-size:21px;}
+  .class-header .meta{color:var(--muted);font-size:13.5px;}
+
+  .inline-add{
+    display:flex;
+    gap:8px;
+    margin-top:14px;
+  }
+  .inline-add input{
+    flex:1;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:12px 13px;
+    font-size:15px;
+    font-family:inherit;
+  }
+  .inline-add input:focus{outline:none;border-color:var(--forest);}
+  .icon-btn{
+    width:44px;height:44px;flex-shrink:0;
+    border-radius:var(--radius-sm);
+    border:none;
+    background:var(--forest);
+    color:#fff;
+    font-size:20px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn.ghost{
+    background:var(--paper);
+    color:var(--danger);
+    border:1px solid var(--line);
+  }
+
+  .student-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:13px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .student-row:last-child{border-bottom:none;}
+  .student-row .sname{flex:1;font-size:15px;color:var(--ink);}
+  .student-row .sname input{
+    width:100%;
+    border:1.5px solid var(--forest);
+    border-radius:7px;
+    padding:8px 10px;
+    font-size:15px;
+    font-family:inherit;
+  }
+  .row-actions{display:flex;gap:4px;}
+  .row-actions button{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:15px;
+    padding:6px 7px;
+    cursor:pointer;
+  }
+  .row-actions button.edit{color:var(--forest);}
+  .row-actions button.delete{color:var(--danger);}
+
+  table.marks{
+    width:100%;
+    border-collapse:collapse;
+    background:var(--card);
+    border-radius:var(--radius);
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  table.marks th{
+    text-align:left;
+    font-size:12.5px;
+    text-transform:none;
+    color:var(--ink-soft);
+    font-weight:600;
+    padding:12px 16px;
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  table.marks td{
+    padding:13px 16px;
+    font-size:15px;
+    border-bottom:1px solid var(--line);
+    color:var(--ink);
+  }
+  table.marks tr:last-child td{border-bottom:none;}
+  table.marks td.mark-col{
+    text-align:right;
+    font-weight:700;
+    color:var(--forest-dark);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .modal-backdrop{
+    position:fixed;inset:0;
+    background:rgba(20,26,23,0.44);
+    display:flex;align-items:flex-end;justify-content:center;
+    z-index:50;
+  }
+  .modal-sheet{
+    background:var(--card);
+    width:100%;
+    max-width:520px;
+    border-radius:18px 18px 0 0;
+    padding:22px 20px 28px;
+  }
+  .modal-sheet h3{margin:0 0 16px;font-size:18px;}
+
+  .placeholder-panel{
+    text-align:center;
+    padding:60px 24px;
+  }
+  .placeholder-panel .glyph{
+    width:56px;height:56px;
+    border-radius:50%;
+    background:var(--leaf-soft);
+    color:var(--forest);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 18px;
+    font-size:24px;
+  }
+  .placeholder-panel h3{margin:0 0 8px;font-size:18px;color:var(--ink);}
+  .placeholder-panel p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.55;}
+
+  .footer-note{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    padding:18px 0 4px;
+  }
+
+  /* Capture flow */
+  .warning-banner{
+    background:var(--amber-soft);
+    border:1px solid var(--amber);
+    color:var(--ink-soft);
+    font-size:13px;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:18px;
+    line-height:1.45;
+  }
+  .capture-header{
+    text-align:center;
+    padding:2px 0 20px;
+  }
+  .capture-header .sname{
+    font-family:"Iowan Old Style","Palatino Linotype","Book Antiqua",Georgia,serif;
+    font-size:25px;
+    font-weight:700;
+    color:var(--forest-dark);
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    margin:0;
+  }
+  .capture-actions{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .capture-actions .btn{flex:1;}
+  .pages-count{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+  }
+  .pages-row{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:4px;
+    margin-bottom:18px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .page-thumb{flex:0 0 auto;width:92px;}
+  .thumb-frame{
+    width:92px;height:122px;
+    border-radius:10px;
+    overflow:hidden;
+    background:var(--line);
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);
+  }
+  .thumb-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+  .thumb-loading,.thumb-missing{
+    font-size:10.5px;
+    color:var(--muted);
+    text-align:center;
+    padding:0 6px;
+  }
+  .thumb-label{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:6px;
+  }
+  .thumb-actions{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    margin-top:3px;
+  }
+  .thumb-actions button{
+    background:none;border:none;
+    color:var(--ink-soft);
+    font-size:14px;
+    padding:2px 3px;
+    cursor:pointer;
+  }
+  .thumb-actions button.remove{color:var(--danger);}
+  .nav-row{display:flex;gap:10px;margin-top:10px;}
+  .nav-row .btn{flex:1;}
+  .papers-badge{background:var(--leaf-soft);color:var(--forest-dark);}
+
+  ::selection{background:var(--leaf-soft);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+
+  /* ---------- Rubrics (static catalog) ---------- */
+  var RUBRICS = [
+    { id: 'ministry-writing-1', name: 'Ministry Writing 1 — 5 marks', maxMark: 5 }
+  ];
+
+  /* ---------- Storage ---------- */
+  var STORAGE_KEY = 'writing-marker-data';
+
+  function emptyData(){
+    return { classes: [], assessments: [] };
+  }
+
+  function storageAvailable(){
+    try {
+      var t = '__wm_test__';
+      localStorage.setItem(t, '1');
+      localStorage.removeItem(t);
+      return true;
+    } catch(e){ return false; }
+  }
+  var STORAGE_OK = storageAvailable();
+
+  function loadData(){
+    if(!STORAGE_OK){
+      console.error('Storage load failed: localStorage is not available in this browser/context (private browsing or storage disabled).');
+      return Promise.resolve(emptyData());
+    }
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return Promise.resolve(emptyData());
+      var parsed = JSON.parse(raw);
+      if(!parsed.classes) parsed.classes = [];
+      if(!parsed.assessments) parsed.assessments = [];
+      parsed.assessments.forEach(function(a){
+        (a.records || []).forEach(function(r){
+          if(!r.pages) r.pages = [];
+          if(!('transcription' in r)) r.transcription = null;
+          if(!('confidence' in r)) r.confidence = null;
+          if(!('transcribedStatus' in r)) r.transcribedStatus = null;
+          if(!('transcribedAt' in r)) r.transcribedAt = null;
+          if(!('transcribeError' in r)) r.transcribeError = null;
+          if(!('manuallyEdited' in r)) r.manuallyEdited = false;
+        });
+      });
+      return Promise.resolve(parsed);
+    } catch(e){
+      console.error('Storage load failed:', e);
+      return Promise.resolve(emptyData());
+    }
+  }
+
+  function writeToLocalStorage(){
+    if(!STORAGE_OK){
+      console.error('Storage save failed: localStorage is not available in this browser/context (private browsing or storage disabled).');
+      return;
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+    } catch(err){
+      console.error('Storage save failed:', err);
+    }
+  }
+  // Every mutation writes immediately and synchronously — no debounce/delay.
+  // localStorage.setItem is itself synchronous, so there is no performance
+  // reason to defer it, and deferring it previously created a real bug:
+  // closing/backgrounding the app (especially on mobile, where JS can be
+  // suspended instantly with no guarantee a pending setTimeout or even
+  // 'beforeunload' will ever fire) could drop a write that hadn't happened
+  // yet. Returns a resolved Promise so existing .then() call sites still work.
+  function saveData(){
+    writeToLocalStorage();
+    return Promise.resolve();
+  }
+  function saveDataImmediate(){
+    writeToLocalStorage();
+  }
+
+  /* ---------- Photo storage (IndexedDB) ----------
+     Page metadata (id, order, timestamps) lives in the small JSON blob above
+     via localStorage. The actual photo bytes are kept separately in
+     IndexedDB, since photos are far too large to fit in localStorage's
+     ~5-10MB quota reliably. */
+  var IDB_NAME = 'writing-marker-photos';
+  var IDB_VERSION = 1;
+  var IDB_STORE = 'pages';
+  var IDB_OK = 'indexedDB' in window;
+  var idbPromise = null;
+
+  function openIdb(){
+    if(!IDB_OK) return Promise.reject(new Error('indexedDB unavailable'));
+    if(idbPromise) return idbPromise;
+    idbPromise = new Promise(function(resolve, reject){
+      var req = indexedDB.open(IDB_NAME, IDB_VERSION);
+      req.onupgradeneeded = function(e){
+        var db = e.target.result;
+        if(!db.objectStoreNames.contains(IDB_STORE)){
+          db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = function(e){ resolve(e.target.result); };
+      req.onerror = function(e){ reject(e.target.error); };
+    });
+    return idbPromise;
+  }
+  function idbPutPage(id, dataUrl){
+    return openIdb().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put({ id: id, dataUrl: dataUrl });
+        tx.oncomplete = function(){ resolve(); };
+        tx.onerror = function(){ reject(tx.error); };
+      });
+    });
+  }
+  function idbGetPage(id){
+    return openIdb().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(IDB_STORE, 'readonly');
+        var req = tx.objectStore(IDB_STORE).get(id);
+        req.onsuccess = function(){ resolve(req.result || null); };
+        req.onerror = function(){ reject(req.error); };
+      });
+    });
+  }
+  function idbDeletePage(id){
+    return openIdb().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).delete(id);
+        tx.oncomplete = function(){ resolve(); };
+        tx.onerror = function(){ reject(tx.error); };
+      });
+    });
+  }
+
+  // In-memory cache of data URLs for photos already fetched this session.
+  var pageUrlCache = {};
+
+  /* ---------- Image capture + compression ----------
+     Photos are read via FileReader into data: URLs rather than
+     URL.createObjectURL blob: URLs. Some sandboxed preview contexts block
+     blob: as an <img>/<canvas> source entirely (silent decode failure),
+     while data: URLs are universally allowed — this is what "Could not
+     read image" was actually caused by. */
+  function isHeicFile(file){
+    var type = (file.type || '').toLowerCase();
+    var name = (file.name || '').toLowerCase();
+    return type.indexOf('heic') > -1 || type.indexOf('heif') > -1 ||
+      /\.hei[cf]$/.test(name);
+  }
+
+  function pickImage(useCamera){
+    return new Promise(function(resolve){
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      if(useCamera) input.setAttribute('capture', 'environment');
+      input.style.position = 'fixed';
+      input.style.left = '-9999px';
+      var settled = false;
+      function cleanup(){
+        if(input.parentNode) document.body.removeChild(input);
+        window.removeEventListener('focus', onFocus);
+      }
+      function onFocus(){
+        // If the user cancels the native picker, 'change' never fires.
+        // Give it a moment in case 'change' is about to fire anyway —
+        // large camera photos can take a beat to hand back to the page.
+        setTimeout(function(){
+          if(!settled){ settled = true; cleanup(); resolve(null); }
+        }, 1200);
+      }
+      input.addEventListener('change', function(){
+        if(settled) return;
+        settled = true;
+        var file = input.files && input.files[0] ? input.files[0] : null;
+        cleanup();
+        resolve(file);
+      });
+      window.addEventListener('focus', onFocus);
+      document.body.appendChild(input);
+      input.click();
+    });
+  }
+
+  function readFileAsDataUrl(file){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onerror = function(){
+        reject(new Error('Could not read the selected file'));
+      };
+      reader.onabort = function(){
+        reject(new Error('Reading the selected file was interrupted'));
+      };
+      reader.onload = function(){
+        if(typeof reader.result === 'string' && reader.result.length > 0){
+          resolve(reader.result);
+        } else {
+          reject(new Error('Could not read the selected file'));
+        }
+      };
+      try {
+        reader.readAsDataURL(file);
+      } catch(e){
+        reject(e);
+      }
+    });
+  }
+
+  function compressImage(file){
+    return readFileAsDataUrl(file).then(function(rawDataUrl){
+      return new Promise(function(resolve, reject){
+        var img = new Image();
+        img.onload = function(){
+          try {
+            var w = img.naturalWidth || img.width;
+            var h = img.naturalHeight || img.height;
+            if(!w || !h){ reject(new Error('Could not read image dimensions')); return; }
+            var maxDim = 1400;
+            var scale = Math.min(1, maxDim / Math.max(w, h));
+            var cw = Math.max(1, Math.round(w * scale));
+            var ch = Math.max(1, Math.round(h * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = cw; canvas.height = ch;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, cw, ch);
+            var outUrl = canvas.toDataURL('image/jpeg', 0.72);
+            resolve(outUrl);
+          } catch(e){
+            reject(e);
+          }
+        };
+        img.onerror = function(){
+          reject(new Error('Could not read image'));
+        };
+        img.src = rawDataUrl;
+      });
+    });
+  }
+
+  function explainImageError(file, err){
+    if(file && isHeicFile(file)){
+      return 'That looks like a HEIC/HEIF photo, which this browser can\'t open directly. On iPhone: Settings > Camera > Formats > "Most Compatible" will save new photos as JPEG — or use "Upload Photo" and pick a JPEG/PNG instead.';
+    }
+    return 'Could not add that photo (' + ((err && err.message) || 'unknown error') + '). Please try again with a JPEG or PNG image.';
+  }
+
+  function addPageToCurrentStudent(useCamera){
+    var a = getAssessment(state.captureAssessmentId);
+    if(!a) return;
+    var record = a.records[state.captureIndex];
+    if(!record) return;
+    var pickedFile = null;
+    pickImage(useCamera).then(function(file){
+      if(!file) return; // user cancelled
+      pickedFile = file;
+      return compressImage(file).then(function(dataUrl){
+        var pageId = uid();
+        var storePromise = IDB_OK ? idbPutPage(pageId, dataUrl).catch(function(err){
+          console.error('Photo storage failed:', err);
+        }) : Promise.resolve();
+        return storePromise.then(function(){
+          record.pages = record.pages || [];
+          record.pages.push({ id: pageId, createdAt: new Date().toISOString() });
+          if(!IDB_OK){
+            pageUrlCache[pageId] = dataUrl;
+          }
+          return saveData();
+        }).then(function(){ render(); });
+      });
+    }).catch(function(err){
+      console.error('Add page failed:', err);
+      alert(explainImageError(pickedFile, err));
+    });
+  }
+
+  function removePage(record, pageId){
+    record.pages = (record.pages || []).filter(function(p){ return p.id !== pageId; });
+    delete pageUrlCache[pageId];
+    if(IDB_OK) idbDeletePage(pageId).catch(function(){});
+    saveData();
+    render();
+  }
+
+  function replacePage(record, pageId, useCamera){
+    var pickedFile = null;
+    pickImage(useCamera).then(function(file){
+      if(!file) return;
+      pickedFile = file;
+      return compressImage(file).then(function(dataUrl){
+        var storePromise = IDB_OK ? idbPutPage(pageId, dataUrl).catch(function(err){
+          console.error('Photo storage failed:', err);
+        }) : Promise.resolve();
+        return storePromise.then(function(){
+          pageUrlCache[pageId] = dataUrl;
+          return saveData();
+        }).then(function(){ render(); });
+      });
+    }).catch(function(err){
+      console.error('Replace page failed:', err);
+      alert(explainImageError(pickedFile, err));
+    });
+  }
+
+  function hydrateThumbnails(record){
+    (record.pages || []).forEach(function(p){
+      if(pageUrlCache[p.id]) return;
+      if(!IDB_OK) return; // nothing recoverable without IndexedDB
+      idbGetPage(p.id).then(function(rec){
+        var frame = document.querySelector('[data-page-id="' + p.id + '"] .thumb-frame');
+        if(rec && rec.dataUrl){
+          pageUrlCache[p.id] = rec.dataUrl;
+          if(frame) frame.innerHTML = '<img src="' + rec.dataUrl + '">';
+        } else if(frame){
+          frame.innerHTML = '<div class="thumb-missing">Missing</div>';
+        }
+      }).catch(function(){
+        var frame = document.querySelector('[data-page-id="' + p.id + '"] .thumb-frame');
+        if(frame) frame.innerHTML = '<div class="thumb-missing">Missing</div>';
+      });
+    });
+  }
+
+  /* ---------- Helpers ---------- */
+  function uid(){
+    return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,9);
+  }
+
+  function getClass(classId){
+    return state.data.classes.find(function(c){ return c.id === classId; });
+  }
+  function getAssessment(assessmentId){
+    return state.data.assessments.find(function(a){ return a.id === assessmentId; });
+  }
+  function getRubric(rubricId){
+    return RUBRICS.find(function(r){ return r.id === rubricId; }) || RUBRICS[0];
+  }
+  function studentName(classId, studentId){
+    var cls = getClass(classId);
+    if(!cls) return '(removed student)';
+    var s = cls.students.find(function(st){ return st.id === studentId; });
+    return s ? s.name : '(removed student)';
+  }
+  function escapeHtml(str){
+    return String(str == null ? '' : str).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function formatDate(iso){
+    var d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  }
+  function capitalize(s){
+    s = String(s || '');
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  /* ---------- State ---------- */
+  var state = {
+    view: 'loading',
+    currentClassId: null,
+    currentAssessmentId: null,
+    currentStudentId: null,
+    assessmentTab: 'students', // students | transcripts | marks
+    editingStudentId: null,
+    captureAssessmentId: null,
+    captureIndex: 0,
+    transcriptAssessmentId: null,
+    transcriptIndex: 0,
+    transcribeProgress: null, // { assessmentId, total, done, active }
+    data: emptyData()
+  };
+
+  var history = [];
+  function goTo(view, opts){
+    history.push({ view: state.view, currentClassId: state.currentClassId, currentAssessmentId: state.currentAssessmentId, assessmentTab: state.assessmentTab });
+    state.view = view;
+    if(opts){
+      if('currentClassId' in opts) state.currentClassId = opts.currentClassId;
+      if('currentAssessmentId' in opts) state.currentAssessmentId = opts.currentAssessmentId;
+      if('currentStudentId' in opts) state.currentStudentId = opts.currentStudentId;
+      if('assessmentTab' in opts) state.assessmentTab = opts.assessmentTab;
+    }
+    render();
+  }
+  function goBack(){
+    var prev = history.pop();
+    if(!prev){ state.view = 'home'; render(); return; }
+    state.view = prev.view;
+    state.currentClassId = prev.currentClassId;
+    state.currentAssessmentId = prev.currentAssessmentId;
+    state.assessmentTab = prev.assessmentTab;
+    render();
+  }
+  function resetToHome(){
+    history = [];
+    state.view = 'home';
+    state.currentClassId = null;
+    state.currentAssessmentId = null;
+    render();
+  }
+
+  /* ---------- Mutations ---------- */
+  function createClass(name){
+    var cls = { id: uid(), name: name, students: [] };
+    state.data.classes.push(cls);
+    saveData();
+    return cls;
+  }
+  function renameClass(classId, name){
+    var cls = getClass(classId);
+    if(cls){ cls.name = name; saveData(); }
+  }
+  function deleteClass(classId){
+    state.data.classes = state.data.classes.filter(function(c){ return c.id !== classId; });
+    saveData();
+  }
+  function addStudent(classId, name){
+    var cls = getClass(classId);
+    if(cls){ cls.students.push({ id: uid(), name: name }); saveData(); }
+  }
+  function editStudent(classId, studentId, name){
+    var cls = getClass(classId);
+    if(!cls) return;
+    var s = cls.students.find(function(st){ return st.id === studentId; });
+    if(s){ s.name = name; saveData(); }
+  }
+  function deleteStudent(classId, studentId){
+    var cls = getClass(classId);
+    if(!cls) return;
+    cls.students = cls.students.filter(function(st){ return st.id !== studentId; });
+    saveData();
+  }
+  function createAssessment(title, prompt, classId, rubricId){
+    var cls = getClass(classId);
+    var records = (cls ? cls.students : []).map(function(s){
+      return { studentId: s.id, status: 'not_added', mark: null, feedback: null, pages: [],
+        transcription: null, confidence: null, transcribedStatus: null, transcribedAt: null,
+        transcribeError: null, manuallyEdited: false };
+    });
+    var assessment = {
+      id: uid(),
+      title: title,
+      prompt: prompt,
+      classId: classId,
+      rubricId: rubricId,
+      createdAt: new Date().toISOString(),
+      records: records
+    };
+    state.data.assessments.push(assessment);
+    saveData();
+    return assessment;
+  }
+
+  /* ---------- Rendering ---------- */
+  var app = document.getElementById('app');
+
+  function render(){
+    if(state.view === 'loading'){ app.innerHTML = renderLoading(); return; }
+    if(state.view === 'home'){ app.innerHTML = renderHome(); bindHome(); return; }
+    if(state.view === 'classes'){ app.innerHTML = renderClassesList(); bindClassesList(); return; }
+    if(state.view === 'classDetail'){ app.innerHTML = renderClassDetail(); bindClassDetail(); return; }
+    if(state.view === 'newAssessment'){ app.innerHTML = renderNewAssessment(); bindNewAssessment(); return; }
+    if(state.view === 'assessment'){ app.innerHTML = renderAssessment(); bindAssessment(); return; }
+    if(state.view === 'studentPlaceholder'){ app.innerHTML = renderStudentPlaceholder(); bindStudentPlaceholder(); return; }
+    if(state.view === 'capture'){ app.innerHTML = renderCapture(); bindCapture(); return; }
+    if(state.view === 'transcript'){ app.innerHTML = renderTranscript(); bindTranscript(); return; }
+  }
+
+  function startCapture(assessmentId){
+    state.captureAssessmentId = assessmentId;
+    state.captureIndex = 0;
+    state.view = 'capture';
+    render();
+  }
+
+  function advanceCapture(assessment){
+    var total = assessment.records.length;
+    if(state.captureIndex >= total - 1){
+      state.view = 'assessment';
+      state.currentAssessmentId = assessment.id;
+      render();
+    } else {
+      state.captureIndex += 1;
+      render();
+    }
+  }
+
+  function renderLoading(){
+    return '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--muted);font-size:14px;">Loading…</div>';
+  }
+
+  function topbar(title, sub, opts){
+    opts = opts || {};
+    var backBtn = opts.showBack ? '<button class="back-btn" id="btn-back">&#8249;</button>' : '';
+    var action = opts.actionLabel ? '<button class="topbar-action" id="btn-topaction">'+ escapeHtml(opts.actionLabel) +'</button>' : '';
+    return '' +
+      '<div class="topbar">' +
+        backBtn +
+        '<div class="title">'+ escapeHtml(title) + (sub ? '<small>'+ escapeHtml(sub) +'</small>' : '') +'</div>' +
+        action +
+      '</div>';
+  }
+
+  /* --- HOME --- */
+  function renderHome(){
+    var recents = state.data.assessments.slice().sort(function(a,b){
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    }).slice(0,6);
+
+    var recentsHtml;
+    if(recents.length === 0){
+      recentsHtml = '';
+    } else {
+      recentsHtml = '<div class="section-label">Recent assessments</div><div class="ledger">' +
+        recents.map(function(a){
+          var cls = getClass(a.classId);
+          var completed = a.records.filter(function(r){ return r.mark != null; }).length;
+          return '' +
+            '<div class="ledger-row" data-open-assessment="'+a.id+'">' +
+              '<div class="main">' +
+                '<div class="rtitle">'+ escapeHtml(a.title) +'</div>' +
+                '<div class="rsub">'+ escapeHtml(cls ? cls.name : 'No class') +' · '+formatDate(a.createdAt)+'</div>' +
+              '</div>' +
+              '<span class="badge '+(completed===a.records.length && a.records.length>0 ? 'badge-done':'badge-pending')+'">'+completed+'/'+a.records.length+'</span>' +
+            '</div>';
+        }).join('') +
+        '</div>';
+    }
+
+    return '' +
+      '<div id="app-inner">' +
+      '<div class="content">' +
+        '<div class="home-hero">' +
+          '<h1 class="brand">Writing Marker</h1>' +
+          '<p class="tag">Mark handwritten writing assignments, faster.</p>' +
+        '</div>' +
+        '<div class="stack">' +
+          '<button class="btn btn-primary" id="btn-new-assessment">New Assessment</button>' +
+          '<button class="btn btn-secondary" id="btn-classes">Classes</button>' +
+        '</div>' +
+        recentsHtml +
+      '</div>' +
+      '</div>';
+  }
+  function bindHome(){
+    document.getElementById('btn-new-assessment').onclick = function(){ goTo('newAssessment'); };
+    document.getElementById('btn-classes').onclick = function(){ goTo('classes'); };
+    document.querySelectorAll('[data-open-assessment]').forEach(function(el){
+      el.onclick = function(){
+        goTo('assessment', { currentAssessmentId: el.getAttribute('data-open-assessment'), assessmentTab: 'students' });
+      };
+    });
+  }
+
+  /* --- CLASSES LIST --- */
+  function renderClassesList(){
+    var classes = state.data.classes;
+    var body;
+    if(classes.length === 0){
+      body = '<div class="empty-state"><div class="glyph">&#9679;</div><p>No classes yet.<br>Add a class to start reusing student lists across assessments.</p></div>';
+    } else {
+      body = '<div class="ledger">' + classes.map(function(c){
+        return '' +
+          '<div class="ledger-row" data-open-class="'+c.id+'">' +
+            '<div class="main">' +
+              '<div class="rtitle">'+ escapeHtml(c.name) +'</div>' +
+              '<div class="rsub">'+ c.students.length + (c.students.length===1?' student':' students') +'</div>' +
+            '</div>' +
+            '<span class="chev">&#8250;</span>' +
+          '</div>';
+      }).join('') + '</div>';
+    }
+    return '' +
+      topbar('Classes', null, { showBack:true }) +
+      '<div class="content">' +
+        body +
+        '<div style="margin-top:16px;">' +
+          '<button class="btn btn-primary" id="btn-add-class">Add Class</button>' +
+        '</div>' +
+      '</div>';
+  }
+  function bindClassesList(){
+    document.getElementById('btn-back').onclick = function(){ resetToHome(); };
+    document.getElementById('btn-add-class').onclick = function(){ showPrompt({
+      title: 'New class',
+      label: 'Class name',
+      placeholder: 'e.g. Grade 11/2',
+      confirmLabel: 'Create',
+      onConfirm: function(val){
+        if(val.trim()){
+          var cls = createClass(val.trim());
+          render();
+        }
+      }
+    }); };
+    document.querySelectorAll('[data-open-class]').forEach(function(el){
+      el.onclick = function(){
+        goTo('classDetail', { currentClassId: el.getAttribute('data-open-class') });
+      };
+    });
+  }
+
+  /* --- CLASS DETAIL --- */
+  function renderClassDetail(){
+    var cls = getClass(state.currentClassId);
+    if(!cls){ return topbar('Class', null, {showBack:true}) + '<div class="content"><div class="empty-state"><p>This class no longer exists.</p></div></div>'; }
+
+    var studentsHtml;
+    if(cls.students.length === 0){
+      studentsHtml = '<div class="empty-state"><div class="glyph">&#9679;</div><p>No students yet.<br>Add names below — you\'ll reuse this list for every assessment.</p></div>';
+    } else {
+      studentsHtml = '<div class="ledger">' + cls.students.map(function(s){
+        if(state.editingStudentId === s.id){
+          return '' +
+            '<div class="student-row">' +
+              '<div class="sname"><input type="text" id="edit-input-'+s.id+'" value="'+escapeHtml(s.name)+'"></div>' +
+              '<div class="row-actions">' +
+                '<button class="edit" data-save-student="'+s.id+'">Save</button>' +
+              '</div>' +
+            '</div>';
+        }
+        return '' +
+          '<div class="student-row">' +
+            '<div class="sname">'+ escapeHtml(s.name) +'</div>' +
+            '<div class="row-actions">' +
+              '<button class="edit" data-edit-student="'+s.id+'" title="Rename">&#9998;</button>' +
+              '<button class="delete" data-delete-student="'+s.id+'" title="Remove">&#10005;</button>' +
+            '</div>' +
+          '</div>';
+      }).join('') + '</div>';
+    }
+
+    return '' +
+      topbar(cls.name, cls.students.length + (cls.students.length===1?' student':' students'), { showBack:true, actionLabel:'Rename' }) +
+      '<div class="content">' +
+        studentsHtml +
+        '<div class="inline-add">' +
+          '<input type="text" id="new-student-input" placeholder="Student name">' +
+          '<button class="icon-btn" id="btn-add-student">+</button>' +
+        '</div>' +
+        '<div style="margin-top:30px;text-align:center;">' +
+          '<button class="btn-danger-text" id="btn-delete-class">Delete this class</button>' +
+        '</div>' +
+      '</div>';
+  }
+  function bindClassDetail(){
+    document.getElementById('btn-back').onclick = goBack;
+    var cls = getClass(state.currentClassId);
+    if(!cls) return;
+
+    var topAction = document.getElementById('btn-topaction');
+    if(topAction) topAction.onclick = function(){
+      showPrompt({
+        title: 'Rename class',
+        label: 'Class name',
+        value: cls.name,
+        confirmLabel: 'Save',
+        onConfirm: function(val){
+          if(val.trim()){ renameClass(cls.id, val.trim()); render(); }
+        }
+      });
+    };
+
+    var addBtn = document.getElementById('btn-add-student');
+    var addInput = document.getElementById('new-student-input');
+    function submitAdd(){
+      var val = addInput.value.trim();
+      if(val){ addStudent(cls.id, val); render(); }
+    }
+    addBtn.onclick = submitAdd;
+    addInput.addEventListener('keydown', function(e){ if(e.key==='Enter') submitAdd(); });
+
+    document.querySelectorAll('[data-edit-student]').forEach(function(el){
+      el.onclick = function(){
+        state.editingStudentId = el.getAttribute('data-edit-student');
+        render();
+        var input = document.getElementById('edit-input-'+state.editingStudentId);
+        if(input){ input.focus(); input.select();
+          input.addEventListener('keydown', function(e){ if(e.key==='Enter') saveEdit(state.editingStudentId); });
+        }
+      };
+    });
+    document.querySelectorAll('[data-save-student]').forEach(function(el){
+      el.onclick = function(){ saveEdit(el.getAttribute('data-save-student')); };
+    });
+    function saveEdit(studentId){
+      var input = document.getElementById('edit-input-'+studentId);
+      var val = input ? input.value.trim() : '';
+      if(val){ editStudent(cls.id, studentId, val); }
+      state.editingStudentId = null;
+      render();
+    }
+
+    document.querySelectorAll('[data-delete-student]').forEach(function(el){
+      el.onclick = function(){
+        var studentId = el.getAttribute('data-delete-student');
+        var s = cls.students.find(function(st){ return st.id === studentId; });
+        showConfirm({
+          title: 'Remove student?',
+          message: (s ? s.name : 'This student') + ' will be removed from ' + cls.name + '.',
+          confirmLabel: 'Remove',
+          danger: true,
+          onConfirm: function(){ deleteStudent(cls.id, studentId); render(); }
+        });
+      };
+    });
+
+    document.getElementById('btn-delete-class').onclick = function(){
+      showConfirm({
+        title: 'Delete class?',
+        message: 'This removes "'+cls.name+'" and its student list. Existing assessments will keep their records.',
+        confirmLabel: 'Delete',
+        danger: true,
+        onConfirm: function(){ deleteClass(cls.id); resetToHome(); goTo('classes'); }
+      });
+    };
+  }
+
+  /* --- NEW ASSESSMENT --- */
+  function renderNewAssessment(){
+    var classes = state.data.classes;
+    var classOptions = classes.length
+      ? classes.map(function(c){ return '<option value="'+c.id+'">'+escapeHtml(c.name)+'</option>'; }).join('')
+      : '<option value="" disabled selected>No classes yet</option>';
+    var rubricOptions = RUBRICS.map(function(r){ return '<option value="'+r.id+'">'+escapeHtml(r.name)+'</option>'; }).join('');
+
+    return '' +
+      topbar('New Assessment', null, { showBack:true }) +
+      '<div class="content">' +
+        (classes.length === 0 ? '<div class="card" style="margin-bottom:18px;border-color:var(--amber);background:var(--amber-soft);"><div style="font-size:14px;color:var(--ink-soft);">You need a class before creating an assessment. <span id="link-add-class" style="color:var(--forest-dark);font-weight:600;text-decoration:underline;cursor:pointer;">Add one now</span>.</div></div>' : '') +
+        '<div class="field">' +
+          '<label for="a-title">Assessment title</label>' +
+          '<input type="text" id="a-title" placeholder="e.g. Descriptive Essay — Term 1">' +
+        '</div>' +
+        '<div class="field">' +
+          '<label for="a-prompt">Writing question / prompt</label>' +
+          '<textarea id="a-prompt" placeholder="e.g. Describe a place that means a lot to you."></textarea>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label for="a-class">Class</label>' +
+          '<select id="a-class">'+classOptions+'</select>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label for="a-rubric">Rubric</label>' +
+          '<select id="a-rubric">'+rubricOptions+'</select>' +
+        '</div>' +
+        '<button class="btn btn-primary" id="btn-create-assessment" '+(classes.length===0?'disabled style="opacity:0.5;"':'')+'>Create Assessment</button>' +
+      '</div>';
+  }
+  function bindNewAssessment(){
+    document.getElementById('btn-back').onclick = goBack;
+    var linkAdd = document.getElementById('link-add-class');
+    if(linkAdd) linkAdd.onclick = function(){ goTo('classes'); };
+    var createBtn = document.getElementById('btn-create-assessment');
+    if(state.data.classes.length === 0) return;
+    createBtn.onclick = function(){
+      var title = document.getElementById('a-title').value.trim();
+      var prompt = document.getElementById('a-prompt').value.trim();
+      var classId = document.getElementById('a-class').value;
+      var rubricId = document.getElementById('a-rubric').value;
+      if(!title){ document.getElementById('a-title').focus(); return; }
+      if(!classId){ return; }
+      var assessment = createAssessment(title, prompt, classId, rubricId);
+      history = [];
+      state.view = 'home';
+      goTo('assessment', { currentAssessmentId: assessment.id, assessmentTab: 'students' });
+    };
+  }
+
+  /* --- ASSESSMENT SCREEN --- */
+  function renderAssessment(){
+    var a = getAssessment(state.currentAssessmentId);
+    if(!a){ return topbar('Assessment', null, {showBack:true}) + '<div class="content"><div class="empty-state"><p>This assessment no longer exists.</p></div></div>'; }
+    var cls = getClass(a.classId);
+    var total = a.records.length;
+    var withPapers = a.records.filter(function(r){ return (r.pages||[]).length > 0; }).length;
+    var pct = total ? Math.round((withPapers/total)*100) : 0;
+    var pendingTranscribe = a.records.filter(function(r){ return (r.pages||[]).length > 0 && !r.transcription; }).length;
+
+    var segmented = '' +
+      '<div class="segmented">' +
+        '<button class="'+(state.assessmentTab==='students'?'active':'')+'" data-tab="students">Students</button>' +
+        '<button class="'+(state.assessmentTab==='transcripts'?'active':'')+'" data-tab="transcripts">Transcripts</button>' +
+        '<button class="'+(state.assessmentTab==='marks'?'active':'')+'" data-tab="marks">Marks Record</button>' +
+      '</div>';
+
+    var body;
+    if(state.assessmentTab === 'students'){
+      if(total === 0){
+        body = '<div class="empty-state"><div class="glyph">&#9679;</div><p>This class has no students yet.</p></div>';
+      } else {
+        body = '<div class="ledger">' + a.records.map(function(r, idx){
+          var name = studentName(a.classId, r.studentId);
+          var n = (r.pages||[]).length;
+          var label, badgeClass, sub = '';
+          if(n === 0){
+            label = 'Not added'; badgeClass = 'badge-pending';
+          } else if(r.transcribeError){
+            label = 'Transcription failed'; badgeClass = 'badge-warn'; sub = 'Tap to retry';
+          } else if(!r.transcription){
+            label = n + (n === 1 ? ' page' : ' pages'); badgeClass = 'badge-done';
+          } else if(r.transcribedStatus === 'needs_review'){
+            label = 'Needs review'; badgeClass = 'badge-warn'; sub = 'Tap to view transcription';
+          } else {
+            label = 'Transcribed'; badgeClass = 'badge-done'; sub = 'Tap to view transcription';
+          }
+          return '' +
+            '<div class="ledger-row" data-open-student-index="'+idx+'">' +
+              '<div class="main"><div class="rtitle">'+escapeHtml(name)+'</div>'+(sub?'<div class="rsub">'+escapeHtml(sub)+'</div>':'')+'</div>' +
+              '<span class="badge '+badgeClass+'">'+label+'</span>' +
+            '</div>';
+        }).join('') + '</div>';
+      }
+    } else if(state.assessmentTab === 'transcripts'){
+      if(total === 0){
+        body = '<div class="empty-state"><div class="glyph">&#9679;</div><p>This class has no students yet.</p></div>';
+      } else {
+        body = '<div class="ledger">' + a.records.map(function(r, idx){
+          var name = studentName(a.classId, r.studentId);
+          var hasPages = (r.pages||[]).length > 0;
+          var badgeClass, badgeLabel, sub = '';
+          if(!hasPages){
+            badgeClass = 'badge-pending'; badgeLabel = 'No papers';
+          } else if(r.transcribeError){
+            badgeClass = 'badge-warn'; badgeLabel = 'Failed'; sub = 'Tap to retry';
+          } else if(!r.transcription){
+            badgeClass = 'badge-pending'; badgeLabel = 'Not transcribed';
+          } else if(r.transcribedStatus === 'needs_review'){
+            badgeClass = 'badge-warn'; badgeLabel = 'Needs review';
+            sub = r.confidence ? capitalize(r.confidence) + ' confidence' : '';
+          } else {
+            badgeClass = 'badge-done'; badgeLabel = 'Transcribed';
+            sub = r.confidence ? capitalize(r.confidence) + ' confidence' : '';
+          }
+          return '' +
+            '<div class="ledger-row" data-open-transcript-index="'+idx+'">' +
+              '<div class="main"><div class="rtitle">'+escapeHtml(name)+'</div>'+(sub?'<div class="rsub">'+escapeHtml(sub)+'</div>':'')+'</div>' +
+              '<span class="badge '+badgeClass+'">'+badgeLabel+'</span>' +
+            '</div>';
+        }).join('') + '</div>';
+      }
+    } else {
+      if(total === 0){
+        body = '<div class="empty-state"><p>No students to record marks for.</p></div>';
+      } else {
+        var rubric = getRubric(a.rubricId);
+        body = '<table class="marks"><thead><tr><th>Student</th><th style="text-align:right;">Mark</th></tr></thead><tbody>' +
+          a.records.map(function(r){
+            var name = studentName(a.classId, r.studentId);
+            return '<tr><td>'+escapeHtml(name)+'</td><td class="mark-col">'+(r.mark != null ? (r.mark + ' / ' + rubric.maxMark) : '—')+'</td></tr>';
+          }).join('') +
+          '</tbody></table>';
+      }
+    }
+
+    var transcribeBtnHtml = '';
+    if(state.transcribeProgress && state.transcribeProgress.assessmentId === a.id && state.transcribeProgress.active){
+      transcribeBtnHtml = '<button class="btn btn-secondary" id="btn-transcribe-papers" disabled style="opacity:0.6;margin-bottom:20px;">Transcribing '+state.transcribeProgress.done+' / '+state.transcribeProgress.total+'…</button>';
+    } else if(pendingTranscribe > 0){
+      transcribeBtnHtml = '<button class="btn btn-secondary" id="btn-transcribe-papers" style="margin-bottom:20px;">Transcribe Papers ('+pendingTranscribe+')</button>';
+    }
+
+    return '' +
+      topbar(a.title, cls ? cls.name : '', { showBack:true }) +
+      '<div class="content">' +
+        '<div class="progress-block">' +
+          '<div class="count">'+withPapers+' / '+total+' papers added</div>' +
+          '<div class="progress-bar"><div style="width:'+pct+'%;"></div></div>' +
+        '</div>' +
+        (total > 0 ? '<button class="btn btn-primary" id="btn-add-papers" style="margin-bottom:14px;">Add Papers</button>' : '') +
+        transcribeBtnHtml +
+        segmented +
+        body +
+      '</div>';
+  }
+  function bindAssessment(){
+    document.getElementById('btn-back').onclick = function(){ history = []; state.view='home'; render(); };
+    document.querySelectorAll('[data-tab]').forEach(function(el){
+      el.onclick = function(){ state.assessmentTab = el.getAttribute('data-tab'); render(); };
+    });
+    var addPapersBtn = document.getElementById('btn-add-papers');
+    if(addPapersBtn){
+      addPapersBtn.onclick = function(){ startCapture(state.currentAssessmentId); };
+    }
+    var transcribeBtn = document.getElementById('btn-transcribe-papers');
+    if(transcribeBtn){
+      transcribeBtn.onclick = function(){ startTranscription(state.currentAssessmentId); };
+    }
+    var a = getAssessment(state.currentAssessmentId);
+    document.querySelectorAll('[data-open-student-index]').forEach(function(el){
+      el.onclick = function(){
+        var idx = parseInt(el.getAttribute('data-open-student-index'), 10) || 0;
+        var record = a && a.records[idx];
+        if(record && (record.transcription || record.transcribeError)){
+          state.transcriptAssessmentId = state.currentAssessmentId;
+          state.transcriptIndex = idx;
+          state.view = 'transcript';
+        } else {
+          state.captureAssessmentId = state.currentAssessmentId;
+          state.captureIndex = idx;
+          state.view = 'capture';
+        }
+        render();
+      };
+    });
+    document.querySelectorAll('[data-open-transcript-index]').forEach(function(el){
+      el.onclick = function(){
+        state.transcriptAssessmentId = state.currentAssessmentId;
+        state.transcriptIndex = parseInt(el.getAttribute('data-open-transcript-index'), 10) || 0;
+        state.view = 'transcript';
+        render();
+      };
+    });
+  }
+
+  /* --- STUDENT PLACEHOLDER --- */
+  function renderStudentPlaceholder(){
+    var a = getAssessment(state.currentAssessmentId);
+    var name = a ? studentName(a.classId, state.currentStudentId) : '';
+    return '' +
+      topbar(name || 'Student', a ? a.title : '', { showBack:true }) +
+      '<div class="content">' +
+        '<div class="placeholder-panel">' +
+          '<div class="glyph">&#9998;</div>' +
+          '<h3>Paper capture coming soon</h3>' +
+          '<p>In the next phase, you\'ll photograph or upload '+escapeHtml(name)+'\'s paper here for AI-assisted marking.</p>' +
+        '</div>' +
+      '</div>';
+  }
+  function bindStudentPlaceholder(){
+    document.getElementById('btn-back').onclick = goBack;
+  }
+
+  /* --- PAPER CAPTURE (one student at a time) --- */
+  function renderPageThumbnails(record, opts){
+    opts = opts || {};
+    var pages = record.pages || [];
+    if(pages.length === 0) return '';
+    return '<div class="pages-row">' + pages.map(function(p, idx){
+      var cached = pageUrlCache[p.id];
+      var inner;
+      if(cached){
+        inner = '<img src="'+cached+'">';
+      } else if(IDB_OK){
+        inner = '<div class="thumb-loading">Loading…</div>';
+      } else {
+        inner = '<div class="thumb-missing">Not saved</div>';
+      }
+      var actions = opts.readOnly ? '' : (
+        '<div class="thumb-actions">' +
+          '<button data-replace-page="'+p.id+'" title="Replace page">&#8635;</button>' +
+          '<button class="remove" data-remove-page="'+p.id+'" title="Remove page">&#10005;</button>' +
+        '</div>'
+      );
+      return '' +
+        '<div class="page-thumb" data-page-id="'+p.id+'">' +
+          '<div class="thumb-frame">'+inner+'</div>' +
+          '<div class="thumb-label">Page '+(idx+1)+'</div>' +
+          actions +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  function renderCapture(){
+    var a = getAssessment(state.captureAssessmentId);
+    if(!a){
+      return topbar('Add Papers', null, { showBack:true }) +
+        '<div class="content"><div class="empty-state"><p>This assessment no longer exists.</p></div></div>';
+    }
+    var total = a.records.length;
+    if(total === 0){
+      return topbar('Add Papers', a.title, { showBack:true }) +
+        '<div class="content"><div class="empty-state"><p>This class has no students yet.</p></div></div>';
+    }
+    if(state.captureIndex < 0) state.captureIndex = 0;
+    if(state.captureIndex > total - 1) state.captureIndex = total - 1;
+
+    var cls = getClass(a.classId);
+    var idx = state.captureIndex;
+    var record = a.records[idx];
+    var name = studentName(a.classId, record.studentId);
+    var pages = record.pages || [];
+    var isLast = idx === total - 1;
+
+    var warning = !IDB_OK
+      ? '<div class="warning-banner">Photo storage isn\'t available in this browser right now — photos you capture will disappear if you leave or refresh this page. Classes, students and assessments will still save normally.</div>'
+      : '';
+
+    return '' +
+      '<div class="topbar">' +
+        '<button class="back-btn" id="btn-capture-back">&#8249;</button>' +
+        '<div class="title">'+escapeHtml(cls ? cls.name : '')+'<small>Student '+(idx+1)+' of '+total+'</small></div>' +
+      '</div>' +
+      '<div class="content">' +
+        warning +
+        '<div class="capture-header"><div class="sname">'+escapeHtml(name)+'</div></div>' +
+        '<div class="capture-actions">' +
+          '<button class="btn btn-primary" id="btn-take-photo">Take Photo</button>' +
+          '<button class="btn btn-secondary" id="btn-upload-photo">Upload Photo</button>' +
+        '</div>' +
+        '<div class="pages-count">Pages: '+pages.length+'</div>' +
+        renderPageThumbnails(record) +
+        '<button class="btn btn-primary" id="btn-save-next">'+(isLast ? 'Finish' : 'Save & Next')+'</button>' +
+        '<div class="nav-row">' +
+          '<button class="btn btn-secondary" id="btn-previous" '+(idx===0 ? 'disabled style="opacity:0.5;"' : '')+'>Previous</button>' +
+          '<button class="btn btn-secondary" id="btn-skip">Skip</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function bindCapture(){
+    var backBtn = document.getElementById('btn-capture-back');
+    var a = getAssessment(state.captureAssessmentId);
+    if(backBtn){
+      backBtn.onclick = function(){
+        state.view = 'assessment';
+        state.currentAssessmentId = state.captureAssessmentId;
+        render();
+      };
+    }
+    if(!a || a.records.length === 0) return;
+
+    var record = a.records[state.captureIndex];
+
+    var takeBtn = document.getElementById('btn-take-photo');
+    if(takeBtn) takeBtn.onclick = function(){ addPageToCurrentStudent(true); };
+    var uploadBtn = document.getElementById('btn-upload-photo');
+    if(uploadBtn) uploadBtn.onclick = function(){ addPageToCurrentStudent(false); };
+    var saveNextBtn = document.getElementById('btn-save-next');
+    if(saveNextBtn) saveNextBtn.onclick = function(){ advanceCapture(a); };
+    var skipBtn = document.getElementById('btn-skip');
+    if(skipBtn) skipBtn.onclick = function(){ advanceCapture(a); };
+    var prevBtn = document.getElementById('btn-previous');
+    if(prevBtn && state.captureIndex > 0){
+      prevBtn.onclick = function(){ state.captureIndex -= 1; render(); };
+    }
+
+    document.querySelectorAll('[data-remove-page]').forEach(function(el){
+      el.onclick = function(){ removePage(record, el.getAttribute('data-remove-page')); };
+    });
+    document.querySelectorAll('[data-replace-page]').forEach(function(el){
+      el.onclick = function(){ replacePage(record, el.getAttribute('data-replace-page'), true); };
+    });
+
+    hydrateThumbnails(record);
+  }
+
+  /* --- TRANSCRIPTION ENGINE ---
+     Calls our own Netlify Function at /.netlify/functions/transcribe, which
+     holds the Anthropic API key server-side (from the ANTHROPIC_API_KEY
+     environment variable) and forwards the request to Claude's vision API.
+     The browser never sees or sends the API key, and since this is a
+     same-origin request (no api.anthropic.com call from the page itself),
+     it works normally on mobile Safari with no CORS issues. */
+  function buildTranscriptionPrompt(){
+    return 'You are transcribing a student\'s handwritten writing assignment from the attached photographed page images, provided in reading order.\n\n' +
+      'Rules:\n' +
+      '- Transcribe only the student\'s own handwritten answer text.\n' +
+      '- Preserve the student\'s original spelling, grammar, and punctuation exactly as written, including mistakes. Do NOT correct or improve the writing in any way.\n' +
+      '- Ignore printed instructions, letterhead, question prompts, and any teacher annotations, marks, or red-pen corrections on the page.\n' +
+      '- If a word or short phrase genuinely cannot be read, write [unclear] in its place instead of guessing. A few unclear words should not stop you from transcribing the rest of the page.\n' +
+      '- Read the pages in the order given and produce one continuous transcription.\n\n' +
+      'Respond with ONLY a JSON object and nothing else — no markdown code fences, no commentary — in exactly this shape:\n' +
+      '{"transcription": "<the full transcription>", "confidence": "high"}\n\n' +
+      'For the confidence field use "high" if the handwriting was clear throughout, "medium" if a handful of words were unclear, or "low" if large portions were difficult to read or the photos were blurry/low quality.';
+  }
+
+  function getPageDataUrl(pageId){
+    if(pageUrlCache[pageId]) return Promise.resolve(pageUrlCache[pageId]);
+    if(!IDB_OK) return Promise.resolve(null);
+    return idbGetPage(pageId).then(function(rec){ return rec ? rec.dataUrl : null; }).catch(function(){ return null; });
+  }
+
+  function withTimeout(promise, ms, message){
+    return new Promise(function(resolve, reject){
+      var settled = false;
+      var timer = setTimeout(function(){
+        if(settled) return;
+        settled = true;
+        reject(new Error(message || 'Timed out'));
+      }, ms);
+      promise.then(function(v){
+        if(settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(v);
+      }, function(e){
+        if(settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(e);
+      });
+    });
+  }
+
+  function transcribeStudent(record){
+    var pages = record.pages || [];
+    if(pages.length === 0) return Promise.resolve({ error: 'No pages to transcribe.' });
+    return Promise.all(pages.map(function(p){ return getPageDataUrl(p.id); })).then(function(dataUrls){
+      var validUrls = dataUrls.filter(Boolean);
+      if(validUrls.length === 0){
+        return { error: 'No readable page images were found (they may not have been saved due to a storage issue).' };
+      }
+      var imageBlocks = [];
+      for(var i=0;i<validUrls.length;i++){
+        var m = /^data:([^;]+);base64,(.*)$/.exec(validUrls[i]);
+        if(m){ imageBlocks.push({ type:'image', source:{ type:'base64', media_type:m[1], data:m[2] } }); }
+      }
+      if(imageBlocks.length === 0){
+        return { error: 'Page images were in an unexpected format and could not be sent for transcription.' };
+      }
+      var content = imageBlocks.concat([{ type:'text', text: buildTranscriptionPrompt() }]);
+      var fetchPromise;
+      try {
+        // Calls our own Netlify Function, which holds the Anthropic API key
+        // server-side and forwards the request — the browser never sees or
+        // sends the key, and this is a same-origin request so it works on
+        // mobile Safari without any CORS configuration.
+        fetchPromise = fetch('/.netlify/functions/transcribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: content })
+        });
+      } catch(syncErr){
+        return { error: 'Could not start the AI request: ' + ((syncErr && syncErr.message) || syncErr) };
+      }
+      return withTimeout(fetchPromise, 30000, 'The transcription service did not respond within 30 seconds.').then(function(resp){
+        if(!resp.ok){
+          return resp.text().then(function(t){
+            throw new Error('AI service error (' + resp.status + '): ' + t.slice(0,180));
+          });
+        }
+        return resp.json();
+      }).then(function(data){
+        var textPart = (data.content || []).map(function(b){ return b.type === 'text' ? b.text : ''; }).filter(Boolean).join('\n');
+        var cleaned = textPart.replace(/```json|```/g, '').trim();
+        var parsed;
+        try { parsed = JSON.parse(cleaned); }
+        catch(e){ throw new Error('Could not understand the AI\'s response'); }
+        if(!parsed || typeof parsed.transcription !== 'string' || !parsed.transcription.trim()){
+          throw new Error('The AI did not return a transcription');
+        }
+        var confidence = ['high','medium','low'].indexOf(parsed.confidence) > -1 ? parsed.confidence : 'medium';
+        return { transcription: parsed.transcription, confidence: confidence };
+      }).catch(function(err){
+        return { error: (err && err.message) || 'Transcription failed' };
+      });
+    }).catch(function(err){
+      // Catch-all: any unexpected error (bad data, thrown exception, etc.)
+      // still resolves to an error result instead of leaving callers hanging.
+      return { error: (err && err.message) || 'Unexpected error during transcription' };
+    });
+  }
+
+  function applyTranscriptionResult(record, result){
+    if(result && result.error){
+      record.transcribeError = result.error;
+    } else if(result){
+      record.transcription = result.transcription;
+      record.confidence = result.confidence;
+      record.transcribedStatus = result.confidence === 'low' ? 'needs_review' : 'transcribed';
+      record.transcribedAt = new Date().toISOString();
+      record.transcribeError = null;
+      record.manuallyEdited = false;
+    }
+  }
+
+  function startTranscription(assessmentId){
+    var a = getAssessment(assessmentId);
+    if(!a) return;
+    var pending = a.records.filter(function(r){ return (r.pages||[]).length > 0 && !r.transcription; });
+    if(pending.length === 0) return;
+    state.transcribeProgress = { assessmentId: assessmentId, total: pending.length, done: 0, active: true };
+    render();
+    function next(i){
+      if(i >= pending.length){
+        state.transcribeProgress = null;
+        render();
+        return;
+      }
+      transcribeStudent(pending[i]).then(function(result){
+        applyTranscriptionResult(pending[i], result);
+        if(state.transcribeProgress) state.transcribeProgress.done = i + 1;
+        return saveData();
+      }).catch(function(err){
+        // Should be unreachable (transcribeStudent never rejects), but guarantees
+        // the loop can never freeze even on a truly unexpected failure.
+        console.error('Transcription step failed unexpectedly:', err);
+        pending[i].transcribeError = (err && err.message) || 'Unexpected error';
+        if(state.transcribeProgress) state.transcribeProgress.done = i + 1;
+      }).then(function(){
+        render();
+        next(i + 1);
+      });
+    }
+    next(0);
+  }
+
+  function runSingleTranscription(record){
+    var btn = document.getElementById('btn-run-transcribe');
+    if(btn){ btn.disabled = true; btn.textContent = 'Transcribing…'; btn.style.opacity = '0.6'; }
+    record.transcribeError = null;
+    transcribeStudent(record).then(function(result){
+      applyTranscriptionResult(record, result);
+      return saveData();
+    }).catch(function(err){
+      console.error('Transcription failed unexpectedly:', err);
+      record.transcribeError = (err && err.message) || 'Unexpected error';
+    }).then(function(){ render(); });
+  }
+
+  /* --- TRANSCRIPT VIEW (view / edit one student's transcription) --- */
+  function renderTranscript(){
+    var a = getAssessment(state.transcriptAssessmentId);
+    if(!a){
+      return topbar('Transcript', null, { showBack:true }) +
+        '<div class="content"><div class="empty-state"><p>This assessment no longer exists.</p></div></div>';
+    }
+    var record = a.records[state.transcriptIndex];
+    if(!record){
+      return topbar('Transcript', a.title, { showBack:true }) +
+        '<div class="content"><div class="empty-state"><p>Student not found.</p></div></div>';
+    }
+    var name = studentName(a.classId, record.studentId);
+    var pages = record.pages || [];
+
+    var statusBlock;
+    if(pages.length === 0){
+      statusBlock = '<div class="empty-state"><div class="glyph">&#9679;</div><p>No papers uploaded yet for '+escapeHtml(name)+'.</p></div>';
+    } else if(record.transcribeError){
+      statusBlock = '' +
+        '<div class="warning-banner">Transcription failed: '+escapeHtml(record.transcribeError)+'</div>' +
+        '<button class="btn btn-primary" id="btn-run-transcribe" style="margin-bottom:20px;">Try Again</button>';
+    } else if(!record.transcription){
+      statusBlock = '<button class="btn btn-primary" id="btn-run-transcribe" style="margin-bottom:20px;">Transcribe This Student</button>';
+    } else {
+      var badgeClass = record.transcribedStatus === 'needs_review' ? 'badge-warn' : 'badge-done';
+      var badgeLabel = record.transcribedStatus === 'needs_review' ? 'Needs review' : 'Transcribed';
+      statusBlock = '' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">' +
+          '<span class="badge '+badgeClass+'">'+badgeLabel+'</span>' +
+          (record.confidence ? '<span style="font-size:13px;color:var(--muted);">'+capitalize(record.confidence)+' confidence</span>' : '') +
+        '</div>' +
+        '<div class="field">' +
+          '<label for="transcript-text">Transcription</label>' +
+          '<textarea id="transcript-text" style="min-height:220px;">'+escapeHtml(record.transcription)+'</textarea>' +
+        '</div>' +
+        '<div class="btn-row">' +
+          '<button class="btn btn-secondary" id="btn-run-transcribe">Re-transcribe</button>' +
+          '<button class="btn btn-primary" id="btn-save-transcript">Save Edits</button>' +
+        '</div>';
+    }
+
+    return '' +
+      topbar(name, a.title, { showBack:true }) +
+      '<div class="content">' +
+        renderPageThumbnails(record, { readOnly:true }) +
+        statusBlock +
+      '</div>';
+  }
+
+  function bindTranscript(){
+    document.getElementById('btn-back').onclick = function(){
+      state.view = 'assessment';
+      state.currentAssessmentId = state.transcriptAssessmentId;
+      state.assessmentTab = 'transcripts';
+      render();
+    };
+    var a = getAssessment(state.transcriptAssessmentId);
+    if(!a) return;
+    var record = a.records[state.transcriptIndex];
+    if(!record) return;
+
+    var runBtn = document.getElementById('btn-run-transcribe');
+    if(runBtn){
+      runBtn.onclick = function(){
+        if(record.transcription){
+          showConfirm({
+            title: 'Re-transcribe?',
+            message: 'This runs AI transcription again and replaces the current text, including any edits you\'ve made.',
+            confirmLabel: 'Re-transcribe',
+            danger: true,
+            onConfirm: function(){ runSingleTranscription(record); }
+          });
+        } else {
+          runSingleTranscription(record);
+        }
+      };
+    }
+    var saveBtn = document.getElementById('btn-save-transcript');
+    if(saveBtn){
+      saveBtn.onclick = function(){
+        var textarea = document.getElementById('transcript-text');
+        record.transcription = textarea.value;
+        record.transcribedStatus = 'transcribed';
+        record.manuallyEdited = true;
+        saveDataImmediate();
+        render();
+      };
+    }
+
+    hydrateThumbnails(record);
+  }
+
+  /* ---------- Simple modal helpers (prompt / confirm) ---------- */
+  function showPrompt(opts){
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.innerHTML = '' +
+      '<div class="modal-sheet">' +
+        '<h3>'+escapeHtml(opts.title)+'</h3>' +
+        '<div class="field" style="margin-bottom:16px;">' +
+          '<label>'+escapeHtml(opts.label)+'</label>' +
+          '<input type="text" id="modal-input" placeholder="'+escapeHtml(opts.placeholder||'')+'" value="'+escapeHtml(opts.value||'')+'">' +
+        '</div>' +
+        '<div class="btn-row">' +
+          '<button class="btn btn-secondary" id="modal-cancel">Cancel</button>' +
+          '<button class="btn btn-primary" id="modal-confirm">'+escapeHtml(opts.confirmLabel||'Save')+'</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(backdrop);
+    var input = backdrop.querySelector('#modal-input');
+    input.focus();
+    if(opts.value) input.select();
+    function close(){ document.body.removeChild(backdrop); }
+    backdrop.addEventListener('click', function(e){ if(e.target === backdrop) close(); });
+    backdrop.querySelector('#modal-cancel').onclick = close;
+    backdrop.querySelector('#modal-confirm').onclick = function(){
+      var val = input.value;
+      close();
+      opts.onConfirm(val);
+    };
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){ var val = input.value; close(); opts.onConfirm(val); }
+    });
+  }
+
+  function showConfirm(opts){
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.innerHTML = '' +
+      '<div class="modal-sheet">' +
+        '<h3>'+escapeHtml(opts.title)+'</h3>' +
+        '<p style="color:var(--ink-soft);font-size:14.5px;line-height:1.5;margin:0 0 20px;">'+escapeHtml(opts.message)+'</p>' +
+        '<div class="btn-row">' +
+          '<button class="btn btn-secondary" id="modal-cancel">Cancel</button>' +
+          '<button class="btn '+(opts.danger?'btn-primary':'btn-primary')+'" id="modal-confirm" style="'+(opts.danger?'background:var(--danger);':'')+'">'+escapeHtml(opts.confirmLabel||'Confirm')+'</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(backdrop);
+    function close(){ document.body.removeChild(backdrop); }
+    backdrop.addEventListener('click', function(e){ if(e.target === backdrop) close(); });
+    backdrop.querySelector('#modal-cancel').onclick = close;
+    backdrop.querySelector('#modal-confirm').onclick = function(){ close(); opts.onConfirm(); };
+  }
+
+  /* ---------- Boot ---------- */
+  loadData().then(function(data){
+    state.data = data;
+    state.view = 'home';
+    render();
+  });
+
+})();
+</script>
+</body>
+</html>
