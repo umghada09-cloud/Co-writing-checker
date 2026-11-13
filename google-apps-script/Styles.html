@@ -1,0 +1,415 @@
+<style>
+:root{
+  --bg:#f6f6f4; --surface:#ffffff; --surface-2:#f1f1ee; --line:#e2e1dc; --line-strong:#cfcec7;
+  --ink:#1b1a17; --ink-2:#55534c; --ink-3:#86847c;
+  --accent:#b3261e; --accent-2:#1f6b45; --accent-ink:#ffffff;
+  --ok:#0f5c4a; --ok-bg:#e2f1ec;
+  --warn:#8a5a00; --warn-bg:#fbf0d9;
+  --idle:#6b6961; --idle-bg:#eceae5;
+  --shadow:0 1px 2px rgba(20,18,14,.06),0 8px 24px -12px rgba(20,18,14,.18);
+  --r:14px;
+}
+:root[data-grade="11"]{ --accent:#1d4ed8; --accent-2:#6d28d9; }
+:root[data-grade="12"]{ --accent:#b3261e; --accent-2:#1f6b45; }
+:root[data-grade="none"]{ --accent:#2A256A; --accent-2:#E8A33D; }
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15140f; --surface:#1e1d18; --surface-2:#26251f; --line:#332f27; --line-strong:#454136;
+    --ink:#f2f0e9; --ink-2:#bab7ac; --ink-3:#8c8a80;
+    --accent:#f0675c; --accent-2:#4fb387; --accent-ink:#17150f;
+    --ok:#7fd8bb; --ok-bg:#16332b;
+    --warn:#f0c169; --warn-bg:#352a13;
+    --idle:#9a988e; --idle-bg:#2a2822;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.7);
+  }
+  :root:not([data-theme="light"])[data-grade="11"]{ --accent:#7aa2ff; --accent-2:#b18aff; }
+  :root:not([data-theme="light"])[data-grade="none"]{ --accent:#9d96ef; --accent-2:#f0b860; }
+}
+:root[data-theme="dark"]{
+  --bg:#15140f; --surface:#1e1d18; --surface-2:#26251f; --line:#332f27; --line-strong:#454136;
+  --ink:#f2f0e9; --ink-2:#bab7ac; --ink-3:#8c8a80;
+  --accent:#f0675c; --accent-2:#4fb387; --accent-ink:#17150f;
+  --ok:#7fd8bb; --ok-bg:#16332b; --warn:#f0c169; --warn-bg:#352a13;
+  --idle:#9a988e; --idle-bg:#2a2822;
+}
+:root[data-theme="dark"][data-grade="11"]{ --accent:#7aa2ff; --accent-2:#b18aff; }
+:root[data-theme="dark"][data-grade="none"]{ --accent:#9d96ef; --accent-2:#f0b860; }
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+button{font:inherit;color:inherit;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:0 14px 132px}
+
+header.top{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line);
+  padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
+.top-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:9px}
+.dot{width:10px;height:10px;border-radius:3px;background:var(--accent);flex:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.brand{display:flex;align-items:center;gap:8px;min-width:0}
+.brand b{font-size:16px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;
+  color:var(--accent);display:inline-flex;align-items:baseline}
+.crumb{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.iconbtn{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:6px 10px;font-size:12.5px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.iconbtn:active{background:var(--surface-2)}
+.rail{max-width:720px;margin:8px auto 0;display:flex;gap:3px}
+.rail i{height:3px;flex:1;border-radius:2px;background:var(--line-strong)}
+.rail i.done{background:var(--accent-2)} .rail i.rev{background:var(--warn)} .rail i.now{background:var(--accent)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-top:14px;overflow:hidden}
+.card-pad{padding:14px}
+h2.sec{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
+.muted{color:var(--ink-2)} .small{font-size:13px} .tiny{font-size:12px}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin:12px 0 5px}
+input[type=text],input[type=number],textarea,select{width:100%;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:15px;outline:none}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-3) 50%),linear-gradient(135deg,var(--ink-3) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line-strong);
+  background:var(--surface);border-radius:11px;padding:11px 14px;font-size:14.5px;font-weight:600;width:100%}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.go{background:var(--accent-2);border-color:var(--accent-2);color:#fff}
+.btn.ghost{background:transparent}
+.btn.sm{padding:9px 12px;font-size:13px;border-radius:9px;width:auto}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 9px;
+  border-radius:999px;background:var(--idle-bg);color:var(--idle)}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.line{background:transparent;border:1px solid var(--line-strong);color:var(--ink-2)}
+.seg{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:11px;border:1px solid var(--line)}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:9px 6px;font-size:13.5px;font-weight:600;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.hidden{display:none !important}
+.vh{position:absolute !important;width:1px;height:1px;opacity:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0;margin:-1px;pointer-events:none}
+.spin{display:inline-block;width:14px;height:14px;border-radius:50%;
+  border:2px solid color-mix(in srgb,currentColor 25%,transparent);border-top-color:currentColor;
+  animation:sp .7s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* home */
+/* The welcome card is drawn, not filled: an indigo outline on paper, with
+   colour kept for the one button worth pressing. */
+.hero{position:relative;margin-top:18px;padding:24px 20px 22px;border-radius:18px;
+  background:var(--surface);color:var(--ink);
+  border:1.5px solid color-mix(in srgb,var(--accent) 34%,var(--line));
+  box-shadow:0 1px 2px rgba(20,18,14,.04),0 16px 34px -28px rgba(42,37,106,.5)}
+.hero h1{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:40px;line-height:1;
+  margin:0;letter-spacing:-.025em;color:var(--accent);display:flex;align-items:baseline}
+/* the tick of the logo, standing in for the v of Eval */
+.vmark{height:.68em;width:auto;margin:0 -.04em 0 .02em;transform:translateY(.05em)}
+.hero .tag{margin:9px 0 0;font-size:17.5px;font-weight:400;color:var(--accent);
+  font-family:Newsreader,Georgia,serif;letter-spacing:.004em;line-height:1.35}
+.hero .lede{margin:13px 0 0;font-size:14px;line-height:1.55;color:var(--ink-2);max-width:40ch}
+.hero .rule{height:1px;background:var(--line);margin:18px 0 16px}
+.steps{display:grid;gap:13px;margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{display:flex;gap:11px;align-items:flex-start;counter-increment:s}
+.steps li:before{content:counter(s);flex:none;width:23px;height:23px;border-radius:7px;
+  background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;margin-top:1px}
+.steps b{display:block;font-size:13.5px;font-weight:600;color:var(--ink);letter-spacing:-.005em}
+.steps span{display:block;margin-top:2px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+.hero .cta{margin-top:20px;background:#E8A33D;border:0;color:#211a07;border-radius:12px;
+  padding:14px 16px;font-size:15px;font-weight:700;width:100%;letter-spacing:-.005em}
+.hero .cta:active{transform:translateY(1px)}
+.hero .alt{display:block;width:100%;margin:9px 0 0;background:none;border:0;padding:7px;
+  font-size:12.5px;color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+.foldst{display:inline-flex;align-items:center;gap:7px}
+.foldst i{width:7px;height:7px;border-radius:50%;background:var(--idle);flex:none}
+.foldst i.on{background:var(--ok)} .foldst i.off{background:var(--warn)}
+.hello{padding:20px 2px 2px}
+.hello h1{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:27px;line-height:1.15;margin:0;letter-spacing:-.01em}
+.hello p{margin:5px 0 0;font-size:13.5px;color:var(--ink-2)}
+.hello button{background:none;border:0;padding:0;font-size:12px;color:var(--ink-3);text-decoration:underline;margin-top:4px}
+.ccard{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-top:12px;padding:14px 14px 14px 18px;overflow:hidden}
+.ccard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(180deg,var(--c1),var(--c2))}
+.ccard h3{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
+.ccard .lvl{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--c1)}
+.prog{margin-top:11px;display:grid;gap:7px}
+.prog div{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-2)}
+.prog .bar{flex:1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}
+.prog .bar i{display:block;height:100%;background:var(--c2)}
+.prog .lab{width:86px;flex:none;font-weight:600;color:var(--ink-3);font-size:11.5px;letter-spacing:.02em}
+.prog .val{flex:none;font-size:12px;color:var(--ink-2);min-width:58px;text-align:right}
+.empty{text-align:center;padding:30px 18px}
+.empty .big{font-size:34px}
+.empty h3{margin:10px 0 6px;font-family:Newsreader,Georgia,serif;font-weight:500;font-size:21px}
+.empty p{margin:0 auto 16px;max-width:38ch;font-size:13.5px;color:var(--ink-2)}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{text-align:left;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:600;padding:0 8px 7px;border-bottom:1px solid var(--line)}
+.tbl th.n,.tbl td.n{text-align:center;width:44px}
+.tbl th.f,.tbl td.f{text-align:center;width:54px}
+.tbl td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.nm{max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-top:9px;padding-bottom:9px}
+.tbl td.n,.tbl td.f{font-family:Newsreader,Georgia,serif;font-size:17px;color:var(--ink-3)}
+.tbl td.n.has,.tbl td.f.has{color:var(--ink)}
+.tbl td.f.has{font-weight:500;color:var(--accent-2)}
+.tbl tr.rev td.nm:after{content:"needs review";margin-left:7px;font-size:10px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--warn)}
+.detrow td{background:var(--surface-2);font-size:12.5px;color:var(--ink-2);padding:9px 10px}
+.dots{display:flex;gap:4px;margin-top:4px}
+.dots i{width:16px;height:5px;border-radius:2px;background:var(--line);display:block}
+.dots i.m{background:var(--ok)}
+.dots i.w{background:var(--warn)}
+.dots i.r{background:var(--warn);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--warn) 45%,transparent)}
+.dots i.p{background:var(--line-strong)}
+.filters{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px}
+.filters button{flex:none;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;
+  border:1px solid var(--line-strong);background:transparent;color:var(--ink-2);white-space:nowrap}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* grading */
+.sbar{padding:13px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-top:14px}
+.sbar .line1{display:flex;align-items:center;gap:10px}
+.nav{flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--ink-2)}
+.nav[disabled]{opacity:.35;pointer-events:none}
+.sname{flex:1;min-width:0;text-align:center}
+/* Omani names run long; two lines beat an ellipsis when the name is the one
+   thing you must be sure of before you put a mark against it. */
+.sname b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  font-size:18.5px;font-weight:600;letter-spacing:-.015em;line-height:1.25}
+.sname span{display:block;margin-top:3px;font-size:12.5px;color:var(--accent);font-weight:600}
+.sbar .line2{margin-top:9px;padding-top:9px;border-top:1px solid var(--line);
+  display:flex;justify-content:center;gap:7px;flex-wrap:wrap}
+
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px}
+.thumb{position:relative;flex:none;width:96px;height:124px;border-radius:10px;overflow:hidden;
+  border:1px solid var(--line-strong);background:var(--surface-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .tools{position:absolute;top:4px;right:4px;display:flex;gap:4px}
+.thumb .tools button{width:23px;height:23px;border-radius:50%;border:0;background:rgba(0,0,0,.62);
+  color:#fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
+.thumb .n{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;
+  font-size:10.5px;text-align:center;padding:2px}
+.addbox{flex:none;width:96px;height:124px;border-radius:10px;border:1.5px dashed var(--line-strong);
+  background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;color:var(--ink-3);font-size:11.5px;font-weight:600}
+.addbox span:first-child{font-size:19px}
+.script{font-family:Newsreader,Georgia,serif;font-size:16.5px;line-height:1.72;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:10px;padding:13px;white-space:pre-wrap;word-wrap:break-word;
+  max-height:290px;overflow:auto}
+.script.clip{max-height:132px;overflow:hidden;position:relative}
+.script.clip:after{content:"";position:absolute;left:0;right:0;bottom:0;height:52px;
+  background:linear-gradient(transparent,var(--surface-2))}
+.unclear{background:var(--warn-bg);color:var(--warn);border-radius:4px;padding:0 3px;
+  font-family:Inter,sans-serif;font-size:12px;font-weight:600}
+.gradehead{display:flex;align-items:center;gap:14px;padding:16px 14px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 9%,var(--surface)),color-mix(in srgb,var(--accent-2) 9%,var(--surface)))}
+.bigmark{flex:none;width:66px;height:66px;border-radius:18px;background:var(--surface);
+  border:1px solid var(--line-strong);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.bigmark b{font-family:Newsreader,Georgia,serif;font-size:32px;font-weight:500;line-height:1;color:var(--accent)}
+.bigmark i{font-style:normal;font-size:10.5px;color:var(--ink-3);letter-spacing:.06em;margin-top:2px}
+.gradehead .why{min-width:0}
+.gradehead .why b{display:block;font-size:14.5px;line-height:1.35;margin-bottom:3px}
+.gradehead .why span{font-size:13px;color:var(--ink-2);line-height:1.45;display:block}
+.crit{display:grid;gap:9px;padding:13px 14px}
+.crit div{display:grid;grid-template-columns:112px 1fr;gap:10px;font-size:13px;align-items:start}
+.crit div b{font-weight:600;color:var(--ink-3);font-size:11px;letter-spacing:.03em;text-transform:uppercase;padding-top:2px}
+details.more>summary{list-style:none;cursor:pointer;padding:11px 14px;font-size:12.5px;font-weight:600;
+  color:var(--ink-2);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary:after{content:"\25BE";color:var(--ink-3)}
+.marks{display:flex;gap:6px}
+.marks button{flex:1;padding:12px 0;border-radius:10px;border:1px solid var(--line-strong);
+  background:var(--surface-2);font-family:Newsreader,Georgia,serif;font-size:19px;font-weight:500}
+.marks button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.banner{display:flex;gap:10px;padding:12px 13px;border-radius:11px;font-size:13.2px;line-height:1.45;align-items:flex-start}
+.banner.warn{background:var(--warn-bg);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent)}
+.banner.ok{background:var(--ok-bg);color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 25%,transparent)}
+.banner b{display:block;margin-bottom:2px}
+.banner .ic{font-size:15px;flex:none}
+.actionbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);
+  border-top:1px solid var(--line);padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom));
+  box-shadow:0 -6px 24px -16px rgba(0,0,0,.5)}
+.actionbar .in{max-width:720px;margin:0 auto;display:flex;gap:8px;align-items:center}
+.actionbar .in .btn{flex:1}
+.actionbar .in .btn.sm{flex:none}
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(10,9,6,.45);display:none}
+.sheet[open-sheet]{display:block}
+.sheet .panel{position:absolute;left:0;right:0;bottom:0;max-height:82vh;overflow:auto;background:var(--bg);
+  border-radius:18px 18px 0 0;border-top:1px solid var(--line);padding:14px 14px;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.grip{width:38px;height:4px;border-radius:2px;background:var(--line-strong);margin:0 auto 12px}
+.rrow{display:flex;align-items:center;gap:10px;padding:11px 10px;border-radius:11px;border:1px solid var(--line);
+  background:var(--surface);margin-bottom:7px}
+.rrow.cur{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent)}
+.rrow .no{flex:none;width:26px;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.rrow .nm{flex:1;min-width:0;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+/* Student names carry dir="auto": an Arabic name runs right-to-left and is cut at the
+   family-name end, so the first name always shows. */
+.bn{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.g b[dir="auto"],td.nm[dir="auto"]{text-align:left}
+.rrow .mk{flex:none;font-family:Newsreader,Georgia,serif;font-size:17px;color:var(--ink-3)}
+.rrow .mk.has{color:var(--accent-2)}
+.stat{display:flex;gap:8px;text-align:center}
+.stat div{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 6px}
+.stat b{display:block;font-family:Newsreader,Georgia,serif;font-size:24px;font-weight:500;line-height:1.1}
+.stat span{font-size:11px;color:var(--ink-3)}
+.prevrow{display:flex;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);
+  border-radius:11px;background:var(--surface);margin-bottom:7px}
+.prevrow .g{flex:1;min-width:0}
+.prevrow .g b{display:block;font-size:15px}
+.prevrow .g span{font-size:12px;color:var(--ink-3)}
+.modal{position:fixed;inset:0;z-index:120;background:rgba(10,9,6,.5);display:none;
+  align-items:center;justify-content:center;padding:20px}
+.modal[open-modal]{display:flex}
+.mbox{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+  padding:18px;max-width:420px;width:100%}
+.mbox h3{margin:0 0 6px;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.mbox p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.5;white-space:pre-wrap}
+.mact{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.mact .btn{width:auto;min-width:84px}
+
+/* =====================================================================
+   GRADE IDENTITY
+   Indigo is the app and amber is what needs you — on every screen, so the
+   front page and the class pages read as one thing. A class's own colours
+   belong to the class: they name the grade, tint the page, and fill the
+   panel at the top. They never repaint a button, which is what frees green
+   to go on meaning "marked" everywhere.
+   ===================================================================== */
+:root[data-grade="12"]{ --accent:#2A256A; --accent-2:#1F6B45; --accent-ink:#fff;
+  --tag:#B3261E; --g1:#B3261E; --g2:#1F6B45; --bg:#faf2f0 }
+:root[data-grade="11"]{ --accent:#2A256A; --accent-2:#1F6B45; --accent-ink:#fff;
+  --tag:#1D4ED8; --g1:#1D4ED8; --g2:#6D28D9; --bg:#f0f3fc }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"])[data-grade="12"]{ --accent:#9d96ef; --accent-2:#4fb387; --accent-ink:#15132B; --bg:#17120f }
+  :root:not([data-theme="light"])[data-grade="11"]{ --accent:#9d96ef; --accent-2:#4fb387; --accent-ink:#15132B; --bg:#111222 }
+}
+:root[data-theme="dark"][data-grade="12"]{ --accent:#9d96ef; --accent-2:#4fb387; --accent-ink:#15132B; --bg:#17120f }
+:root[data-theme="dark"][data-grade="11"]{ --accent:#9d96ef; --accent-2:#4fb387; --accent-ink:#15132B; --bg:#111222 }
+
+/* a hairline in the class colour, carried on every screen inside that class */
+header.top{ box-shadow:inset 0 -3px 0 0 var(--tag,transparent) }
+.lvl{ color:var(--tag,var(--accent)) }
+
+/* the class panel — the welcome panel's shape, in the class's own colours */
+#classHead{ position:relative;border:0;color:#FAF9F6;overflow:hidden;padding:18px 16px 16px;
+  background:linear-gradient(150deg,var(--g1) 0%,color-mix(in srgb,var(--g1) 52%,var(--g2)) 50%,var(--g2) 100%);
+  box-shadow:0 1px 2px rgba(20,18,14,.08),0 18px 40px -22px rgba(20,18,14,.55) }
+#classHead:after{ content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(150deg,rgba(0,0,0,.06),rgba(0,0,0,.30)) }
+#classHead>*{ position:relative;z-index:1 }
+#classHead .lvl{ color:rgba(250,249,246,.74) }
+#classHead h3{ color:#fff }
+#classHead .muted{ color:rgba(250,249,246,.74) }
+#classHead .chip{ background:rgba(250,249,246,.17);color:#FAF9F6 }
+#classHead .chip.ok{ background:rgba(250,249,246,.24);color:#fff }
+#classHead .btn{ background:rgba(250,249,246,.13);border-color:rgba(250,249,246,.32);color:#FAF9F6 }
+#classHead .btn.go,#classHead .btn.primary{ background:#E8A33D;border-color:#E8A33D;color:#211a07 }
+#classHead .btn.ghost{ background:transparent;color:rgba(250,249,246,.68) }
+#classHead details.more>summary{ border-top-color:rgba(250,249,246,.22);color:rgba(250,249,246,.82) }
+#classHead details.more>summary:after{ color:rgba(250,249,246,.6) }
+
+/* ---- per-student sheet: the score first, then the four papers ---- */
+/* the sheet's text node is a <p> with pre-wrap, so this layout opts out of it */
+.stu{white-space:normal}
+.stu-score{position:relative;display:flex;align-items:center;gap:14px;padding:15px 16px;
+  border-radius:14px;overflow:hidden;color:#FAF9F6;margin-bottom:15px;
+  background:linear-gradient(140deg,var(--g1,#2A256A) 0%,
+    color-mix(in srgb,var(--g1,#2A256A) 52%,var(--g2,#15132B)) 55%,var(--g2,#15132B) 100%)}
+.stu-score:after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(140deg,rgba(0,0,0,.05),rgba(0,0,0,.28))}
+.stu-score>*{position:relative;z-index:1}
+.stu-score .n{font-family:Newsreader,Georgia,serif;font-size:40px;font-weight:500;
+  line-height:1;letter-spacing:-.02em;flex:none}
+.stu-score .n i{font-style:normal;font-size:17px;opacity:.7}
+.stu-score .s b{display:block;font-size:13.5px;font-weight:600}
+.stu-score .s span{display:block;margin-top:2px;font-size:12px;line-height:1.4;color:rgba(250,249,246,.72)}
+
+.stu-grp{margin-bottom:13px}
+.stu-grp h4{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 0 7px;
+  font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.stu-grp h4 em{font-style:normal;font-size:12px;font-weight:600;letter-spacing:0;
+  text-transform:none;color:var(--ink-2)}
+.stu-cells{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cell{position:relative;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:11px;padding:10px 11px;overflow:hidden}
+.cell:before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;
+  border-radius:0 3px 3px 0;background:transparent}
+.cell .hit{position:absolute;inset:0;z-index:1;background:none;border:0;padding:0}
+.cell .hit:active{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.cell .k,.cell .v,.cell .t{display:block;pointer-events:none}
+.cell .k{font-size:11.5px;font-weight:600;color:var(--ink-3)}
+.cell .v{font-family:Newsreader,Georgia,serif;font-size:27px;font-weight:500;
+  line-height:1.15;margin-top:1px;color:var(--ink-3)}
+.cell .t{font-size:11.5px;margin-top:1px;color:var(--ink-3)}
+.cell .x{position:absolute;right:5px;top:5px;z-index:2;width:23px;height:23px;border:0;
+  border-radius:7px;background:transparent;color:var(--ink-3);font-size:12px;line-height:1;padding:0}
+.cell .x:active{background:var(--surface-2)}
+.cell.m{background:var(--surface)}
+.cell.m:before{background:var(--ok)} .cell.m .v,.cell.m .t{color:var(--ok)}
+.cell.r:before,.cell.w:before{background:var(--warn)}
+.cell.r .v,.cell.r .t,.cell.w .v,.cell.w .t{color:var(--warn)}
+.cell.p:before{background:var(--idle)}
+.cell.e{background:transparent;border-style:dashed}
+
+/* =====================================================================
+   ONE ACTION COLOUR
+   Amber is the thing to press, on every screen — the welcome card, the
+   class panel, the import page, the grading screen. Indigo is the app's
+   own colour: text, outlines, focus rings, and the filled chips and
+   toggles below, which use a true indigo rather than the lighter accent
+   that dark mode needs for text.
+   ===================================================================== */
+:root{ --fill:#2A256A; --fill-ink:#ffffff }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --fill:#3F38A0; --fill-ink:#ffffff }
+}
+:root[data-theme="dark"]{ --fill:#3F38A0; --fill-ink:#ffffff }
+
+.btn.primary{background:#E8A33D;border-color:#E8A33D;color:#211a07}
+.seg button[aria-pressed="true"]{background:var(--fill);color:var(--fill-ink)}
+.filters button[aria-pressed="true"]{background:var(--fill);border-color:var(--fill);color:var(--fill-ink)}
+.marks button[aria-pressed="true"]{background:var(--fill);border-color:var(--fill);color:var(--fill-ink)}
+
+/* The name you are marking against, framed in the colours of its class —
+   a border rather than a filled panel, so it never competes with the paper
+   and the transcript below it. */
+.sbar{border:2.5px solid transparent;
+  background:linear-gradient(var(--surface),var(--surface)) padding-box,
+             linear-gradient(135deg,var(--g1,var(--accent)),var(--g2,var(--accent))) border-box}
+
+/* the teacher's own name, in the app's colour */
+.hello h1 .who{color:var(--accent)}
+
+/* ---- agreement between Eval's proposed mark and the teacher's ---- */
+.agree .top{display:flex;align-items:center;gap:14px}
+.agree .big{font-family:Newsreader,Georgia,serif;font-size:44px;font-weight:500;line-height:1;
+  letter-spacing:-.02em;color:var(--ok);flex:none}
+.agree .big i{font-style:normal;font-size:19px;opacity:.65}
+.agree .s b{display:block;font-size:13.5px;font-weight:600}
+.agree .s span{display:block;margin-top:2px;font-size:12.5px;color:var(--ink-2);line-height:1.4}
+.agree .bar{display:flex;height:10px;margin-top:13px;border-radius:999px;
+  background:var(--surface-2);overflow:hidden}
+.agree .bar i{display:block;height:100%}
+.agree .bar i.ok{background:var(--ok)}
+.agree .bar i.ch{background:var(--warn)}
+.agree .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:9px;font-size:12px;color:var(--ink-2)}
+.agree .legend span{display:inline-flex;align-items:center;gap:6px}
+.agree .legend i{width:8px;height:8px;border-radius:3px;flex:none}
+.agree .legend i.ok{background:var(--ok)} .agree .legend i.ch{background:var(--warn)}
+.agree-note>summary{list-style:none;cursor:pointer;margin-top:12px;font-size:12px;font-weight:600;
+  color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+.agree-note>summary::-webkit-details-marker{display:none}
+</style>

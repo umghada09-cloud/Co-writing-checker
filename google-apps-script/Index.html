@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<script>window.EVAL_CONFIG = { server: true, open: <?= open ?> };</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<?!= include('Styles') ?>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <button class="iconbtn hidden" id="btnBack">‹ Back</button>
+    <div class="brand" id="brandBox"><b aria-label="Eval">E<svg class="vmark" viewBox="0 0 46 42" aria-hidden="true" focusable="false"><path d="M4 15 L17 37" stroke="#E8A33D" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M17 37 L33 11" stroke="currentColor" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M33 11 L43 3 L39 16 Z" fill="currentColor"/></svg>al</b></div>
+    <div class="crumb" id="crumb"></div>
+    <button class="iconbtn hidden" id="btnRoster">Class list</button>
+  </div>
+  <div class="rail hidden" id="rail"></div>
+</header>
+
+<div class="wrap">
+
+<!-- ================= HOME ================= -->
+<section id="scHome" class="hidden">
+
+  <div id="firstRun" class="hidden">
+    <div class="hero">
+      <h1 aria-label="Eval">E<svg class="vmark" viewBox="0 0 46 42" aria-hidden="true" focusable="false">
+        <path d="M4 15 L17 37" stroke="#E8A33D" stroke-width="5.4" stroke-linecap="round" fill="none"/>
+        <path d="M17 37 L33 11" stroke="currentColor" stroke-width="5.4" stroke-linecap="round" fill="none"/>
+        <path d="M33 11 L43 3 L39 16 Z" fill="currentColor"/>
+      </svg>al</h1>
+      <p class="tag">Smarter grading. Fairer marks.</p>
+      <p class="lede">A marking assistant for handwritten English writing. Photograph the pile, read the proposed marks, keep the final say.</p>
+      <div class="rule"></div>
+      <ol class="steps">
+        <li><div><b>Import your gradebook</b><span>The Excel file you already keep. Classes and names come across in the order of your paper pile &mdash; no retyping.</span></div></li>
+        <li><div><b>Photograph the papers</b><span>Ten at a time, in register order. Each one is read and given a mark against the Ministry rubric.</span></div></li>
+        <li><div><b>Approve or change it</b><span>Every mark is yours. Eval learns from the ones you change, and writes them back into your own register.</span></div></li>
+      </ol>
+      <button class="cta" id="btnFirstImport">Import my gradebook</button>
+      <button class="alt" id="btnFirstRestore">I already have a backup file</button>
+    </div>
+  </div>
+
+  <div class="hello" id="hello">
+    <h1 id="helloName">Welcome</h1>
+    <p id="helloSub"></p>
+    <button id="btnEditTeacher">Change name</button>
+  </div>
+  <div id="classList"></div>
+  <div class="card card-pad hidden" id="homeAgree"></div>
+  <div class="card card-pad" id="aiStatus"></div>
+  <div class="card card-pad" id="homeActions">
+    <button class="btn primary" id="btnImport">Import Gradebook</button>
+    <p class="tiny muted" style="margin:9px 0 0" id="importHint">Upload the Excel workbook you already use. Classes and student names are read from it, in the same order as your paper pile.</p>
+  </div>
+  <details class="more card" id="moreBox" style="margin-top:14px"><summary>Move my work to another device</summary>
+    <div class="card-pad" style="padding-top:4px">
+      <p class="small muted" style="margin:0 0 12px">Classes, marks and comments are kept in this browser only. Save a backup file, put it in your Drive, and open it on the other device to carry everything across. Photos are not included — they are only needed until a paper is marked.</p>
+      <button class="btn" id="btnBackup">Save a backup file</button>
+      <button class="btn ghost" id="btnRestore" style="margin-top:8px">Open a backup file</button>
+      <p class="tiny muted" id="backupInfo" style="margin:10px 0 0"></p>
+    </div>
+  </details>
+  <input type="file" id="fileBackup" class="vh">
+  <p class="tiny muted" style="text-align:center;margin:16px 0 0;opacity:.6">Eval · build <span id="buildNo"></span></p>
+  <input type="file" id="fileXls" accept=".xlsx,.xlsm,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="vh">
+</section>
+
+<!-- ================= IMPORT ================= -->
+<section id="scImport" class="hidden">
+  <div class="card">
+    <div class="card-pad">
+      <h2 class="sec" id="impStep">Reading workbook</h2>
+      <div id="impBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CLASS ================= -->
+<section id="scClass" class="hidden">
+  <div class="card card-pad" id="classHead"></div>
+  <div class="card">
+    <div class="card-pad" style="padding-bottom:6px">
+      <h2 class="sec">Students · tap any name to open their paper</h2>
+      <div class="filters" id="classFilters"></div>
+    </div>
+    <div style="padding:0 6px 8px"><table class="tbl" id="classTbl"></table></div>
+  </div>
+  <div class="card card-pad" id="classRev"></div>
+  <div class="card card-pad hidden" id="classAgree"></div>
+</section>
+
+<!-- ================= SESSION SETUP ================= -->
+<section id="scSetup" class="hidden">
+  <div class="card card-pad">
+    <h2 class="sec">Start grading</h2>
+    <label class="f">Assignment</label>
+    <div class="seg" id="segAsg"><button data-a="1" aria-pressed="true">Assignment 1</button><button data-a="2" aria-pressed="false">Assignment 2</button></div>
+    <label class="f">Attempt</label>
+    <div class="seg" id="segAtt"><button data-t="1" aria-pressed="true">Attempt 1</button><button data-t="2" aria-pressed="false">Attempt 2</button></div>
+
+    <label class="f">Assignment title</label>
+    <input type="text" id="inTitle" placeholder="Writing 1 — A letter to a friend">
+    <label class="f">Writing prompt / task</label>
+    <textarea id="inPrompt" placeholder="Write a letter to your friend describing a place you visited last holiday."></textarea>
+    <label class="f">Minimum word target</label>
+    <input type="number" id="inWords" value="75" min="0" max="500">
+
+    <div class="chips" style="margin-top:12px">
+      <span class="chip line">Ministry Writing rubric · 5 marks</span>
+      <span class="chip line">Flexible Grading Guidelines</span>
+      <span class="chip line">Whole marks 0–5</span>
+    </div>
+    <p class="tiny muted" id="setupCount" style="margin:10px 0 0"></p>
+    <div style="margin-top:14px"><button class="btn primary" id="btnStartSession">Start Grading Session</button></div>
+  </div>
+</section>
+
+<!-- ================= BATCH ================= -->
+<section id="scBatch" class="hidden">
+  <div class="card card-pad">
+    <h2 class="sec" id="batchStep">Batch of papers</h2>
+    <div id="batchBody"></div>
+  </div>
+</section>
+
+<!-- ================= EXPORT ================= -->
+<section id="scExport" class="hidden">
+  <div class="card card-pad">
+    <h2 class="sec" id="expStep">Export to the gradebook</h2>
+    <div id="expBody"></div>
+  </div>
+</section>
+
+<!-- ================= GRADING ================= -->
+<section id="scGrade" class="hidden">
+  <div class="sbar">
+    <div class="line1">
+      <button class="nav" id="btnPrev" aria-label="Previous student">‹</button>
+      <div class="sname"><b id="stName" dir="auto">—</b><span id="stPos"></span></div>
+      <button class="nav" id="btnNext" aria-label="Next student">›</button>
+    </div>
+    <div class="line2"><span class="chip line" id="chipClass"></span><span class="chip line" id="chipAsg"></span></div>
+  </div>
+
+  <div class="card">
+    <details class="more" id="taskBox">
+      <summary>Task, word target &amp; rubric in use</summary>
+      <div class="card-pad" style="padding-top:2px">
+        <p class="small" id="taskTitle" style="margin:0 0 6px;font-weight:600"></p>
+        <p class="small muted" id="taskPrompt" style="margin:0 0 10px;white-space:pre-wrap"></p>
+        <div class="chips"><span class="chip line" id="chipWords"></span><span class="chip line">Ministry Writing rubric /5</span></div>
+        <button class="btn sm ghost" id="btnEditTask" style="width:100%;margin-top:11px">Edit the task for this attempt</button>
+      </div>
+    </details>
+  </div>
+
+  <div class="card card-pad" id="boxPaper">
+    <div style="display:flex;align-items:center;gap:8px">
+      <h2 class="sec" style="margin:0;flex:1">1 · The paper</h2>
+      <button class="btn sm ghost hidden" id="btnShowPaper">Show</button>
+    </div>
+    <div id="paperBody" style="margin-top:8px">
+    <div class="thumbs" id="thumbs"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnCam">Take Photo</button>
+      <button class="btn" id="btnUp">Upload Paper</button>
+    </div>
+    <input type="file" id="fileCam" accept="image/*" capture="environment" multiple class="vh">
+    <input type="file" id="fileUp" accept="image/*,.heic,.heif" multiple class="vh">
+    <button class="btn" id="btnPileHere" style="margin-top:8px">Photograph a pile from this student</button>
+    <button class="btn go" id="btnRead" style="margin-top:10px">Read and grade this paper</button>
+    <button class="btn ghost sm" id="btnType" style="width:100%;margin-top:8px">Type the text instead</button>
+    <button class="btn ghost sm" id="btnWhy" style="width:100%;margin-top:8px;color:var(--ink-3)">Why won't it read?</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="boxScript">
+    <div class="card-pad">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <h2 class="sec" style="margin:0;flex:1">2 · What the student wrote</h2>
+        <button class="btn sm ghost" id="btnEditScript">Edit</button>
+      </div>
+      <div class="chips" style="margin-bottom:9px"><span class="chip" id="chipWC"></span><span class="chip" id="chipConf"></span></div>
+      <div class="script" id="scriptView"></div>
+      <button class="btn sm ghost hidden" id="btnFullText" style="width:100%;margin-top:8px">Show the full text</button>
+      <textarea class="script hidden" id="scriptEdit" style="max-height:none;min-height:200px"></textarea>
+      <div id="scriptWarn" class="hidden" style="margin-top:10px"></div>
+      <button class="btn go" id="btnGrade" style="margin-top:11px">Propose a grade</button>
+    </div>
+  </div>
+
+  <div class="card hidden" id="boxGrade">
+    <div class="gradehead">
+      <div class="bigmark"><b id="gNum">—</b><i>OF 5</i></div>
+      <div class="why"><b id="gReason"></b><span id="gImprove"></span></div>
+    </div>
+    <div class="card-pad" style="padding-top:11px;padding-bottom:0"><div class="chips" id="gChips"></div></div>
+    <div id="gWarn" class="card-pad hidden" style="padding-bottom:0"></div>
+    <details class="more" style="margin-top:12px">
+      <summary>Why this grade — the five assessment areas</summary>
+      <div class="crit" id="gCrit"></div>
+    </details>
+    <div class="card-pad" style="border-top:1px solid var(--line)">
+      <h2 class="sec" id="markHead">Your mark — tap to choose</h2>
+      <div class="marks" id="markPick">
+        <button data-m="1">1</button><button data-m="2">2</button>
+        <button data-m="3">3</button><button data-m="4">4</button><button data-m="5">5</button>
+      </div>
+      <p class="tiny muted" style="margin:8px 0 0" id="markNote">Tap a number to change the proposal. Nothing is recorded until you approve.</p>
+      <button class="btn ghost sm hidden" id="btnRegradeHere" style="width:100%;margin-top:10px">Grade this paper again</button>
+    </div>
+    <div class="card-pad" style="border-top:1px solid var(--line)">
+      <h2 class="sec">Short comment for the student</h2>
+      <textarea id="inComment" style="min-height:56px" placeholder="One short line the student can act on."></textarea>
+      <p class="tiny muted" style="margin:7px 0 0">Saved with the mark and included in the grading summary export.</p>
+    </div>
+  </div>
+
+  <div class="card card-pad hidden" id="boxSaved">
+    <div class="banner ok"><span class="ic">✓</span><div><b id="savedLine"></b><span id="savedSub"></span></div></div>
+  </div>
+
+  <div class="card card-pad" id="boxSummary">
+    <h2 class="sec">This session</h2>
+    <div class="stat">
+      <div><b id="nDone">0</b><span>APPROVED</span></div>
+      <div><b id="nRev">0</b><span>NEEDS REVIEW</span></div>
+      <div><b id="nLeft">0</b><span>NOT GRADED</span></div>
+    </div>
+    <p class="tiny muted" id="summaryNote" style="margin:10px 0 0"></p>
+  </div>
+</section>
+
+</div>
+
+<div class="modal" id="modal"><div class="mbox">
+  <h3 id="mTitle"></h3><p id="mText"></p>
+  <input type="text" id="mInput" class="hidden" style="margin-top:4px">
+  <div class="mact"><button class="btn ghost sm" id="mCancel">Cancel</button><button class="btn primary sm" id="mOk">OK</button></div>
+</div></div>
+
+<input type="file" id="fileBatch" accept="image/*,.heic,.heif" multiple class="vh">
+<input type="file" id="fileXlsExport" accept=".xlsx,.xlsm,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="vh">
+
+<div class="actionbar hidden" id="actionbar"><div class="in" id="actions"></div></div>
+
+<div class="sheet" id="sheet">
+  <div class="panel">
+    <div class="grip"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <h2 class="sec" style="margin:0;flex:1" id="rosterTitle">Class</h2>
+      <button class="btn sm ghost" id="btnCloseSheet">Close</button>
+    </div>
+    <div id="rosterList"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<?!= include('JavaScript') ?>
+</body>
+</html>
