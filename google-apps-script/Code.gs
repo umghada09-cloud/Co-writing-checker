@@ -25,7 +25,8 @@ const MAX_TOKENS = 8000;
 
 function doGet() {
   const page = HtmlService.createTemplateFromFile('Index');
-  page.open = isOpen_();
+  // printed into the page as the word true or false (see Index.html)
+  page.open = isOpen_() ? 'true' : 'false';
   return page.evaluate()
     .setTitle('Eval')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');

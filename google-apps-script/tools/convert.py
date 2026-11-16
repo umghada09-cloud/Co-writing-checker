@@ -82,7 +82,7 @@ index = """<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
-<script>window.EVAL_CONFIG = { server: true, open: <?= open ?> };</script>
+<script>window.EVAL_CONFIG = { server: true, open: <?!= open ?> };</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
