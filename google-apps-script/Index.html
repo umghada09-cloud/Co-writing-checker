@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ghada’s Finals Tracker</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"><style id="st">:root{
+/* layout: summary header → tabs → one working view; subject colour carries identity, form carries status */
+--bg:#F3F5F9;--surface:#FFFFFF;--ink:#18202E;--muted:#5D6779;--line:#DFE4EC;--accent:#0B6E79;
+--ok:#15803D;--bad:#D92D20;--mu:#2563EB;--late:#B54708;
+--old:#7C5CFA;--new:#0EA5A4;--study:#6366F1;--practice:#F59E0B;--catch:#94A3B8;
+--display:'Bricolage Grotesque','IBM Plex Sans Arabic',system-ui,sans-serif;
+--body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,system-ui,sans-serif;
+color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F141C;--surface:#18202B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2A3442;--accent:#3FC1CD;--ok:#4ADE80;--bad:#F87171;--mu:#7AA7FF;--late:#F5A35C;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F141C;--surface:#18202B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2A3442;--accent:#3FC1CD;--ok:#4ADE80;--bad:#F87171;--mu:#7AA7FF;--late:#F5A35C;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+#root{max-width:1180px;margin:0 auto;padding:20px 18px 60px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:22px}
+h3{font-size:16px;margin:22px 0 10px}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.top{display:grid;grid-template-columns:1fr;gap:16px}
+.phasebar{display:flex;gap:4px;margin-top:14px;font-size:12px}
+.ph{border-radius:8px;padding:6px 8px;background:color-mix(in srgb,var(--c,#888) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--c,#888) 35%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ph b{color:var(--c)}
+.ph.on{box-shadow:0 0 0 2px var(--c)}
+.ph-study{--c:var(--study)}.ph-final{--c:#E11D48}.k-final{color:#E11D48;font-weight:600}.ph-old{--c:var(--old)}.ph-new{--c:var(--new)}.ph-practice{--c:var(--practice)}.ph-catch{--c:var(--catch)}.ph-exam{--c:var(--bad)}
+.kpis{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:150px;justify-content:center;display:flex;flex-direction:column}
+.kpi b{font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.warn b{color:var(--bad)}.kpi.exam b{color:var(--accent)}
+.ring{--p:0;width:74px;height:74px;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;position:relative;align-content:center}
+.ring::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg)}
+.ring span,.ring small{position:relative;line-height:1}
+.ring span{font-family:var(--display);font-weight:800;font-size:18px}
+.ring small{font-size:10px;color:var(--muted)}
+.tabs{display:flex;gap:4px;margin:22px 0 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.tabs a{padding:10px 14px;color:var(--muted);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs a.on{color:var(--ink);border-color:var(--accent)}
+.tabs a:hover{color:var(--ink)}
+.cnt{font-style:normal;background:var(--bad);color:#fff;border-radius:99px;padding:0 7px;font-size:12px}
+.save{margin-inline-start:auto;font-size:12px;color:var(--muted)}
+.lede{color:var(--muted);max-width:70ch;margin:0 0 16px}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0}
+/* day */
+.dayhead{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.dayhead>div{flex:1;min-width:200px}
+.sub{color:var(--muted);font-size:13.5px}
+.ph-tag{display:inline-block;border-radius:99px;padding:1px 9px;font-weight:600;font-size:12.5px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.nav{font-size:22px;line-height:1;padding:4px 12px}
+.jump{font-size:12px;color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%}
+#jump{width:auto}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.task{display:grid;grid-template-columns:86px 1fr auto;gap:4px 12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-inline-start:6px solid var(--c);border-radius:12px;padding:10px 12px}
+.task.st-done,.task.st-madeup{background:color-mix(in srgb,var(--ok) 7%,var(--surface))}
+.task.st-done .tt,.task.st-madeup .tt{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent);color:var(--muted)}
+.task.st-missed{background:color-mix(in srgb,var(--bad) 7%,var(--surface))}
+.tm{font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px}
+.sb{color:var(--c);font-weight:700}
+.kind{color:var(--muted)}
+.from{color:var(--muted)}
+.tt{font-size:16px;font-weight:600;margin-top:2px}
+.why{font-size:12.5px;color:var(--bad);margin-top:3px}
+.act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.b{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:7px 12px;font-weight:600;font-size:13.5px}
+.b:hover{border-color:var(--ink)}
+.b:disabled{opacity:.35;cursor:default}
+.b.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.b.no{background:var(--surface);border-color:var(--bad);color:var(--bad)}
+.b.ghost{background:transparent}
+.pill{display:inline-block;border-radius:99px;padding:0 8px;font-size:11.5px;font-weight:700;line-height:19px}
+.pill.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.pill.mu{background:color-mix(in srgb,var(--mu) 16%,transparent);color:var(--mu)}
+.pill.late{background:color-mix(in srgb,var(--late) 16%,transparent);color:var(--late)}
+.pill.now{background:var(--accent);color:var(--surface);vertical-align:middle;font-family:var(--body)}
+.nd{grid-column:1/-1;border-top:1px dashed var(--line);margin-top:8px;padding-top:10px;display:grid;gap:10px}
+.nd fieldset{border:0;padding:0;margin:0}
+.nd legend{font-weight:700;font-size:13.5px;margin-bottom:6px}
+.nd legend.err{color:var(--bad)}
+.reasons{display:flex;flex-wrap:wrap;gap:6px}
+.rc input{position:absolute;opacity:0;width:1px;height:1px}
+.rc span{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}
+.rc input:checked+span{background:var(--bad);border-color:var(--bad);color:#fff}
+.rc input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.frow{display:grid;gap:4px}
+.frow label,.ecard>label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.frow.two{grid-template-columns:1fr 1fr;gap:10px}
+.frow.btns{display:flex;gap:8px;align-items:center}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted);margin-top:16px}
+.empty.exam{border-color:var(--bad);color:var(--ink)}
+/* calendar */
+.cal{overflow-x:auto}
+.cw,.grid{display:grid;grid-template-columns:repeat(7,minmax(84px,1fr));gap:5px;min-width:620px}
+.cw span{font-size:12px;font-weight:700;color:var(--muted);padding:0 4px}
+.grid{margin-top:4px}
+.cell{text-align:start;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c,var(--line));border-radius:10px;min-height:84px;padding:6px;display:flex;flex-direction:column;gap:5px;color:var(--ink)}
+.cell.out{opacity:.35;border-top-color:var(--line)}
+.cell.now{box-shadow:0 0 0 2px var(--accent)}
+.cell.sel{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.cell.ph-exam{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}
+.dn{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.ex{font-size:11px;font-weight:800;color:var(--bad);letter-spacing:.06em}
+.bars{display:flex;flex-wrap:wrap;gap:3px}
+.bar{display:block;width:14px;height:8px;border-radius:3px;border:1.5px solid var(--c);background:transparent}
+.bar.s-done,.bar.s-madeup{background:var(--c)}
+.bar.s-missed{border-color:var(--bad);background:repeating-linear-gradient(45deg,var(--bad) 0 2px,transparent 2px 4px)}
+.bar.late{border-style:dashed}
+.mkn{font-size:10.5px;color:var(--mu);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:13px}
+.lg i{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--c);margin-inline-end:6px;vertical-align:-1px}
+/* subjects */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--c);border-radius:14px;padding:14px;display:grid;gap:8px;align-content:start}
+.card header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card h3{margin:0;color:var(--c)}
+.ar{font-size:13px;color:var(--muted)}
+.big{font-family:var(--display);font-size:30px;font-weight:800;line-height:1}
+.big small{display:block;font-family:var(--body);font-size:12.5px;font-weight:500;color:var(--muted);margin-top:4px}
+.big em{color:var(--bad);font-style:normal}
+.seg{display:grid;grid-template-columns:60px 1fr 40px;gap:8px;align-items:center;font-size:12.5px}
+.seg b{text-align:end;font-variant-numeric:tabular-nums}
+.track{height:8px;background:var(--line);border-radius:99px;overflow:hidden;display:flex}
+.track i{display:block;height:100%;background:var(--c,var(--ok))}
+.track i.m{background:var(--bad)}
+details summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent)}
+details ol{margin:8px 0 0;padding-inline-start:20px;display:grid;gap:5px;font-size:13.5px}
+details li small{display:block;color:var(--muted);font-size:11.5px}
+.li-done span,.li-madeup span{text-decoration:line-through;color:var(--muted)}
+.note{font-size:12.5px;color:var(--late);margin:0;border-top:1px dashed var(--line);padding-top:8px}
+/* memo */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.mcard{display:grid;grid-template-columns:44px 1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;--c:#0E8F6E}
+.mcard.full{border-color:var(--c)}
+.mn{width:44px;height:44px;border-radius:12px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:20px}
+.mcard h3{margin:0;font-size:17px}
+.mb{display:grid;gap:6px}
+.dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--c)}
+.dot.s-done,.dot.s-madeup{background:var(--c)}
+.dot.s-missed{border-color:var(--bad);background:var(--bad)}
+.dots small{color:var(--muted);font-size:12px;margin-inline-start:4px}
+.vis{font-size:12px;color:var(--muted);font-weight:600}
+/* makeup */
+.mkcols{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+.mkcols h3:first-child{margin-top:0}
+.why-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.rb{display:grid;grid-template-columns:1fr 90px 22px;gap:8px;align-items:center;font-size:13px;margin:6px 0}
+.rb .track i{background:var(--bad)}
+.flag{background:color-mix(in srgb,var(--late) 12%,transparent);color:var(--late);border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600}
+/* edit */
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;margin-top:14px}
+.ecard{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:14px;padding:12px;display:grid;gap:6px;margin:0}
+.ecard legend{font-weight:800;font-family:var(--display);padding:0 4px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-inline-end:6px}
+.sticky{position:sticky;bottom:0;background:var(--bg);padding:12px 0;margin-top:12px;border-top:1px solid var(--line)}
+#stu{max-width:280px}
+@media (max-width:820px){.top{grid-template-columns:1fr}.kpis{justify-content:flex-start}.mkcols{grid-template-columns:1fr}}
+@media (max-width:560px){
+ .task{grid-template-columns:1fr}.tm{order:-1}.act{justify-content:flex-start}
+ .phasebar{flex-wrap:wrap}.ph{flex:1 1 45%!important}
+ .frow.two{grid-template-columns:1fr}
+ .kpi{min-width:0;flex:1 1 40%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:16px}
+.sp{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-inline-start:5px solid var(--c);border-radius:10px;padding:8px 10px;color:var(--ink);text-decoration:none}
+.sp:hover{border-color:var(--c)}
+.spn{font-weight:700;color:var(--c);font-size:13.5px}
+.sp b{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums}
+.sbar{grid-column:1/-1;display:flex;gap:2px;height:8px}
+.sg{display:block;background:color-mix(in srgb,var(--c) 18%,var(--line));border-radius:3px;overflow:hidden;min-width:4px}
+.sg i{display:block;height:100%;background:var(--c)}
+.sg.k-new i{background:color-mix(in srgb,var(--c) 70%,#000)}
+.sg.k-practice i{background:repeating-linear-gradient(45deg,var(--c) 0 3px,color-mix(in srgb,var(--c) 60%,#fff) 3px 6px)}
+.sp small{grid-column:1/-1;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sp em{color:var(--bad);font-style:normal}
+.k-old{color:var(--old);font-weight:600}.k-new{color:var(--new);font-weight:600}.k-practice{color:var(--late);font-weight:600}
+
+.school{margin-top:14px;background:repeating-linear-gradient(135deg,var(--surface) 0 10px,color-mix(in srgb,var(--muted) 8%,var(--surface)) 10px 20px);border:1px dashed var(--line);border-radius:12px;padding:10px 14px;font-size:14px}
+.school span{color:var(--muted)}
+
+#root{position:relative}
+.topright{position:absolute;top:18px;inset-inline-end:18px;display:flex;gap:10px;align-items:center;z-index:5}
+.motd{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:linear-gradient(145deg,#FFB020,#FF6B6B);color:#fff;border-radius:16px;padding:8px 12px;font-weight:700;font-size:11px;box-shadow:0 6px 16px rgba(255,107,107,.35)}
+.motd:hover{transform:translateY(-1px)}
+.motd.new::after{content:"";position:absolute;top:-4px;inset-inline-end:-4px;width:14px;height:14px;border-radius:50%;background:var(--bad);border:2px solid var(--bg)}
+.motd.new svg{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.18)}}
+.mo-back{position:fixed;inset:0;background:rgba(10,14,22,.45);z-index:20}
+.mo{position:fixed;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100% - 32px));background:var(--surface);border-radius:20px;padding:20px 22px 16px;border-top:8px solid #FFB020;box-shadow:0 20px 50px rgba(0,0,0,.25);display:grid;gap:10px}
+.mo-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mo h2{font-size:24px;line-height:1.3}
+.mo-ar{font-size:20px;font-weight:600;color:var(--accent);margin:0}
+.brand{padding-inline-end:260px}
+
+.lang{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.lang button{border:0;background:transparent;color:var(--muted);padding:7px 11px;font-weight:700;font-size:13px}
+.lang button.on{background:var(--accent);color:var(--surface)}
+.chooser{min-height:70vh;display:grid;place-content:center;text-align:center;gap:10px}
+.chs{display:flex;gap:14px;justify-content:center;margin-top:12px}
+.b.big{font-size:20px;padding:16px 32px;border-radius:14px;border:2px solid var(--accent);color:var(--accent)}
+.b.big:hover{background:var(--accent);color:var(--surface)}
+html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3{font-family:var(--body)}
+html[dir="rtl"] .eyebrow{letter-spacing:0}
+@media (max-width:640px){.topright{position:static;justify-content:flex-end;margin-bottom:10px}.brand{padding-inline-end:0}}
+
+.examday{margin-top:14px;border-radius:14px;padding:14px 16px;background:color-mix(in srgb,var(--c) 14%,var(--surface));border:2px solid var(--c);display:grid;gap:4px;font-size:15px}
+.examday b{color:var(--c);font-size:18px}
+.examday span{color:var(--muted);font-size:13.5px}
+.cell.ph-final{border-top-color:#E11D48}
+#timerbar{display:none}
+#timerbar.on{display:block;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--surface);border-top:3px solid var(--c);box-shadow:0 -8px 24px rgba(0,0,0,.14)}
+.tb-prog{position:absolute;top:-3px;inset-inline-start:0;height:3px;background:var(--ink);opacity:.35}
+.tb-in{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.tb-info{flex:1;min-width:180px;display:grid}
+.tb-s{font-size:12px;color:var(--c);font-weight:700}
+.tb-t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-clock{font-family:var(--display);font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);min-width:110px;text-align:center}
+#timerbar.fin .tb-clock{color:var(--ok);font-size:22px}
+.tb-act{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tb-msg{font-size:13px;color:var(--muted)}
+.b.tmr{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line));font-variant-numeric:tabular-nums}
+.b.tmr.run{background:var(--accent);color:var(--surface)}
+body:has(#timerbar.on) #root{padding-bottom:120px}
+
+.vstrip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;margin-top:18px;align-items:stretch}
+.vp{display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 6px 8px;text-align:center;min-width:0}
+.vp:hover{border-color:var(--c)}
+.vpc{font-family:var(--display);font-size:20px;font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;line-height:1}
+.tube{position:relative;display:block;width:34px;height:150px;border-radius:17px;background:color-mix(in srgb,var(--c) 14%,var(--bg));border:2px solid color-mix(in srgb,var(--c) 45%,transparent);overflow:hidden}
+.fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(to top,var(--c),color-mix(in srgb,var(--c) 70%,#fff));transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.vp.full .tube{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent)}
+.vt{position:absolute;left:0;right:0;height:0;border-top:1.5px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.vpn{font-weight:700;font-size:13px;color:var(--c);line-height:1.25;overflow-wrap:anywhere}
+.vcount{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.vcount em{color:var(--bad);font-style:normal}
+.vex{font-size:11.5px;font-weight:700;color:var(--ink);background:color-mix(in srgb,var(--c) 12%,transparent);border-radius:99px;padding:1px 8px}
+.vparts{display:none}
+.vp:hover .vparts,.vp:focus .vparts{display:grid;font-size:11px;color:var(--muted);gap:1px}
+.clock{display:grid;justify-items:end;line-height:1.15;padding:4px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.ck-t{font-family:var(--display);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.ck-s{font-size:14px;color:var(--muted)}
+.ck-ap{font-size:12px;color:var(--accent);font-family:var(--body)}
+.ck-d{font-size:11.5px;color:var(--muted)}
+.brand{padding-inline-end:400px}
+@media (max-width:900px){.vstrip{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.tube{height:100px;width:28px}.vpn{font-size:12px}.vex{font-size:10.5px;padding:1px 5px}}
+@media (max-width:820px){.brand{padding-inline-end:0}.topright{position:static;justify-content:flex-end;flex-wrap:wrap;margin-bottom:10px}}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+
+.afterx{margin-top:10px;border-radius:14px;padding:12px 16px;background:color-mix(in srgb,var(--ok) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--ok) 40%,transparent)}
+.afterx b{color:var(--ok)}
+.afterx p{margin:4px 0 0;font-size:15px}
+
+.top{grid-template-columns:minmax(0,1fr)}
+.brand{min-width:0}
+.greet{margin:0 0 4px;font-family:var(--display);font-size:clamp(18px,2.6vw,24px);font-weight:600;background:linear-gradient(90deg,#FF6B6B,#FFB020);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+html[dir="rtl"] .greet{font-family:var(--body);font-weight:700}
+.ck-t{direction:ltr;unicode-bidi:isolate}
+</style></head>
+<body><div id="root"></div>
+<script id="state" type="application/json">{"student": "Ghada", "subjects": [{"id": "art", "name": "Art", "ar": "الفنون التشكيلية", "color": "#E07400", "units": ["فن الكاريكاتير والكارتون", "فن الفسيفساء", "الفن الحديث", "مجسمات ورقية", "منتجات حرفية عمانية", "تشكيلات حروفية"], "old": ["الوحدة 1: فن الكاريكاتير والكارتون (4 دروس)", "الوحدة 2: فن الفسيفساء (4 دروس)", "الوحدة 3: الفن الحديث (4 دروس)"], "new": ["الوحدة 4: مجسمات ورقية (4 دروس)", "الوحدة 5: منتجات حرفية عمانية (3 دروس)", "الوحدة 6: تشكيلات حروفية (4 دروس)"], "note": "Each session covers one unit of the art book."}, {"id": "mat", "name": "Advanced Maths", "ar": "الرياضيات المتقدمة", "color": "#6A3FD1", "units": ["القياس الدائري", "حساب المثلثات", "مقدمة في النهايات والاتصال", "التفاضل"], "old": ["1-1 الراديان", "1-2 طول القوس", "1-3 مساحة القطاع الدائري", "2-1 الزوايا العامة", "2-2 زاوية الأساس (الزاوية المرجعية)", "2-3 النسب المثلثية للزوايا العامة", "2-4 التمثيلات البيانية للدوال المثلثية", "2-5 الدوال المثلثية العكسية", "2-6 المعادلات المثلثية", "2-7 المتطابقات المثلثية", "2-8 المزيد من المعادلات المثلثية"], "new": ["3-1 نهاية الدالة عند نقطة (كثيرة الحدود، النسبية، متعددة القاعدة)", "3-2 نهاية الدالة النسبية عند اللانهاية", "3-3 خواص النهايات", "3-4 الاتصال", "4-1 المشتقة وعلاقتها بالميل", "4-2 مشتقة دالة القوة", "4-3 قاعدة السلسلة", "4-4 المماس والعمودي", "4-5 الدوال المتزايدة والمتناقصة", "4-6 النقاط الحرجة"]}, {"id": "wat", "name": "Social Studies", "ar": "هذا وطني", "color": "#9A6A00", "units": ["عُمان… تاريخ وحضارة", "بيئتنا… تنوّع وثراء واستدامة"], "old": ["عُمان في عصر النباهنة… حضارة وتواصل", "عُمان في عصر اليعاربة… قوة وازدهار", "عُمان في عصر البوسعيد… وحدة ومنجزات"], "new": ["البيئة… قضية عالمية ويقظة وطنية", "البيئة العُمانية… حماية واستدامة", "قضايا بيئية… تحديات عالمية وجهود وطنية"]}, {"id": "ara", "name": "Arabic", "ar": "اللغة العربية", "color": "#C2362B", "old": ["النحو: أسلوب التعجب", "النحو: الإغراء والتحذير", "النحو: المدح والذم", "النحو: أسلوب الاختصاص", "الصرف: المزيد بحرف", "الصرف: المزيد بحرفين", "الصرف: المزيد بثلاثة أحرف", "المؤنس: عندما جاء المتنبي ملأ الدنيا وشغل الناس", "المؤنس: وصف الطبيعة في الشعر الأندلسي", "المؤنس: المقامة القريضية", "المؤنس: مصطلح السرد في المقامة", "المؤنس: قراءة أولى في المقامات", "المؤنس: مصادر العقل العربي الإسلامي", "المؤنس: المنحى العقلي عند الجاحظ", "المؤنس: علاقة ما بين الشريعة والعقل", "المؤنس: معاني القرآن الكريم"], "new": ["المؤنس: الصنعة الشعرية عند أبي العتاهية", "المؤنس: الرثاء في الأدب العربي", "المؤنس: خراب القيروان", "المؤنس: الغريب", "المؤنس: المرأة والمجتمع", "المؤنس: منهجية التعبير", "المؤنس: التلخيص", "المؤنس: الشباب وأوقات الفراغ", "البلاغة: المسند والمسند إليه", "البلاغة: التقديم والتأخير", "البلاغة: الخبر والإنشاء", "البلاغة: الخبر أنواعه وأغراضه", "العروض: بحر الوافر", "العروض: بحر الرمل"], "note": "From the المؤنس book only. Lessons from the uploaded المؤنس book."}, {"id": "isl", "name": "Islamic Education", "ar": "التربية الإسلامية", "color": "#0E8F6E", "units": ["من الأخطاء الشائعة في التلاوة", "قيمنا", "عقيدتنا", "هويتنا", "معاملاتنا", "من مدرسة النبوة"], "old": ["التلاوة: أخطاء عند تطبيق أحكام الميم والنون الساكنتين والتنوين", "التلاوة: أخطاء في تطبيق المدود", "التلاوة: أخطاء عند تطبيق صفات الحروف", "قيمنا: قيم الحضارة الإسلامية", "قيمنا: من القيم الاجتماعية (العفة والطهر)", "قيمنا: من القيم الصحية (التداوي)", "قيمنا: من القيم القيادية", "قيمنا: من القيم المهنية", "عقيدتنا: عالم الغيب", "عقيدتنا: الحياة البرزخية", "عقيدتنا: البعث والحشر", "عقيدتنا: الحساب", "عقيدتنا: نعيم الجنة وعذاب النار"], "new": ["هويتنا: الهوية الإسلامية", "هويتنا: الهوية وتحويل القبلة", "هويتنا: الثابت والمتجدد في الهوية الإسلامية", "هويتنا: دور العُمانيين في تأصيل الهوية الإسلامية", "معاملاتنا: المعاملات المالية في الإسلام", "معاملاتنا: حرمة الغش", "معاملاتنا: من البيوع الجائزة", "معاملاتنا: من البيوع المنهي عنها", "معاملاتنا: الوعيد الشديد في التعامل بالربا", "من مدرسة النبوة: فلاحك باتباعك رسولك ﷺ", "من مدرسة النبوة: السيدة عائشة أم المؤمنين", "من مدرسة النبوة: السيدة حفصة أم المؤمنين", "من مدرسة النبوة: أبو ذر الغفاري", "من مدرسة النبوة: سعد بن معاذ"]}, {"id": "bio", "name": "Biology", "ar": "الأحياء", "color": "#4E9A12", "units": ["الأحماض النووية وبناء البروتين", "الوراثة", "التقنية الجينية", "الاتزان الداخلي", "التحكم والتنسيق"], "old": ["1-1 تركيب DNA و RNA", "1-2 تضاعف DNA", "1-3 الشيفرة الجينية", "1-4 بناء البروتين", "1-5 الطفرات الجينية", "2-1 الأمشاج والتكاثر", "2-2 كيف يحدث التباين الجيني؟", "2-3 الوراثة", "2-4 الوراثة والمخططات الجينية", "2-5 الجينات والبروتينات والطراز المظهري", "2-6 التحكم في التعبير الجيني", "3-1 الهندسة الجينية", "3-2 أدوات تقني الجينات", "3-3 فصل وتضخيم DNA", "3-4 التقنية الجينية والطب", "3-5 التقنية الجينية والزراعة"], "new": ["4-1 الاتزان الداخلي", "4-2 تركيب الكلية", "4-3 التحكم في المحتوى المائي", "4-4 التحكم في تركيز جلوكوز الدم", "4-5 الاتزان الداخلي في النباتات", "5-1 مقارنة جهاز الغدد الصماء والجهاز العصبي", "5-2 التواصل العصبي", "5-3 الانقباض العضلي", "5-4 التحكم والتنسيق في النباتات"]}, {"id": "eng", "name": "English", "ar": "اللغة الإنجليزية", "color": "#2462D6", "units": ["Retail Therapy", "Starting University", "Tourism and Hospitality", "Travel and Transport"], "old": ["Theme 1 Retail Therapy: reading & grammar (past simple, past simple passive)", "Theme 1 Retail Therapy: vocabulary, listening & speaking, writing", "Theme 2 Starting University: reading speed & grammar (past perfect)", "Theme 2 Starting University: vocabulary, listening & speaking, writing"], "new": ["Theme 3 Tourism and Hospitality: reading & grammar (first conditional)", "Theme 3 Tourism and Hospitality: vocabulary, listening & speaking, writing", "Theme 4 Travel and Transport: timed reading & grammar (present perfect, for/since)", "Theme 4 Travel and Transport: vocabulary, listening & speaking, writing"]}, {"id": "chm", "name": "Chemistry", "ar": "الكيمياء", "color": "#C93A84", "units": ["الاتزان في المحاليل المائية", "الكيمياء الكهربائية", "طاقة الشبكة البلورية", "مشتقات الهيدروكربونات (1)"], "old": ["1-1 الأحماض والقواعد", "1-2 الأحماض والقواعد القوية والضعيفة", "1-3 ثابت تأين الماء Kw وحسابات pH", "1-4 ثابت تأين الأحماض الضعيفة Ka والقواعد الضعيفة Kb", "1-5 معايرة الأحماض والقواعد", "1-6 الاتزان والذوبانية", "1-7 المحاليل المنظمة", "2-1 جهود الأقطاب الكهربائية (E)", "2-2 قياس جهود الأقطاب القياسية", "2-3 جهود الاختزال القياسية", "2-4 تأثير تراكيز الأيونات على قيم جهود الاختزال", "2-5 التحليل الكهربائي", "2-6 حسابات التحليل الكهربائي"], "new": ["3-1 طاقة الشبكة البلورية", "3-2 المحتوى الحراري للتذرير والألفة الإلكترونية", "3-3 حلقة (دورة) بورن-هابر", "3-4 التغيرات في المحتوى الحراري للمحاليل", "4-1 السلسلة المتجانسة للكحولات", "4-2 الألدهيدات والكيتونات", "4-3 الأحماض الكربوكسيلية", "4-4 الإسترات", "4-5 تفاعلات الكحولات", "4-6 تفاعلات تحضير الكحولات"]}], "memo": [{"title": "سورة النور (30–31)", "lesson": "قيمنا: العفة والطهر · ص 39", "text": ""}, {"title": "حديث: إن الله أنزل الداء والدواء", "lesson": "قيمنا: التداوي · ص 45", "text": "«إنَّ اللهَ أنزلَ الداءَ والدواءَ، وجعلَ لكلِّ داءٍ دواءً، فتداوَوا ولا تداوَوا بحرامٍ» (رواه أبو داود)"}, {"title": "حديث: يُحشر الناس يوم القيامة", "lesson": "عقيدتنا: البعث والحشر · ص 74", "text": "«يُحشَرُ النَّاسُ يومَ القيامةِ على أرضٍ بيضاءَ عَفْراءَ، كقُرصةِ النَّقِيِّ، ليس فيها مَعْلَمٌ لأحدٍ» (متفق عليه)"}, {"title": "سورة محمد (12–15)", "lesson": "عقيدتنا: نعيم الجنة وعذاب النار · ص 80", "text": ""}, {"title": "سورة البقرة (142–145)", "lesson": "هويتنا: الهوية وتحويل القبلة · ص 91", "text": ""}, {"title": "حديث: لو أن أهل عُمان أتيت", "lesson": "هويتنا: دور العُمانيين · ص 101", "text": "«لو أنَّ أهلَ عُمانَ أتيتَ، ما سبُّوكَ ولا ضربوكَ» (رواه مسلم)"}, {"title": "حديث: من غشّ فليس مني", "lesson": "معاملاتنا: حرمة الغش · ص 112", "text": "«ما هذا يا صاحبَ الطعامِ؟ ... أفلا جعلتَه فوقَ الطعامِ كي يراه الناسُ؟ مَن غشَّ فليس منِّي» (رواه مسلم)"}, {"title": "سورة البقرة (275–281)", "lesson": "معاملاتنا: الوعيد الشديد في التعامل بالربا · ص 125", "text": ""}, {"title": "سورة الأعراف (157–158)", "lesson": "من مدرسة النبوة: فلاحك باتباعك رسولك · ص 133", "text": ""}], "seq": 284, "savedAt": 1794858409542, "lang": "en", "plan": "8-subjects-v1", "tasks": [{"id": "t233", "key": "memo|0|0", "date": "2026-11-16", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 0, "status": "pending"}, {"id": "t1", "key": "ara|old|النحو: أسلوب التعجب", "date": "2026-11-16", "time": "4:00 PM", "subj": "ara", "kind": "old", "title": "النحو: أسلوب التعجب", "status": "pending"}, {"id": "t2", "key": "isl|new|هويتنا: الهوية الإسلامية", "date": "2026-11-16", "time": "5:15 PM", "subj": "isl", "kind": "new", "title": "هويتنا: الهوية الإسلامية", "status": "pending"}, {"id": "t3", "key": "bio|old|1-1 تركيب DNA و RNA", "date": "2026-11-16", "time": "7:30 PM", "subj": "bio", "kind": "old", "title": "1-1 تركيب DNA و RNA", "status": "pending"}, {"id": "t234", "key": "memo|0|1", "date": "2026-11-17", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 0, "status": "pending"}, {"id": "t4", "key": "mat|new|3-1 نهاية الدالة عند نقطة (كثيرة الحدود، النسبية، متعددة القاعدة)", "date": "2026-11-17", "time": "4:00 PM", "subj": "mat", "kind": "new", "title": "3-1 نهاية الدالة عند نقطة (كثيرة الحدود، النسبية، متعددة القاعدة)", "status": "pending"}, {"id": "t5", "key": "chm|old|1-1 الأحماض والقواعد", "date": "2026-11-17", "time": "5:15 PM", "subj": "chm", "kind": "old", "title": "1-1 الأحماض والقواعد", "status": "pending"}, {"id": "t6", "key": "eng|new|Theme 3 Tourism and Hospitality: reading & grammar (first conditional)", "date": "2026-11-17", "time": "7:30 PM", "subj": "eng", "kind": "new", "title": "Theme 3 Tourism and Hospitality: reading & grammar (first conditional)", "status": "pending"}, {"id": "t235", "key": "memo|0|2", "date": "2026-11-18", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 0, "status": "pending"}, {"id": "t7", "key": "isl|old|التلاوة: أخطاء عند تطبيق أحكام الميم والنون الساكنتين والتنوين", "date": "2026-11-18", "time": "4:00 PM", "subj": "isl", "kind": "old", "title": "التلاوة: أخطاء عند تطبيق أحكام الميم والنون الساكنتين والتنوين", "status": "pending"}, {"id": "t8", "key": "ara|new|المؤنس: الصنعة الشعرية عند أبي العتاهية", "date": "2026-11-18", "time": "5:15 PM", "subj": "ara", "kind": "new", "title": "المؤنس: الصنعة الشعرية عند أبي العتاهية", "status": "pending"}, {"id": "t9", "key": "art|old|الوحدة 1: فن الكاريكاتير والكارتون (4 دروس)", "date": "2026-11-18", "time": "7:30 PM", "subj": "art", "kind": "old", "title": "الوحدة 1: فن الكاريكاتير والكارتون (4 دروس)", "status": "pending"}, {"id": "t236", "key": "memo|1|0", "date": "2026-11-19", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 1, "status": "pending"}, {"id": "t10", "key": "chm|new|3-1 طاقة الشبكة البلورية", "date": "2026-11-19", "time": "4:00 PM", "subj": "chm", "kind": "new", "title": "3-1 طاقة الشبكة البلورية", "status": "pending"}, {"id": "t11", "key": "mat|old|1-1 الراديان", "date": "2026-11-19", "time": "5:15 PM", "subj": "mat", "kind": "old", "title": "1-1 الراديان", "status": "pending"}, {"id": "t12", "key": "bio|new|4-1 الاتزان الداخلي", "date": "2026-11-19", "time": "7:30 PM", "subj": "bio", "kind": "new", "title": "4-1 الاتزان الداخلي", "status": "pending"}, {"id": "t237", "key": "memo|1|1", "date": "2026-11-20", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 1, "status": "pending"}, {"id": "t13", "key": "eng|old|Theme 1 Retail Therapy: reading & grammar (past simple, past simple passive)", "date": "2026-11-20", "time": "9:00 AM", "subj": "eng", "kind": "old", "title": "Theme 1 Retail Therapy: reading & grammar (past simple, past simple passive)", "status": "pending"}, {"id": "t14", "key": "art|new|الوحدة 4: مجسمات ورقية (4 دروس)", "date": "2026-11-20", "time": "10:30 AM", "subj": "art", "kind": "new", "title": "الوحدة 4: مجسمات ورقية (4 دروس)", "status": "pending"}, {"id": "t15", "key": "wat|old|عُمان في عصر النباهنة… حضارة وتواصل", "date": "2026-11-20", "time": "12:00 PM", "subj": "wat", "kind": "old", "title": "عُمان في عصر النباهنة… حضارة وتواصل", "status": "pending"}, {"id": "t16", "key": "ara|new|المؤنس: الرثاء في الأدب العربي", "date": "2026-11-20", "time": "4:00 PM", "subj": "ara", "kind": "new", "title": "المؤنس: الرثاء في الأدب العربي", "status": "pending"}, {"id": "t17", "key": "isl|old|التلاوة: أخطاء في تطبيق المدود", "date": "2026-11-20", "time": "5:30 PM", "subj": "isl", "kind": "old", "title": "التلاوة: أخطاء في تطبيق المدود", "status": "pending"}, {"id": "t18", "key": "mat|new|3-2 نهاية الدالة النسبية عند اللانهاية", "date": "2026-11-20", "time": "7:30 PM", "subj": "mat", "kind": "new", "title": "3-2 نهاية الدالة النسبية عند اللانهاية", "status": "pending"}, {"id": "t238", "key": "memo|1|2", "date": "2026-11-21", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 1, "status": "pending"}, {"id": "t19", "key": "bio|old|1-2 تضاعف DNA", "date": "2026-11-21", "time": "9:00 AM", "subj": "bio", "kind": "old", "title": "1-2 تضاعف DNA", "status": "pending"}, {"id": "t20", "key": "chm|new|3-2 المحتوى الحراري للتذرير والألفة الإلكترونية", "date": "2026-11-21", "time": "10:30 AM", "subj": "chm", "kind": "new", "title": "3-2 المحتوى الحراري للتذرير والألفة الإلكترونية", "status": "pending"}, {"id": "t21", "key": "ara|old|النحو: الإغراء والتحذير", "date": "2026-11-21", "time": "12:00 PM", "subj": "ara", "kind": "old", "title": "النحو: الإغراء والتحذير", "status": "pending"}, {"id": "t22", "key": "wat|new|البيئة… قضية عالمية ويقظة وطنية", "date": "2026-11-21", "time": "4:00 PM", "subj": "wat", "kind": "new", "title": "البيئة… قضية عالمية ويقظة وطنية", "status": "pending"}, {"id": "t23", "key": "mat|old|1-2 طول القوس", "date": "2026-11-21", "time": "5:30 PM", "subj": "mat", "kind": "old", "title": "1-2 طول القوس", "status": "pending"}, {"id": "t24", "key": "isl|new|هويتنا: الهوية وتحويل القبلة", "date": "2026-11-21", "time": "7:30 PM", "subj": "isl", "kind": "new", "title": "هويتنا: الهوية وتحويل القبلة", "status": "pending"}, {"id": "t239", "key": "memo|2|0", "date": "2026-11-22", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 2, "status": "pending"}, {"id": "t25", "key": "eng|old|Theme 1 Retail Therapy: vocabulary, listening & speaking, writing", "date": "2026-11-22", "time": "4:00 PM", "subj": "eng", "kind": "old", "title": "Theme 1 Retail Therapy: vocabulary, listening & speaking, writing", "status": "pending"}, {"id": "t26", "key": "art|new|الوحدة 5: منتجات حرفية عمانية (3 دروس)", "date": "2026-11-22", "time": "5:15 PM", "subj": "art", "kind": "new", "title": "الوحدة 5: منتجات حرفية عمانية (3 دروس)", "status": "pending"}, {"id": "t27", "key": "chm|old|1-2 الأحماض والقواعد القوية والضعيفة", "date": "2026-11-22", "time": "7:30 PM", "subj": "chm", "kind": "old", "title": "1-2 الأحماض والقواعد القوية والضعيفة", "status": "pending"}, {"id": "t240", "key": "memo|2|1", "date": "2026-11-23", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 2, "status": "pending"}, {"id": "t28", "key": "ara|old|النحو: المدح والذم", "date": "2026-11-23", "time": "4:00 PM", "subj": "ara", "kind": "old", "title": "النحو: المدح والذم", "status": "pending"}, {"id": "t29", "key": "bio|new|4-2 تركيب الكلية", "date": "2026-11-23", "time": "5:15 PM", "subj": "bio", "kind": "new", "title": "4-2 تركيب الكلية", "status": "pending"}, {"id": "t30", "key": "isl|old|التلاوة: أخطاء عند تطبيق صفات الحروف", "date": "2026-11-23", "time": "7:30 PM", "subj": "isl", "kind": "old", "title": "التلاوة: أخطاء عند تطبيق صفات الحروف", "status": "pending"}, {"id": "t241", "key": "memo|2|2", "date": "2026-11-24", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 2, "status": "pending"}, {"id": "t31", "key": "chm|old|1-3 ثابت تأين الماء Kw وحسابات pH", "date": "2026-11-24", "time": "4:00 PM", "subj": "chm", "kind": "old", "title": "1-3 ثابت تأين الماء Kw وحسابات pH", "status": "pending"}, {"id": "t32", "key": "mat|new|3-3 خواص النهايات", "date": "2026-11-24", "time": "5:15 PM", "subj": "mat", "kind": "new", "title": "3-3 خواص النهايات", "status": "pending"}, {"id": "t33", "key": "art|old|الوحدة 2: فن الفسيفساء (4 دروس)", "date": "2026-11-24", "time": "7:30 PM", "subj": "art", "kind": "old", "title": "الوحدة 2: فن الفسيفساء (4 دروس)", "status": "pending"}, {"id": "t242", "key": "memo|3|0", "date": "2026-11-25", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 3, "status": "pending"}, {"id": "t34", "key": "ara|new|المؤنس: خراب القيروان", "date": "2026-11-25", "time": "4:00 PM", "subj": "ara", "kind": "new", "title": "المؤنس: خراب القيروان", "status": "pending"}, {"id": "t35", "key": "bio|old|1-3 الشيفرة الجينية", "date": "2026-11-25", "time": "5:15 PM", "subj": "bio", "kind": "old", "title": "1-3 الشيفرة الجينية", "status": "pending"}, {"id": "t36", "key": "isl|new|هويتنا: الثابت والمتجدد في الهوية الإسلامية", "date": "2026-11-25", "time": "7:30 PM", "subj": "isl", "kind": "new", "title": "هويتنا: الثابت والمتجدد في الهوية الإسلامية", "status": "pending"}, {"id": "t243", "key": "memo|3|1", "date": "2026-11-26", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 3, "status": "pending"}, {"id": "t37", "key": "mat|old|1-3 مساحة القطاع الدائري", "date": "2026-11-26", "time": "4:00 PM", "subj": "mat", "kind": "old", "title": "1-3 مساحة القطاع الدائري", "status": "pending"}, {"id": "t38", "key": "chm|new|3-3 حلقة (دورة) بورن-هابر", "date": "2026-11-26", "time": "5:15 PM", "subj": "chm", "kind": "new", "title": "3-3 حلقة (دورة) بورن-هابر", "status": "pending"}, {"id": "t39", "key": "wat|old|عُمان في عصر اليعاربة… قوة وازدهار", "date": "2026-11-26", "time": "7:30 PM", "subj": "wat", "kind": "old", "title": "عُمان في عصر اليعاربة… قوة وازدهار", "status": "pending"}, {"id": "t244", "key": "memo|3|2", "date": "2026-11-27", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 3, "status": "pending"}, {"id": "t40", "key": "ara|old|النحو: أسلوب الاختصاص", "date": "2026-11-27", "time": "9:00 AM", "subj": "ara", "kind": "old", "title": "النحو: أسلوب الاختصاص", "status": "pending"}, {"id": "t41", "key": "isl|new|هويتنا: دور العُمانيين في تأصيل الهوية الإسلامية", "date": "2026-11-27", "time": "10:30 AM", "subj": "isl", "kind": "new", "title": "هويتنا: دور العُمانيين في تأصيل الهوية الإسلامية", "status": "pending"}, {"id": "t42", "key": "bio|old|1-4 بناء البروتين", "date": "2026-11-27", "time": "12:00 PM", "subj": "bio", "kind": "old", "title": "1-4 بناء البروتين", "status": "pending"}, {"id": "t43", "key": "eng|new|Theme 3 Tourism and Hospitality: vocabulary, listening & speaking, writing", "date": "2026-11-27", "time": "4:00 PM", "subj": "eng", "kind": "new", "title": "Theme 3 Tourism and Hospitality: vocabulary, listening & speaking, writing", "status": "pending"}, {"id": "t44", "key": "art|old|الوحدة 3: الفن الحديث (4 دروس)", "date": "2026-11-27", "time": "5:30 PM", "subj": "art", "kind": "old", "title": "الوحدة 3: الفن الحديث (4 دروس)", "status": "pending"}, {"id": "t45", "key": "mat|new|3-4 الاتصال", "date": "2026-11-27", "time": "7:30 PM", "subj": "mat", "kind": "new", "title": "3-4 الاتصال", "status": "pending"}, {"id": "t245", "key": "memo|4|0", "date": "2026-11-28", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 4, "status": "pending"}, {"id": "t46", "key": "chm|old|1-4 ثابت تأين الأحماض الضعيفة Ka والقواعد الضعيفة Kb", "date": "2026-11-28", "time": "9:00 AM", "subj": "chm", "kind": "old", "title": "1-4 ثابت تأين الأحماض الضعيفة Ka والقواعد الضعيفة Kb", "status": "pending"}, {"id": "t47", "key": "wat|new|البيئة العُمانية… حماية واستدامة", "date": "2026-11-28", "time": "10:30 AM", "subj": "wat", "kind": "new", "title": "البيئة العُمانية… حماية واستدامة", "status": "pending"}, {"id": "t48", "key": "isl|old|قيمنا: قيم الحضارة الإسلامية", "date": "2026-11-28", "time": "12:00 PM", "subj": "isl", "kind": "old", "title": "قيمنا: قيم الحضارة الإسلامية", "status": "pending"}, {"id": "t49", "key": "ara|new|المؤنس: الغريب", "date": "2026-11-28", "time": "4:00 PM", "subj": "ara", "kind": "new", "title": "المؤنس: الغريب", "status": "pending"}, {"id": "t50", "key": "bio|old|1-5 الطفرات الجينية", "date": "2026-11-28", "time": "5:30 PM", "subj": "bio", "kind": "old", "title": "1-5 الطفرات الجينية", "status": "pending"}, {"id": "t51", "key": "mat|new|4-1 المشتقة وعلاقتها بالميل", "date": "2026-11-28", "time": "7:30 PM", "subj": "mat", "kind": "new", "title": "4-1 المشتقة وعلاقتها بالميل", "status": "pending"}, {"id": "t246", "key": "memo|4|1", "date": "2026-11-29", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 4, "status": "pending"}, {"id": "t52", "key": "eng|old|Theme 2 Starting University: reading speed & grammar (past perfect)", "date": "2026-11-29", "time": "4:00 PM", "subj": "eng", "kind": "old", "title": "Theme 2 Starting University: reading speed & grammar (past perfect)", "status": "pending"}, {"id": "t53", "key": "art|new|الوحدة 6: تشكيلات حروفية (4 دروس)", "date": "2026-11-29", "time": "5:15 PM", "subj": "art", "kind": "new", "title": "الوحدة 6: تشكيلات حروفية (4 دروس)", "status": "pending"}, {"id": "t54", "key": "ara|old|الصرف: المزيد بحرف", "date": "2026-11-29", "time": "7:30 PM", "subj": "ara", "kind": "old", "title": "الصرف: المزيد بحرف", "status": "pending"}, {"id": "t247", "key": "memo|4|2", "date": "2026-11-30", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 4, "status": "pending"}, {"id": "t55", "key": "mat|old|2-1 الزوايا العامة", "date": "2026-11-30", "time": "4:00 PM", "subj": "mat", "kind": "old", "title": "2-1 الزوايا العامة", "status": "pending"}, {"id": "t56", "key": "bio|new|4-3 التحكم في المحتوى المائي", "date": "2026-11-30", "time": "5:15 PM", "subj": "bio", "kind": "new", "title": "4-3 التحكم في المحتوى المائي", "status": "pending"}, {"id": "t57", "key": "isl|old|قيمنا: من القيم الاجتماعية (العفة والطهر)", "date": "2026-11-30", "time": "7:30 PM", "subj": "isl", "kind": "old", "title": "قيمنا: من القيم الاجتماعية (العفة والطهر)", "status": "pending"}, {"id": "t248", "key": "memo|5|0", "date": "2026-12-01", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 5, "status": "pending"}, {"id": "t58", "key": "ara|new|المؤنس: المرأة والمجتمع", "date": "2026-12-01", "time": "4:00 PM", "subj": "ara", "kind": "new", "title": "المؤنس: المرأة والمجتمع", "status": "pending"}, {"id": "t59", "key": "chm|old|1-5 معايرة الأحماض والقواعد", "date": "2026-12-01", "time": "5:15 PM", "subj": "chm", "kind": "old", "title": "1-5 معايرة الأحماض والقواعد", "status": "pending"}, {"id": "t60", "key": "eng|new|Theme 4 Travel and Transport: timed reading & grammar (present perfect, for/since)", "date": "2026-12-01", "time": "7:30 PM", "subj": "eng", "kind": "new", "title": "Theme 4 Travel and Transport: timed reading & grammar (present perfect, for/since)", "status": "pending"}, {"id": "t249", "key": "memo|5|1", "date": "2026-12-02", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 5, "status": "pending"}, {"id": "t61", "key": "bio|old|2-1 الأمشاج والتكاثر", "date": "2026-12-02", "time": "4:00 PM", "subj": "bio", "kind": "old", "title": "2-1 الأمشاج والتكاثر", "status": "pending"}, {"id": "t62", "key": "isl|new|معاملاتنا: المعاملات المالية في الإسلام", "date": "2026-12-02", "time": "5:15 PM", "subj": "isl", "kind": "new", "title": "معاملاتنا: المعاملات المالية في الإسلام", "status": "pending"}, {"id": "t63", "key": "mat|old|2-2 زاوية الأساس (الزاوية المرجعية)", "date": "2026-12-02", "time": "7:30 PM", "subj": "mat", "kind": "old", "title": "2-2 زاوية الأساس (الزاوية المرجعية)", "status": "pending"}, {"id": "t250", "key": "memo|5|2", "date": "2026-12-03", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 5, "status": "pending"}, {"id": "t64", "key": "ara|old|الصرف: المزيد بحرفين", "date": "2026-12-03", "time": "4:00 PM", "subj": "ara", "kind": "old", "title": "الصرف: المزيد بحرفين", "status": "pending"}, {"id": "t65", "key": "chm|new|3-4 التغيرات في المحتوى الحراري للمحاليل", "date": "2026-12-03", "time": "5:15 PM", "subj": "chm", "kind": "new", "title": "3-4 التغيرات في المحتوى الحراري للمحاليل", "status": "pending"}, {"id": "t66", "key": "wat|old|عُمان في عصر البوسعيد… وحدة ومنجزات", "date": "2026-12-03", "time": "7:30 PM", "subj": "wat", "kind": "old", "title": "عُمان في عصر البوسعيد… وحدة ومنجزات", "status": "pending"}, {"id": "t251", "key": "memo|6|0", "date": "2026-12-04", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 6, "status": "pending"}, {"id": "t67", "key": "bio|new|4-4 التحكم في تركيز جلوكوز الدم", "date": "2026-12-04", "time": "9:00 AM", "subj": "bio", "kind": "new", "title": "4-4 التحكم في تركيز جلوكوز الدم", "status": "pending"}, {"id": "t68", "key": "isl|old|قيمنا: من القيم الصحية (التداوي)", "date": "2026-12-04", "time": "10:30 AM", "subj": "isl", "kind": "old", "title": "قيمنا: من القيم الصحية (التداوي)", "status": "pending"}, {"id": "t69", "key": "mat|new|4-2 مشتقة دالة القوة", "date": "2026-12-04", "time": "12:00 PM", "subj": "mat", "kind": "new", "title": "4-2 مشتقة دالة القوة", "status": "pending"}, {"id": "t70", "key": "eng|old|Theme 2 Starting University: vocabulary, listening & speaking, writing", "date": "2026-12-04", "time": "4:00 PM", "subj": "eng", "kind": "old", "title": "Theme 2 Starting University: vocabulary, listening & speaking, writing", "status": "pending"}, {"id": "t71", "key": "ara|new|المؤنس: منهجية التعبير", "date": "2026-12-04", "time": "5:30 PM", "subj": "ara", "kind": "new", "title": "المؤنس: منهجية التعبير", "status": "pending"}, {"id": "t72", "key": "chm|old|1-6 الاتزان والذوبانية", "date": "2026-12-04", "time": "7:30 PM", "subj": "chm", "kind": "old", "title": "1-6 الاتزان والذوبانية", "status": "pending"}, {"id": "t252", "key": "memo|6|1", "date": "2026-12-05", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 6, "status": "pending"}, {"id": "t73", "key": "wat|new|قضايا بيئية… تحديات عالمية وجهود وطنية", "date": "2026-12-05", "time": "9:00 AM", "subj": "wat", "kind": "new", "title": "قضايا بيئية… تحديات عالمية وجهود وطنية", "status": "pending"}, {"id": "t74", "key": "ara|old|الصرف: المزيد بثلاثة أحرف", "date": "2026-12-05", "time": "10:30 AM", "subj": "ara", "kind": "old", "title": "الصرف: المزيد بثلاثة أحرف", "status": "pending"}, {"id": "t75", "key": "bio|old|2-2 كيف يحدث التباين الجيني؟", "date": "2026-12-05", "time": "12:00 PM", "subj": "bio", "kind": "old", "title": "2-2 كيف يحدث التباين الجيني؟", "status": "pending"}, {"id": "t76", "key": "isl|new|معاملاتنا: حرمة الغش", "date": "2026-12-05", "time": "4:00 PM", "subj": "isl", "kind": "new", "title": "معاملاتنا: حرمة الغش", "status": "pending"}, {"id": "t77", "key": "mat|old|2-3 النسب المثلثية للزوايا العامة", "date": "2026-12-05", "time": "5:30 PM", "subj": "mat", "kind": "old", "title": "2-3 النسب المثلثية للزوايا العامة", "status": "pending"}, {"id": "t253", "key": "memo|6|2", "date": "2026-12-06", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 6, "status": "pending"}, {"id": "t78", "key": "chm|new|4-1 السلسلة المتجانسة للكحولات", "date": "2026-12-06", "time": "4:00 PM", "subj": "chm", "kind": "new", "title": "4-1 السلسلة المتجانسة للكحولات", "status": "pending"}, {"id": "t79", "key": "ara|old|المؤنس: عندما جاء المتنبي ملأ الدنيا وشغل الناس", "date": "2026-12-06", "time": "5:15 PM", "subj": "ara", "kind": "old", "title": "المؤنس: عندما جاء المتنبي ملأ الدنيا وشغل الناس", "status": "pending"}, {"id": "t80", "key": "eng|new|Theme 4 Travel and Transport: vocabulary, listening & speaking, writing", "date": "2026-12-06", "time": "7:30 PM", "subj": "eng", "kind": "new", "title": "Theme 4 Travel and Transport: vocabulary, listening & speaking, writing", "status": "pending"}, {"id": "t254", "key": "memo|7|0", "date": "2026-12-07", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 7, "status": "pending"}, {"id": "t81", "key": "bio|old|2-3 الوراثة", "date": "2026-12-07", "time": "4:00 PM", "subj": "bio", "kind": "old", "title": "2-3 الوراثة", "status": "pending"}, {"id": "t82", "key": "isl|new|معاملاتنا: من البيوع الجائزة", "date": "2026-12-07", "time": "5:15 PM", "subj": "isl", "kind": "new", "title": "معاملاتنا: من البيوع الجائزة", "status": "pending"}, {"id": "t83", "key": "mat|old|2-4 التمثيلات البيانية للدوال المثلثية", "date": "2026-12-07", "time": "7:30 PM", "subj": "mat", "kind": "old", "title": "2-4 التمثيلات البيانية للدوال المثلثية", "status": "pending"}, {"id": "t255", "key": "memo|7|1", "date": "2026-12-08", "time": "5:45 AM · 15 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 7, "status": "pending"}, {"id": "t84", "key": "ara|new|المؤنس: التلخيص", "date": "2026-12-08", "time": "4:00 PM", "subj": "ara", "kind": "new", "title": "المؤنس: التلخيص", "status": "pending"}, {"id": "t85", "key": "chm|old|1-7 المحاليل المنظمة", "date": "2026-12-08", "time": "5:15 PM", "subj": "chm", "kind": "old", "title": "1-7 المحاليل المنظمة", "status": "pending"}, {"id": "t86", "key": "bio|new|4-5 الاتزان الداخلي في النباتات", "date": "2026-12-08", "time": "7:30 PM", "subj": "bio", "kind": "new", "title": "4-5 الاتزان الداخلي في النباتات", "status": "pending"}, {"id": "t256", "key": "memo|7|2", "date": "2026-12-09", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 7, "status": "pending"}, {"id": "t87", "key": "isl|old|قيمنا: من القيم القيادية", "date": "2026-12-09", "time": "9:00 AM", "subj": "isl", "kind": "old", "title": "قيمنا: من القيم القيادية", "status": "pending"}, {"id": "t88", "key": "mat|new|4-3 قاعدة السلسلة", "date": "2026-12-09", "time": "10:30 AM", "subj": "mat", "kind": "new", "title": "4-3 قاعدة السلسلة", "status": "pending"}, {"id": "t89", "key": "ara|old|المؤنس: وصف الطبيعة في الشعر الأندلسي", "date": "2026-12-09", "time": "12:00 PM", "subj": "ara", "kind": "old", "title": "المؤنس: وصف الطبيعة في الشعر الأندلسي", "status": "pending"}, {"id": "t90", "key": "chm|new|4-2 الألدهيدات والكيتونات", "date": "2026-12-09", "time": "4:00 PM", "subj": "chm", "kind": "new", "title": "4-2 الألدهيدات والكيتونات", "status": "pending"}, {"id": "t91", "key": "bio|old|2-4 الوراثة والمخططات الجينية", "date": "2026-12-09", "time": "5:30 PM", "subj": "bio", "kind": "old", "title": "2-4 الوراثة والمخططات الجينية", "status": "pending"}, {"id": "t92", "key": "isl|new|معاملاتنا: من البيوع المنهي عنها", "date": "2026-12-09", "time": "7:30 PM", "subj": "isl", "kind": "new", "title": "معاملاتنا: من البيوع المنهي عنها", "status": "pending"}, {"id": "t257", "key": "memo|8|0", "date": "2026-12-10", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Read, understand, memorize first half", "item": 8, "status": "pending"}, {"id": "t93", "key": "isl|old|قيمنا: من القيم المهنية", "date": "2026-12-10", "time": "9:00 AM", "subj": "isl", "kind": "old", "title": "قيمنا: من القيم المهنية", "status": "pending"}, {"id": "t94", "key": "ara|new|المؤنس: الشباب وأوقات الفراغ", "date": "2026-12-10", "time": "10:30 AM", "subj": "ara", "kind": "new", "title": "المؤنس: الشباب وأوقات الفراغ", "status": "pending"}, {"id": "t95", "key": "chm|old|2-1 جهود الأقطاب الكهربائية (E)", "date": "2026-12-10", "time": "12:00 PM", "subj": "chm", "kind": "old", "title": "2-1 جهود الأقطاب الكهربائية (E)", "status": "pending"}, {"id": "t96", "key": "bio|new|5-1 مقارنة جهاز الغدد الصماء والجهاز العصبي", "date": "2026-12-10", "time": "4:00 PM", "subj": "bio", "kind": "new", "title": "5-1 مقارنة جهاز الغدد الصماء والجهاز العصبي", "status": "pending"}, {"id": "t97", "key": "mat|old|2-5 الدوال المثلثية العكسية", "date": "2026-12-10", "time": "5:30 PM", "subj": "mat", "kind": "old", "title": "2-5 الدوال المثلثية العكسية", "status": "pending"}, {"id": "t98", "key": "ara|new|البلاغة: المسند والمسند إليه", "date": "2026-12-10", "time": "7:30 PM", "subj": "ara", "kind": "new", "title": "البلاغة: المسند والمسند إليه", "status": "pending"}, {"id": "t258", "key": "memo|8|1", "date": "2026-12-11", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Memorize second half", "item": 8, "status": "pending"}, {"id": "t99", "key": "ara|old|المؤنس: المقامة القريضية", "date": "2026-12-11", "time": "9:00 AM", "subj": "ara", "kind": "old", "title": "المؤنس: المقامة القريضية", "status": "pending"}, {"id": "t100", "key": "isl|new|معاملاتنا: الوعيد الشديد في التعامل بالربا", "date": "2026-12-11", "time": "10:30 AM", "subj": "isl", "kind": "new", "title": "معاملاتنا: الوعيد الشديد في التعامل بالربا", "status": "pending"}, {"id": "t101", "key": "bio|old|2-5 الجينات والبروتينات والطراز المظهري", "date": "2026-12-11", "time": "12:00 PM", "subj": "bio", "kind": "old", "title": "2-5 الجينات والبروتينات والطراز المظهري", "status": "pending"}, {"id": "t102", "key": "chm|new|4-3 الأحماض الكربوكسيلية", "date": "2026-12-11", "time": "4:00 PM", "subj": "chm", "kind": "new", "title": "4-3 الأحماض الكربوكسيلية", "status": "pending"}, {"id": "t103", "key": "mat|old|2-6 المعادلات المثلثية", "date": "2026-12-11", "time": "5:30 PM", "subj": "mat", "kind": "old", "title": "2-6 المعادلات المثلثية", "status": "pending"}, {"id": "t104", "key": "ara|new|البلاغة: التقديم والتأخير", "date": "2026-12-11", "time": "7:30 PM", "subj": "ara", "kind": "new", "title": "البلاغة: التقديم والتأخير", "status": "pending"}, {"id": "t259", "key": "memo|8|2", "date": "2026-12-12", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "memo", "title": "Recite the whole text from memory", "item": 8, "status": "pending"}, {"id": "t105", "key": "isl|old|عقيدتنا: عالم الغيب", "date": "2026-12-12", "time": "9:00 AM", "subj": "isl", "kind": "old", "title": "عقيدتنا: عالم الغيب", "status": "pending"}, {"id": "t106", "key": "bio|new|5-2 التواصل العصبي", "date": "2026-12-12", "time": "10:30 AM", "subj": "bio", "kind": "new", "title": "5-2 التواصل العصبي", "status": "pending"}, {"id": "t107", "key": "chm|old|2-2 قياس جهود الأقطاب القياسية", "date": "2026-12-12", "time": "12:00 PM", "subj": "chm", "kind": "old", "title": "2-2 قياس جهود الأقطاب القياسية", "status": "pending"}, {"id": "t108", "key": "mat|new|4-4 المماس والعمودي", "date": "2026-12-12", "time": "4:00 PM", "subj": "mat", "kind": "new", "title": "4-4 المماس والعمودي", "status": "pending"}, {"id": "t109", "key": "ara|old|المؤنس: مصطلح السرد في المقامة", "date": "2026-12-12", "time": "5:30 PM", "subj": "ara", "kind": "old", "title": "المؤنس: مصطلح السرد في المقامة", "status": "pending"}, {"id": "t110", "key": "isl|new|من مدرسة النبوة: فلاحك باتباعك رسولك ﷺ", "date": "2026-12-12", "time": "7:30 PM", "subj": "isl", "kind": "new", "title": "من مدرسة النبوة: فلاحك باتباعك رسولك ﷺ", "status": "pending"}, {"id": "t260", "key": "rev|27", "date": "2026-12-13", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 1–3", "item": -1, "group": [0, 2], "status": "pending"}, {"id": "t111", "key": "bio|old|2-6 التحكم في التعبير الجيني", "date": "2026-12-13", "time": "9:00 AM", "subj": "bio", "kind": "old", "title": "2-6 التحكم في التعبير الجيني", "status": "pending"}, {"id": "t112", "key": "chm|new|4-4 الإسترات", "date": "2026-12-13", "time": "10:30 AM", "subj": "chm", "kind": "new", "title": "4-4 الإسترات", "status": "pending"}, {"id": "t113", "key": "ara|old|المؤنس: قراءة أولى في المقامات", "date": "2026-12-13", "time": "12:00 PM", "subj": "ara", "kind": "old", "title": "المؤنس: قراءة أولى في المقامات", "status": "pending"}, {"id": "t114", "key": "isl|new|من مدرسة النبوة: السيدة عائشة أم المؤمنين", "date": "2026-12-13", "time": "4:00 PM", "subj": "isl", "kind": "new", "title": "من مدرسة النبوة: السيدة عائشة أم المؤمنين", "status": "pending"}, {"id": "t115", "key": "mat|old|2-7 المتطابقات المثلثية", "date": "2026-12-13", "time": "5:30 PM", "subj": "mat", "kind": "old", "title": "2-7 المتطابقات المثلثية", "status": "pending"}, {"id": "t116", "key": "ara|new|البلاغة: الخبر والإنشاء", "date": "2026-12-13", "time": "7:30 PM", "subj": "ara", "kind": "new", "title": "البلاغة: الخبر والإنشاء", "status": "pending"}, {"id": "t261", "key": "rev|28", "date": "2026-12-14", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 4–6", "item": -1, "group": [3, 5], "status": "pending"}, {"id": "t117", "key": "bio|old|3-1 الهندسة الجينية", "date": "2026-12-14", "time": "9:00 AM", "subj": "bio", "kind": "old", "title": "3-1 الهندسة الجينية", "status": "pending"}, {"id": "t118", "key": "ara|new|البلاغة: الخبر أنواعه وأغراضه", "date": "2026-12-14", "time": "10:30 AM", "subj": "ara", "kind": "new", "title": "البلاغة: الخبر أنواعه وأغراضه", "status": "pending"}, {"id": "t119", "key": "isl|old|عقيدتنا: الحياة البرزخية", "date": "2026-12-14", "time": "12:00 PM", "subj": "isl", "kind": "old", "title": "عقيدتنا: الحياة البرزخية", "status": "pending"}, {"id": "t120", "key": "mat|new|4-5 الدوال المتزايدة والمتناقصة", "date": "2026-12-14", "time": "4:00 PM", "subj": "mat", "kind": "new", "title": "4-5 الدوال المتزايدة والمتناقصة", "status": "pending"}, {"id": "t121", "key": "chm|old|2-3 جهود الاختزال القياسية", "date": "2026-12-14", "time": "5:30 PM", "subj": "chm", "kind": "old", "title": "2-3 جهود الاختزال القياسية", "status": "pending"}, {"id": "t122", "key": "bio|new|5-3 الانقباض العضلي", "date": "2026-12-14", "time": "7:30 PM", "subj": "bio", "kind": "new", "title": "5-3 الانقباض العضلي", "status": "pending"}, {"id": "t262", "key": "rev|29", "date": "2026-12-15", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 7–9", "item": -1, "group": [6, 8], "status": "pending"}, {"id": "t123", "key": "ara|old|المؤنس: مصادر العقل العربي الإسلامي", "date": "2026-12-15", "time": "9:00 AM", "subj": "ara", "kind": "old", "title": "المؤنس: مصادر العقل العربي الإسلامي", "status": "pending"}, {"id": "t124", "key": "isl|new|من مدرسة النبوة: السيدة حفصة أم المؤمنين", "date": "2026-12-15", "time": "10:30 AM", "subj": "isl", "kind": "new", "title": "من مدرسة النبوة: السيدة حفصة أم المؤمنين", "status": "pending"}, {"id": "t125", "key": "bio|old|3-2 أدوات تقني الجينات", "date": "2026-12-15", "time": "12:00 PM", "subj": "bio", "kind": "old", "title": "3-2 أدوات تقني الجينات", "status": "pending"}, {"id": "t126", "key": "chm|new|4-5 تفاعلات الكحولات", "date": "2026-12-15", "time": "4:00 PM", "subj": "chm", "kind": "new", "title": "4-5 تفاعلات الكحولات", "status": "pending"}, {"id": "t127", "key": "mat|old|2-8 المزيد من المعادلات المثلثية", "date": "2026-12-15", "time": "5:30 PM", "subj": "mat", "kind": "old", "title": "2-8 المزيد من المعادلات المثلثية", "status": "pending"}, {"id": "t128", "key": "ara|new|العروض: بحر الوافر", "date": "2026-12-15", "time": "7:30 PM", "subj": "ara", "kind": "new", "title": "العروض: بحر الوافر", "status": "pending"}, {"id": "t263", "key": "rev|30", "date": "2026-12-16", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Recite all 9 from memory · ask someone to listen", "item": -1, "group": [0, 8], "status": "pending"}, {"id": "t129", "key": "isl|old|عقيدتنا: البعث والحشر", "date": "2026-12-16", "time": "9:00 AM", "subj": "isl", "kind": "old", "title": "عقيدتنا: البعث والحشر", "status": "pending"}, {"id": "t130", "key": "bio|new|5-4 التحكم والتنسيق في النباتات", "date": "2026-12-16", "time": "10:30 AM", "subj": "bio", "kind": "new", "title": "5-4 التحكم والتنسيق في النباتات", "status": "pending"}, {"id": "t131", "key": "chm|old|2-4 تأثير تراكيز الأيونات على قيم جهود الاختزال", "date": "2026-12-16", "time": "12:00 PM", "subj": "chm", "kind": "old", "title": "2-4 تأثير تراكيز الأيونات على قيم جهود الاختزال", "status": "pending"}, {"id": "t132", "key": "mat|new|4-6 النقاط الحرجة", "date": "2026-12-16", "time": "4:00 PM", "subj": "mat", "kind": "new", "title": "4-6 النقاط الحرجة", "status": "pending"}, {"id": "t133", "key": "ara|old|المؤنس: المنحى العقلي عند الجاحظ", "date": "2026-12-16", "time": "5:30 PM", "subj": "ara", "kind": "old", "title": "المؤنس: المنحى العقلي عند الجاحظ", "status": "pending"}, {"id": "t134", "key": "isl|new|من مدرسة النبوة: أبو ذر الغفاري", "date": "2026-12-16", "time": "7:30 PM", "subj": "isl", "kind": "new", "title": "من مدرسة النبوة: أبو ذر الغفاري", "status": "pending"}, {"id": "t264", "key": "rev|31", "date": "2026-12-17", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 1–3", "item": -1, "group": [0, 2], "status": "pending"}, {"id": "t135", "key": "bio|old|3-3 فصل وتضخيم DNA", "date": "2026-12-17", "time": "9:00 AM", "subj": "bio", "kind": "old", "title": "3-3 فصل وتضخيم DNA", "status": "pending"}, {"id": "t136", "key": "chm|new|4-6 تفاعلات تحضير الكحولات", "date": "2026-12-17", "time": "10:30 AM", "subj": "chm", "kind": "new", "title": "4-6 تفاعلات تحضير الكحولات", "status": "pending"}, {"id": "t137", "key": "isl|old|عقيدتنا: الحساب", "date": "2026-12-17", "time": "12:00 PM", "subj": "isl", "kind": "old", "title": "عقيدتنا: الحساب", "status": "pending"}, {"id": "t138", "key": "ara|new|العروض: بحر الرمل", "date": "2026-12-17", "time": "4:00 PM", "subj": "ara", "kind": "new", "title": "العروض: بحر الرمل", "status": "pending"}, {"id": "t139", "key": "chm|old|2-5 التحليل الكهربائي", "date": "2026-12-17", "time": "5:30 PM", "subj": "chm", "kind": "old", "title": "2-5 التحليل الكهربائي", "status": "pending"}, {"id": "t140", "key": "isl|new|من مدرسة النبوة: سعد بن معاذ", "date": "2026-12-17", "time": "7:30 PM", "subj": "isl", "kind": "new", "title": "من مدرسة النبوة: سعد بن معاذ", "status": "pending"}, {"id": "t265", "key": "rev|32", "date": "2026-12-18", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 4–6", "item": -1, "group": [3, 5], "status": "pending"}, {"id": "t141", "key": "ara|old|المؤنس: علاقة ما بين الشريعة والعقل", "date": "2026-12-18", "time": "9:00 AM", "subj": "ara", "kind": "old", "title": "المؤنس: علاقة ما بين الشريعة والعقل", "status": "pending"}, {"id": "t142", "key": "bio|old|3-4 التقنية الجينية والطب", "date": "2026-12-18", "time": "10:30 AM", "subj": "bio", "kind": "old", "title": "3-4 التقنية الجينية والطب", "status": "pending"}, {"id": "t143", "key": "isl|old|عقيدتنا: نعيم الجنة وعذاب النار", "date": "2026-12-18", "time": "12:00 PM", "subj": "isl", "kind": "old", "title": "عقيدتنا: نعيم الجنة وعذاب النار", "status": "pending"}, {"id": "t144", "key": "chm|old|2-6 حسابات التحليل الكهربائي", "date": "2026-12-18", "time": "4:00 PM", "subj": "chm", "kind": "old", "title": "2-6 حسابات التحليل الكهربائي", "status": "pending"}, {"id": "t145", "key": "ara|old|المؤنس: معاني القرآن الكريم", "date": "2026-12-18", "time": "5:30 PM", "subj": "ara", "kind": "old", "title": "المؤنس: معاني القرآن الكريم", "status": "pending"}, {"id": "t146", "key": "bio|old|3-5 التقنية الجينية والزراعة", "date": "2026-12-18", "time": "7:30 PM", "subj": "bio", "kind": "old", "title": "3-5 التقنية الجينية والزراعة", "status": "pending"}, {"id": "t266", "key": "rev|33", "date": "2026-12-19", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 7–9", "item": -1, "group": [6, 8], "status": "pending"}, {"id": "t147", "key": "art|practice|Past exam paper 1 (timed)", "date": "2026-12-19", "time": "9:00 AM", "subj": "art", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t148", "key": "mat|practice|Past exam paper 1 (timed)", "date": "2026-12-19", "time": "10:30 AM", "subj": "mat", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t149", "key": "wat|practice|Past exam paper 1 (timed)", "date": "2026-12-19", "time": "12:00 PM", "subj": "wat", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t150", "key": "ara|practice|Past exam paper 1 (timed)", "date": "2026-12-19", "time": "4:00 PM", "subj": "ara", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t151", "key": "isl|practice|Past exam paper 1 (timed)", "date": "2026-12-19", "time": "5:30 PM", "subj": "isl", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t267", "key": "rev|34", "date": "2026-12-20", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Recite all 9 from memory · ask someone to listen", "item": -1, "group": [0, 8], "status": "pending"}, {"id": "t152", "key": "bio|practice|Past exam paper 1 (timed)", "date": "2026-12-20", "time": "9:00 AM", "subj": "bio", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t153", "key": "eng|practice|Past exam paper 1 (timed)", "date": "2026-12-20", "time": "10:30 AM", "subj": "eng", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t154", "key": "chm|practice|Past exam paper 1 (timed)", "date": "2026-12-20", "time": "12:00 PM", "subj": "chm", "kind": "practice", "title": "Past exam paper 1 (timed)", "status": "pending"}, {"id": "t155", "key": "art|practice|Mark paper 1 · list weak topics", "date": "2026-12-20", "time": "4:00 PM", "subj": "art", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t156", "key": "mat|practice|Mark paper 1 · list weak topics", "date": "2026-12-20", "time": "5:30 PM", "subj": "mat", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t268", "key": "rev|35", "date": "2026-12-21", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 1–3", "item": -1, "group": [0, 2], "status": "pending"}, {"id": "t157", "key": "wat|practice|Mark paper 1 · list weak topics", "date": "2026-12-21", "time": "9:00 AM", "subj": "wat", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t158", "key": "ara|practice|Mark paper 1 · list weak topics", "date": "2026-12-21", "time": "10:30 AM", "subj": "ara", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t159", "key": "isl|practice|Mark paper 1 · list weak topics", "date": "2026-12-21", "time": "12:00 PM", "subj": "isl", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t160", "key": "bio|practice|Mark paper 1 · list weak topics", "date": "2026-12-21", "time": "4:00 PM", "subj": "bio", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t269", "key": "rev|36", "date": "2026-12-22", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 4–6", "item": -1, "group": [3, 5], "status": "pending"}, {"id": "t161", "key": "eng|practice|Mark paper 1 · list weak topics", "date": "2026-12-22", "time": "9:00 AM", "subj": "eng", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t162", "key": "chm|practice|Mark paper 1 · list weak topics", "date": "2026-12-22", "time": "10:30 AM", "subj": "chm", "kind": "practice", "title": "Mark paper 1 · list weak topics", "status": "pending"}, {"id": "t163", "key": "art|practice|Past exam paper 2 (timed)", "date": "2026-12-22", "time": "12:00 PM", "subj": "art", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t164", "key": "mat|practice|Past exam paper 2 (timed)", "date": "2026-12-22", "time": "4:00 PM", "subj": "mat", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t165", "key": "wat|practice|Past exam paper 2 (timed)", "date": "2026-12-22", "time": "5:30 PM", "subj": "wat", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t270", "key": "rev|37", "date": "2026-12-23", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 7–9", "item": -1, "group": [6, 8], "status": "pending"}, {"id": "t166", "key": "ara|practice|Past exam paper 2 (timed)", "date": "2026-12-23", "time": "9:00 AM", "subj": "ara", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t167", "key": "isl|practice|Past exam paper 2 (timed)", "date": "2026-12-23", "time": "10:30 AM", "subj": "isl", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t168", "key": "bio|practice|Past exam paper 2 (timed)", "date": "2026-12-23", "time": "12:00 PM", "subj": "bio", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t169", "key": "eng|practice|Past exam paper 2 (timed)", "date": "2026-12-23", "time": "4:00 PM", "subj": "eng", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t170", "key": "chm|practice|Past exam paper 2 (timed)", "date": "2026-12-23", "time": "5:30 PM", "subj": "chm", "kind": "practice", "title": "Past exam paper 2 (timed)", "status": "pending"}, {"id": "t271", "key": "rev|38", "date": "2026-12-24", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Recite all 9 from memory · ask someone to listen", "item": -1, "group": [0, 8], "status": "pending"}, {"id": "t272", "key": "rev|39", "date": "2026-12-25", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 1–3", "item": -1, "group": [0, 2], "status": "pending"}, {"id": "t273", "key": "rev|40", "date": "2026-12-26", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 4–6", "item": -1, "group": [3, 5], "status": "pending"}, {"id": "t171", "key": "final|art|2026-12-26|Revise units 1–3", "date": "2026-12-26", "time": "9:00 AM", "subj": "art", "kind": "final", "title": "Revise units 1–3", "status": "pending"}, {"id": "t172", "key": "final|art|2026-12-26|Revise units 4–6", "date": "2026-12-26", "time": "10:30 AM", "subj": "art", "kind": "final", "title": "Revise units 4–6", "status": "pending"}, {"id": "t173", "key": "final|mat|2026-12-26|Revise unit 1", "date": "2026-12-26", "time": "12:00 PM", "subj": "mat", "kind": "final", "title": "Revise unit 1", "status": "pending"}, {"id": "t174", "key": "final|wat|2026-12-26|Revise unit 1", "date": "2026-12-26", "time": "4:00 PM", "subj": "wat", "kind": "final", "title": "Revise unit 1", "status": "pending"}, {"id": "t274", "key": "rev|41", "date": "2026-12-27", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 7–9", "item": -1, "group": [6, 8], "status": "pending"}, {"id": "t175", "key": "final|mat|2026-12-27|Revise unit 2", "date": "2026-12-27", "time": "9:00 AM", "subj": "mat", "kind": "final", "title": "Revise unit 2", "status": "pending"}, {"id": "t176", "key": "final|mat|2026-12-27|Revise unit 3", "date": "2026-12-27", "time": "10:30 AM", "subj": "mat", "kind": "final", "title": "Revise unit 3", "status": "pending"}, {"id": "t177", "key": "final|wat|2026-12-27|Revise unit 2", "date": "2026-12-27", "time": "12:00 PM", "subj": "wat", "kind": "final", "title": "Revise unit 2", "status": "pending"}, {"id": "t178", "key": "final|art|2026-12-27|Exam eve: summary sheet, early sleep", "date": "2026-12-27", "time": "8:30 PM", "subj": "art", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}, {"id": "t275", "key": "rev|42", "date": "2026-12-28", "time": "6:00 AM · 15 min", "subj": "isl", "kind": "review", "title": "Recite all 9 from memory · ask someone to listen", "item": -1, "group": [0, 8], "status": "pending"}, {"id": "t179", "key": "final|mat|2026-12-28|Revise unit 4", "date": "2026-12-28", "time": "4:00 PM", "subj": "mat", "kind": "final", "title": "Revise unit 4", "status": "pending"}, {"id": "t180", "key": "final|mat|2026-12-28|Timed past paper", "date": "2026-12-28", "time": "5:30 PM", "subj": "mat", "kind": "final", "title": "Timed past paper", "status": "pending"}, {"id": "t276", "key": "rev|43", "date": "2026-12-29", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 1–3", "item": -1, "group": [0, 2], "status": "pending"}, {"id": "t181", "key": "final|mat|2026-12-29|Mark the paper · fix weak points", "date": "2026-12-29", "time": "9:00 AM", "subj": "mat", "kind": "final", "title": "Mark the paper · fix weak points", "status": "pending"}, {"id": "t182", "key": "final|mat|2026-12-29|End-of-unit review exercises", "date": "2026-12-29", "time": "10:30 AM", "subj": "mat", "kind": "final", "title": "End-of-unit review exercises", "status": "pending"}, {"id": "t183", "key": "final|wat|2026-12-29|Timed past paper", "date": "2026-12-29", "time": "12:00 PM", "subj": "wat", "kind": "final", "title": "Timed past paper", "status": "pending"}, {"id": "t184", "key": "final|mat|2026-12-29|Exam eve: summary sheet, early sleep", "date": "2026-12-29", "time": "8:30 PM", "subj": "mat", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}, {"id": "t277", "key": "rev|44", "date": "2026-12-30", "time": "6:00 AM · 15 min", "subj": "isl", "kind": "review", "title": "Review items 4–6", "item": -1, "group": [3, 5], "status": "pending"}, {"id": "t185", "key": "final|wat|2026-12-30|Summary of both units · maps and dates", "date": "2026-12-30", "time": "4:00 PM", "subj": "wat", "kind": "final", "title": "Summary of both units · maps and dates", "status": "pending"}, {"id": "t186", "key": "final|wat|2026-12-30|Exam eve: summary sheet, early sleep", "date": "2026-12-30", "time": "8:30 PM", "subj": "wat", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}, {"id": "t278", "key": "rev|45", "date": "2026-12-31", "time": "6:00 AM · 15 min", "subj": "isl", "kind": "review", "title": "Review items 7–9", "item": -1, "group": [6, 8], "status": "pending"}, {"id": "t187", "key": "final|ara|2026-12-31|Revise grammar (النحو)", "date": "2026-12-31", "time": "4:00 PM", "subj": "ara", "kind": "final", "title": "Revise grammar (النحو)", "status": "pending"}, {"id": "t188", "key": "final|ara|2026-12-31|Revise morphology (الصرف)", "date": "2026-12-31", "time": "5:30 PM", "subj": "ara", "kind": "final", "title": "Revise morphology (الصرف)", "status": "pending"}, {"id": "t279", "key": "rev|46", "date": "2027-01-01", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Recite all 9 from memory · ask someone to listen", "item": -1, "group": [0, 8], "status": "pending"}, {"id": "t189", "key": "final|ara|2027-01-01|Revise rhetoric (البلاغة)", "date": "2027-01-01", "time": "9:00 AM", "subj": "ara", "kind": "final", "title": "Revise rhetoric (البلاغة)", "status": "pending"}, {"id": "t190", "key": "final|ara|2027-01-01|Revise prosody (العروض)", "date": "2027-01-01", "time": "10:30 AM", "subj": "ara", "kind": "final", "title": "Revise prosody (العروض)", "status": "pending"}, {"id": "t191", "key": "final|ara|2027-01-01|Revise المؤنس lessons 1–9", "date": "2027-01-01", "time": "12:00 PM", "subj": "ara", "kind": "final", "title": "Revise المؤنس lessons 1–9", "status": "pending"}, {"id": "t192", "key": "final|bio|2027-01-01|Revise unit 1", "date": "2027-01-01", "time": "4:00 PM", "subj": "bio", "kind": "final", "title": "Revise unit 1", "status": "pending"}, {"id": "t280", "key": "rev|47", "date": "2027-01-02", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 1–3", "item": -1, "group": [0, 2], "status": "pending"}, {"id": "t193", "key": "final|ara|2027-01-02|Revise المؤنس lessons 10–17", "date": "2027-01-02", "time": "9:00 AM", "subj": "ara", "kind": "final", "title": "Revise المؤنس lessons 10–17", "status": "pending"}, {"id": "t194", "key": "final|ara|2027-01-02|Timed past paper", "date": "2027-01-02", "time": "10:30 AM", "subj": "ara", "kind": "final", "title": "Timed past paper", "status": "pending"}, {"id": "t195", "key": "final|bio|2027-01-02|Revise unit 2", "date": "2027-01-02", "time": "12:00 PM", "subj": "bio", "kind": "final", "title": "Revise unit 2", "status": "pending"}, {"id": "t196", "key": "final|ara|2027-01-02|Exam eve: summary sheet, early sleep", "date": "2027-01-02", "time": "8:30 PM", "subj": "ara", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}, {"id": "t281", "key": "rev|48", "date": "2027-01-03", "time": "6:00 AM · 15 min", "subj": "isl", "kind": "review", "title": "Review items 4–6", "item": -1, "group": [3, 5], "status": "pending"}, {"id": "t197", "key": "final|isl|2027-01-03|Revise unit 1", "date": "2027-01-03", "time": "4:00 PM", "subj": "isl", "kind": "final", "title": "Revise unit 1", "status": "pending"}, {"id": "t198", "key": "final|isl|2027-01-03|Revise unit 2", "date": "2027-01-03", "time": "5:30 PM", "subj": "isl", "kind": "final", "title": "Revise unit 2", "status": "pending"}, {"id": "t282", "key": "rev|49", "date": "2027-01-04", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Review items 7–9", "item": -1, "group": [6, 8], "status": "pending"}, {"id": "t199", "key": "final|isl|2027-01-04|Revise unit 3", "date": "2027-01-04", "time": "9:00 AM", "subj": "isl", "kind": "final", "title": "Revise unit 3", "status": "pending"}, {"id": "t200", "key": "final|isl|2027-01-04|Revise unit 4", "date": "2027-01-04", "time": "10:30 AM", "subj": "isl", "kind": "final", "title": "Revise unit 4", "status": "pending"}, {"id": "t201", "key": "final|bio|2027-01-04|Revise unit 3", "date": "2027-01-04", "time": "12:00 PM", "subj": "bio", "kind": "final", "title": "Revise unit 3", "status": "pending"}, {"id": "t202", "key": "final|isl|2027-01-04|Recite all verses & Hadith", "date": "2027-01-04", "time": "4:00 PM", "subj": "isl", "kind": "final", "title": "Recite all verses & Hadith", "status": "pending"}, {"id": "t283", "key": "rev|50", "date": "2027-01-05", "time": "8:00 AM · 20 min", "subj": "isl", "kind": "review", "title": "Recite all 9 from memory · ask someone to listen", "item": -1, "group": [0, 8], "status": "pending"}, {"id": "t203", "key": "final|isl|2027-01-05|Revise unit 5", "date": "2027-01-05", "time": "9:00 AM", "subj": "isl", "kind": "final", "title": "Revise unit 5", "status": "pending"}, {"id": "t204", "key": "final|isl|2027-01-05|Revise unit 6", "date": "2027-01-05", "time": "10:30 AM", "subj": "isl", "kind": "final", "title": "Revise unit 6", "status": "pending"}, {"id": "t205", "key": "final|isl|2027-01-05|Timed past paper", "date": "2027-01-05", "time": "12:00 PM", "subj": "isl", "kind": "final", "title": "Timed past paper", "status": "pending"}, {"id": "t206", "key": "final|bio|2027-01-05|Revise unit 4", "date": "2027-01-05", "time": "4:00 PM", "subj": "bio", "kind": "final", "title": "Revise unit 4", "status": "pending"}, {"id": "t207", "key": "final|isl|2027-01-05|Exam eve: summary sheet, early sleep", "date": "2027-01-05", "time": "8:30 PM", "subj": "isl", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}, {"id": "t208", "key": "final|bio|2027-01-06|Revise unit 5", "date": "2027-01-06", "time": "4:00 PM", "subj": "bio", "kind": "final", "title": "Revise unit 5", "status": "pending"}, {"id": "t209", "key": "final|bio|2027-01-06|Timed past paper", "date": "2027-01-06", "time": "5:30 PM", "subj": "bio", "kind": "final", "title": "Timed past paper", "status": "pending"}, {"id": "t210", "key": "final|bio|2027-01-06|Exam eve: summary sheet, early sleep", "date": "2027-01-06", "time": "8:30 PM", "subj": "bio", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}, {"id": "t211", "key": "final|eng|2027-01-08|Revise theme 1", "date": "2027-01-08", "time": "9:00 AM", "subj": "eng", "kind": "final", "title": "Revise theme 1", "status": "pending"}, {"id": "t212", "key": "final|eng|2027-01-08|Revise theme 2", "date": "2027-01-08", "time": "10:30 AM", "subj": "eng", "kind": "final", "title": "Revise theme 2", "status": "pending"}, {"id": "t213", "key": "final|chm|2027-01-08|Revise unit 1", "date": "2027-01-08", "time": "12:00 PM", "subj": "chm", "kind": "final", "title": "Revise unit 1", "status": "pending"}, {"id": "t214", "key": "final|eng|2027-01-09|Revise theme 3", "date": "2027-01-09", "time": "9:00 AM", "subj": "eng", "kind": "final", "title": "Revise theme 3", "status": "pending"}, {"id": "t215", "key": "final|eng|2027-01-09|Revise theme 4", "date": "2027-01-09", "time": "10:30 AM", "subj": "eng", "kind": "final", "title": "Revise theme 4", "status": "pending"}, {"id": "t216", "key": "final|chm|2027-01-09|Revise unit 2", "date": "2027-01-09", "time": "12:00 PM", "subj": "chm", "kind": "final", "title": "Revise unit 2", "status": "pending"}, {"id": "t217", "key": "final|eng|2027-01-10|Grammar review: all four themes", "date": "2027-01-10", "time": "9:00 AM", "subj": "eng", "kind": "final", "title": "Grammar review: all four themes", "status": "pending"}, {"id": "t218", "key": "final|eng|2027-01-10|Timed past paper", "date": "2027-01-10", "time": "10:30 AM", "subj": "eng", "kind": "final", "title": "Timed past paper", "status": "pending"}, {"id": "t219", "key": "final|chm|2027-01-10|Revise unit 3", "date": "2027-01-10", "time": "12:00 PM", "subj": "chm", "kind": "final", "title": "Revise unit 3", "status": "pending"}, {"id": "t220", "key": "final|eng|2027-01-11|Mark the paper · fix weak points", "date": "2027-01-11", "time": "9:00 AM", "subj": "eng", "kind": "final", "title": "Mark the paper · fix weak points", "status": "pending"}, {"id": "t221", "key": "final|eng|2027-01-11|Writing practice: one timed essay", "date": "2027-01-11", "time": "10:30 AM", "subj": "eng", "kind": "final", "title": "Writing practice: one timed essay", "status": "pending"}, {"id": "t222", "key": "final|chm|2027-01-11|Revise unit 4", "date": "2027-01-11", "time": "12:00 PM", "subj": "chm", "kind": "final", "title": "Revise unit 4", "status": "pending"}, {"id": "t223", "key": "final|eng|2027-01-12|Timed past paper 2", "date": "2027-01-12", "time": "9:00 AM", "subj": "eng", "kind": "final", "title": "Timed past paper 2", "status": "pending"}, {"id": "t224", "key": "final|eng|2027-01-12|Exam eve: summary sheet, early sleep", "date": "2027-01-12", "time": "8:30 PM", "subj": "eng", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}, {"id": "t225", "key": "final|chm|2027-01-13|Timed past paper", "date": "2027-01-13", "time": "4:00 PM", "subj": "chm", "kind": "final", "title": "Timed past paper", "status": "pending"}, {"id": "t226", "key": "final|chm|2027-01-14|Mark the paper · fix weak points", "date": "2027-01-14", "time": "9:00 AM", "subj": "chm", "kind": "final", "title": "Mark the paper · fix weak points", "status": "pending"}, {"id": "t227", "key": "final|chm|2027-01-14|Calculations drill: pH, Ka, electrolysis, Born–Haber", "date": "2027-01-14", "time": "10:30 AM", "subj": "chm", "kind": "final", "title": "Calculations drill: pH, Ka, electrolysis, Born–Haber", "status": "pending"}, {"id": "t228", "key": "final|chm|2027-01-15|Organic reactions summary", "date": "2027-01-15", "time": "9:00 AM", "subj": "chm", "kind": "final", "title": "Organic reactions summary", "status": "pending"}, {"id": "t229", "key": "final|chm|2027-01-15|Timed past paper 2", "date": "2027-01-15", "time": "10:30 AM", "subj": "chm", "kind": "final", "title": "Timed past paper 2", "status": "pending"}, {"id": "t230", "key": "final|chm|2027-01-16|Revise all weak topics", "date": "2027-01-16", "time": "9:00 AM", "subj": "chm", "kind": "final", "title": "Revise all weak topics", "status": "pending"}, {"id": "t231", "key": "final|chm|2027-01-16|One-page summary sheet", "date": "2027-01-16", "time": "10:30 AM", "subj": "chm", "kind": "final", "title": "One-page summary sheet", "status": "pending"}, {"id": "t232", "key": "final|chm|2027-01-16|Exam eve: summary sheet, early sleep", "date": "2027-01-16", "time": "8:30 PM", "subj": "chm", "kind": "final", "title": "Exam eve: summary sheet, early sleep", "status": "pending"}]}</script>
+<script id="app">(function(){
+"use strict";
+/* ---------- constants ---------- */
+var START='2026-11-16', END='2026-12-25', CATCH_S='2026-12-24', CATCH_E='2026-12-25', FINAL_S='2026-12-26', FINAL_E='2027-01-16', LAST='2027-01-17', MEMO_E='2027-01-05';
+var EXAMS=[{date:'2026-12-28',subj:'art'},{date:'2026-12-30',subj:'mat'},{date:'2026-12-31',subj:'wat'},{date:'2027-01-03',subj:'ara'},{date:'2027-01-06',subj:'isl'},{date:'2027-01-07',subj:'bio'},{date:'2027-01-13',subj:'eng'},{date:'2027-01-17',subj:'chm'}];
+var EXAM=EXAMS[0].date;
+/* final revision before each exam: [date, subject, title] */
+var FINALS=[["2026-12-26", "art", "Revise units 1–3"], ["2026-12-26", "art", "Revise units 4–6"], ["2026-12-26", "mat", "Revise unit 1"], ["2026-12-26", "wat", "Revise unit 1"], ["2026-12-27", "mat", "Revise unit 2"], ["2026-12-27", "mat", "Revise unit 3"], ["2026-12-27", "wat", "Revise unit 2"], ["2026-12-27", "art", "Exam eve: summary sheet, early sleep"], ["2026-12-28", "mat", "Revise unit 4"], ["2026-12-28", "mat", "Timed past paper"], ["2026-12-29", "mat", "Mark the paper · fix weak points"], ["2026-12-29", "mat", "End-of-unit review exercises"], ["2026-12-29", "wat", "Timed past paper"], ["2026-12-29", "mat", "Exam eve: summary sheet, early sleep"], ["2026-12-30", "wat", "Summary of both units · maps and dates"], ["2026-12-30", "wat", "Exam eve: summary sheet, early sleep"], ["2026-12-31", "ara", "Revise grammar (النحو)"], ["2026-12-31", "ara", "Revise morphology (الصرف)"], ["2027-01-01", "ara", "Revise rhetoric (البلاغة)"], ["2027-01-01", "ara", "Revise prosody (العروض)"], ["2027-01-01", "ara", "Revise المؤنس lessons 1–9"], ["2027-01-01", "bio", "Revise unit 1"], ["2027-01-02", "ara", "Revise المؤنس lessons 10–17"], ["2027-01-02", "ara", "Timed past paper"], ["2027-01-02", "bio", "Revise unit 2"], ["2027-01-02", "ara", "Exam eve: summary sheet, early sleep"], ["2027-01-03", "isl", "Revise unit 1"], ["2027-01-03", "isl", "Revise unit 2"], ["2027-01-04", "isl", "Revise unit 3"], ["2027-01-04", "isl", "Revise unit 4"], ["2027-01-04", "bio", "Revise unit 3"], ["2027-01-04", "isl", "Recite all verses & Hadith"], ["2027-01-05", "isl", "Revise unit 5"], ["2027-01-05", "isl", "Revise unit 6"], ["2027-01-05", "isl", "Timed past paper"], ["2027-01-05", "bio", "Revise unit 4"], ["2027-01-05", "isl", "Exam eve: summary sheet, early sleep"], ["2027-01-06", "bio", "Revise unit 5"], ["2027-01-06", "bio", "Timed past paper"], ["2027-01-06", "bio", "Exam eve: summary sheet, early sleep"], ["2027-01-08", "eng", "Revise theme 1"], ["2027-01-08", "eng", "Revise theme 2"], ["2027-01-08", "chm", "Revise unit 1"], ["2027-01-09", "eng", "Revise theme 3"], ["2027-01-09", "eng", "Revise theme 4"], ["2027-01-09", "chm", "Revise unit 2"], ["2027-01-10", "eng", "Grammar review: all four themes"], ["2027-01-10", "eng", "Timed past paper"], ["2027-01-10", "chm", "Revise unit 3"], ["2027-01-11", "eng", "Mark the paper · fix weak points"], ["2027-01-11", "eng", "Writing practice: one timed essay"], ["2027-01-11", "chm", "Revise unit 4"], ["2027-01-12", "eng", "Timed past paper 2"], ["2027-01-12", "eng", "Exam eve: summary sheet, early sleep"], ["2027-01-13", "chm", "Timed past paper"], ["2027-01-14", "chm", "Mark the paper · fix weak points"], ["2027-01-14", "chm", "Calculations drill: pH, Ka, electrolysis, Born–Haber"], ["2027-01-15", "chm", "Organic reactions summary"], ["2027-01-15", "chm", "Timed past paper 2"], ["2027-01-16", "chm", "Revise all weak topics"], ["2027-01-16", "chm", "One-page summary sheet"], ["2027-01-16", "chm", "Exam eve: summary sheet, early sleep"]];
+var AFTER={
+'2026-12-28':['Well done, Ghada! Art is finished and behind you, so don\u2019t go over your answers worrying. Rest a little, then start Maths calmly. Its exam is in two days.','أحسنتِ يا غادة! انتهى اختبار الفنون وصار خلفك، فلا تراجعي إجاباتك بقلق. استريحي قليلًا ثم ابدئي مراجعة الرياضيات بهدوء، فاختبارها بعد يومين.'],
+'2026-12-30':['Maths is done. Well done! Don\u2019t count mistakes now, you gave it your best. Have lunch and rest, then a light review of Social Studies. That exam is tomorrow.','انتهى اختبار الرياضيات، أحسنتِ! لا تحسبي الأخطاء الآن، فقد بذلتِ جهدك. تناولي غداءك واستريحي، ثم مراجعة خفيفة لهذا وطني فاختباره غدًا.'],
+'2026-12-31':['Three exams done. You are doing brilliantly! Enjoy the weekend a little, then get ready for Arabic on Sunday with the same energy.','ثلاثة اختبارات انتهت، أنتِ رائعة! استمتعي بنهاية الأسبوع قليلًا، ثم استعدّي للعربية يوم الأحد بنفس الهمّة.'],
+'2027-01-03':['Arabic is done. Well done! What is past is past, and the best is ahead. Rest now, then start Islamic Education this afternoon. That exam is on Wednesday.','انتهى اختبار العربية، أحسنتِ! ما مضى لا يعود، والقادم أجمل. ارتاحي الآن ثم ابدئي التربية الإسلامية بعد العصر، واختبارها يوم الأربعاء.'],
+'2027-01-06':['Islamic Education is done. May Allah accept your effort! Rest for an hour, then one last look at Biology. Its exam is tomorrow.','انتهى اختبار التربية الإسلامية، تقبّل الله جهدك! استريحي ساعة، ثم نظرة أخيرة على الأحياء فاختبارها غدًا.'],
+'2027-01-07':['Six exams done! You are so close. Take the rest of today completely off. English is on Wednesday and Chemistry comes after it.','ستة اختبارات انتهت! أنتِ قريبة جدًا. خذي بقية اليوم راحة كاملة، فالإنجليزية يوم الأربعاء وبعدها الكيمياء.'],
+'2027-01-13':['English is done. Well done! Only one exam left: Chemistry on Sunday. Rest today. Tomorrow the final stretch begins.','انتهى اختبار الإنجليزية، أحسنتِ! بقي اختبار واحد فقط: الكيمياء يوم الأحد. استريحي اليوم، وغدًا تبدأ المرحلة الأخيرة.'],
+'2027-01-17':['Congratulations, Ghada! You have finished every exam. We are proud of you and of every hour you worked. Now it is time to rest and celebrate.','مبروك يا غادة! أنهيتِ كل الاختبارات. نحن فخورون بك وبكل ساعة اجتهدتِ فيها. الآن وقت الراحة والفرح.']
+};
+function examOn(d){for(var i=0;i<EXAMS.length;i++)if(EXAMS[i].date===d)return EXAMS[i];return null;}
+var PHASES=[
+  {key:'study',kinds:['old','new'],start:'2026-11-16',end:'2026-12-18',label:'Old + new lessons, mixed every day',short:'Old + New'},
+  {key:'practice',kinds:['practice'],start:'2026-12-19',end:'2026-12-23',label:'Final test practice',short:'Practice'}
+];
+var KINDS=[{key:'old',short:'Old'},{key:'new',short:'New'},{key:'practice',short:'Practice'},{key:'final',short:'Final'}];
+var SCHOOL_S='2026-11-15',SCHOOL_E='2026-12-08';
+var WD_SLOTS=['4:00 PM','5:15 PM','7:30 PM','8:45 PM','9:30 PM'];
+var WE_SLOTS=['9:00 AM','10:30 AM','12:00 PM','4:00 PM','5:30 PM','7:30 PM','8:45 PM'];
+var PRACTICE=['Past exam paper 1 (timed)','Mark paper 1 · list weak topics','Past exam paper 2 (timed)'];
+var REASONS=['Ran out of time','Tired or unwell','School homework or test','Lesson too hard · need help','Family or social event','Distracted (phone)','Other'];
+var MEMO_STEPS=['Read, understand, memorize first half','Memorize second half','Recite the whole text from memory'];
+var KIND_LABEL={old:'Old lesson',new:'New lesson',practice:'Test practice',final:'Final revision',memo:'Memorize',review:'Memorize'};
+var HEAD='<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ghada’s Finals Tracker</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">';
+
+var MSGS=[
+['A good start is half the work. Today is day one, and you showed up.','بداية موفقة يا غادة، والخطوة الأولى هي الأصعب.'],
+['You do not have to study everything today. Just today’s three sessions.','ركّزي على جلسات اليوم فقط، والباقي سيأتي في وقته.'],
+['Small steps every day add up to big results in December.','قليلٌ دائم خيرٌ من كثيرٍ منقطع.'],
+['Here and now, Ghada.','هنا والآن يا غادة'],
+['Every lesson you review now is one less worry in exam week.','كل درس تراجعينه اليوم يخفف عنك يوم الامتحان.'],
+['Mistakes in practice are gifts. They show you exactly what to fix.','الخطأ في التدريب فرصة للتعلّم.'],
+['\u201cFor indeed, with hardship comes ease. Indeed, with hardship comes ease.\u201d (94:5–6)','\u0641\u064e\u0625\u0650\u0646\u0651\u064e \u0645\u064e\u0639\u064e \u0627\u0644\u0652\u0639\u064f\u0633\u0652\u0631\u0650 \u064a\u064f\u0633\u0652\u0631\u064b\u0627 \u060c \u0625\u0650\u0646\u0651\u064e \u0645\u064e\u0639\u064e \u0627\u0644\u0652\u0639\u064f\u0633\u0652\u0631\u0650 \u064a\u064f\u0633\u0652\u0631\u064b\u0627'],
+['One week done. Look at how many ticks you already have.','أسبوع كامل من الجهد، فخورون بك.'],
+['\u201cAnd that his effort is going to be seen, then he will be rewarded with the fullest reward.\u201d (53:40–41)','\u0648\u064e\u0623\u064e\u0646\u0651\u064e \u0633\u064e\u0639\u0652\u064a\u064e\u0647\u064f \u0633\u064e\u0648\u0652\u0641\u064e \u064a\u064f\u0631\u064e\u0649\u0670 \u060c \u062b\u064f\u0645\u0651\u064e \u064a\u064f\u062c\u0652\u0632\u064e\u0627\u0647\u064f \u0627\u0644\u0652\u062c\u064e\u0632\u064e\u0627\u0621\u064e \u0627\u0644\u0652\u0623\u064e\u0648\u0652\u0641\u064e\u0649\u0670'],
+['Your phone can wait 60 minutes. Your future cannot.','أبعدي الهاتف قليلًا، وستنجزين أكثر.'],
+['Drink water, sit up straight, and give this session your full attention.','اشربي الماء وركّزي، أنت قادرة.'],
+['Missed a session? No guilt. Just pick a makeup time and move on.','فاتتك جلسة؟ لا بأس، حدّدي وقتًا لتعويضها.'],
+['You are building a habit, and habits beat motivation.','العادة اليومية أقوى من الحماس المؤقت.'],
+['Explain one idea aloud today as if you were the teacher.','اشرحي فكرة بصوت عالٍ كأنك المعلمة.'],
+['Two weeks in. Halfway through the review season. Keep the pace.','أنتِ في منتصف الطريق، استمري.'],
+['“And say: My Lord, increase me in knowledge.” (20:114)','وَقُل رَّبِّ زِدْنِي عِلْمًا'],
+['Focus beats hours. One focused hour is worth three distracted ones.','ساعة تركيز تعادل ثلاث ساعات تشتت.'],
+['Be proud of the girl who keeps going even on slow days.','افخري بنفسك لأنك تستمرين حتى في الأيام الصعبة.'],
+['Sleep is part of studying. Your brain saves today’s lessons at night.','النوم الجيد يساعد على الحفظ.'],
+['Review what you memorized this morning once more before bed.','راجعي محفوظك قبل النوم ليثبت.'],
+['Celebrate small wins. Every tick on this page is real progress.','احتفلي بكل إنجاز صغير.'],
+['Three weeks of effort. Your future self is already thankful.','ثلاثة أسابيع من الاجتهاد، أحسنت.'],
+['When it feels heavy, do just ten minutes. Starting is the hardest part.','ابدئي بعشر دقائق فقط، والباقي يأتي.'],
+['You are more prepared today than you were yesterday.','أنتِ اليوم أقوى من الأمس.'],
+['Last school day before home study. You handled the school weeks so well.','آخر يوم في المدرسة قبل المذاكرة في البيت، أحسنتِ التحمّل.'],
+['Home days now. More time, so take proper breaks between sessions.','أيام المنزل بدأت، نظّمي وقتك واستريحي بين الجلسات.'],
+['“Allah does not burden a soul beyond that it can bear.” (2:286)','لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا'],
+['Trust the plan. It was built so you finish everything on time.','ثقي بالخطة، فهي مصمَّمة لتنجحي.'],
+['Every expert was once a beginner who did not give up.','كل متميّز كان مبتدئًا لم يستسلم.'],
+['Your hard work is quietly turning into confidence.','جهدك يتحوّل إلى ثقة.'],
+['Read the question twice, answer once. Start practising that habit now.','اقرئي السؤال مرتين قبل الإجابة.'],
+['You have already done more than most people think you can.','لقد أنجزتِ أكثر مما تتوقعين.'],
+['Strong finish on the lessons. Keep going.','اقتربتِ من إنهاء الدروس، استمري.'],
+['Today and tomorrow are the last lesson days. Keep the same energy.','اليوم وغدًا آخر أيام الدروس، استمري بنفس الهمّة.'],
+['All lessons covered by today. That is a huge achievement.','أنهيتِ الدروس، إنجاز كبير!'],
+['Here and now, Ghada.','هنا والآن يا غادة'],
+['Practice week: treat each past paper like the real exam.','أسبوع التدريب: تعاملي مع كل اختبار سابق كأنه الامتحان الحقيقي.'],
+['Keep your summary sheets short. One page per subject is enough.','ورقة ملخص واحدة لكل مادة تكفي.'],
+['“So remember Me; I will remember you.” (2:152)','فَاذْكُرُونِي أَذْكُرْكُمْ'],
+['\u201cAnd that his effort is going to be seen, then he will be rewarded with the fullest reward.\u201d (53:40–41)','\u0648\u064e\u0623\u064e\u0646\u0651\u064e \u0633\u064e\u0639\u0652\u064a\u064e\u0647\u064f \u0633\u064e\u0648\u0652\u0641\u064e \u064a\u064f\u0631\u064e\u0649\u0670 \u060c \u062b\u064f\u0645\u0651\u064e \u064a\u064f\u062c\u0652\u0632\u064e\u0627\u0647\u064f \u0627\u0644\u0652\u062c\u064e\u0632\u064e\u0627\u0621\u064e \u0627\u0644\u0652\u0623\u064e\u0648\u0652\u0641\u064e\u0649\u0670'],
+['Practice week done. Today and tomorrow are for catching up on anything you missed.','انتهى أسبوع التدريب. اليوم والغد لتعويض ما فاتك.'],
+['Last catch-up day. Clear your list, then rest. Exam season starts tomorrow.','آخر يوم تعويض. أنهي ما تبقى ثم استريحي، فموسم الاختبارات يبدأ غدًا.'],
+['Final revision begins: Art first, then Maths and Social Studies. One step at a time.','بدأت المراجعة النهائية: الفنون أولًا ثم الرياضيات وهذا وطني. خطوة بخطوة.'],
+['Art exam tomorrow. Review your terms and artists, then sleep early.','اختبار الفنون غدًا. راجعي المصطلحات والفنانين ونامي مبكرًا.'],
+['Art exam today. Bismillah. Then a calm afternoon of Maths.','بسم الله، اليوم اختبار الفنون، وبعده مراجعة هادئة للرياضيات.'],
+['Maths tomorrow. Practise, check your formulas, and get to bed early.','الرياضيات غدًا. تدربي وراجعي القوانين ونامي مبكرًا.'],
+['Maths exam today. Show every step and check your answers.','اليوم اختبار الرياضيات. اكتبي كل الخطوات وراجعي إجاباتك.'],
+['Social Studies exam today. Three exams done after this.','اليوم اختبار هذا وطني، وبعده تكونين أنهيتِ ثلاثة اختبارات.'],
+['A new year and a new start. Arabic revision today: rhetoric and prosody.','عام جديد وبداية جديدة. مراجعة العربية اليوم: البلاغة والعروض.'],
+['Arabic exam tomorrow. Read your summary once, then rest. Sleep early.','اختبار العربية غدًا. راجعي الملخص مرة واحدة ثم استريحي ونامي مبكرًا.'],
+['Arabic exam today. Bismillah. Read each question twice and manage your time.','بسم الله، اليوم اختبار العربية. اقرئي كل سؤال مرتين ونظّمي وقتك.'],
+['Halfway through the exams. Focus on Islamic Education and keep your verses fresh.','أنتِ في منتصف الاختبارات. ركّزي على التربية الإسلامية وراجعي محفوظك.'],
+['Islamic Education tomorrow. Recite your verses and Hadith once more, then sleep early.','التربية الإسلامية غدًا. سمّعي الآيات والأحاديث مرة أخيرة ونامي مبكرًا.'],
+['Islamic Education exam today. \u201cMy Lord, expand for me my breast.\u201d (20:25)','\u0631\u064e\u0628\u0651\u0650 \u0627\u0634\u0652\u0631\u064e\u062d\u0652 \u0644\u0650\u064a \u0635\u064e\u062f\u0652\u0631\u0650\u064a · بالتوفيق في اختبار التربية الإسلامية'],
+['Biology exam today. You have revised every unit. Trust your preparation.','اليوم اختبار الأحياء. راجعتِ كل الوحدات، فثقي بنفسك.'],
+['Six exams done. Two to go: English and Chemistry.','انتهت ستة اختبارات، وبقي اختباران: الإنجليزية والكيمياء.'],
+['English and Chemistry revision. Read one English text aloud today.','مراجعة الإنجليزية والكيمياء. اقرئي نصًا إنجليزيًا بصوت عالٍ اليوم.'],
+['Grammar check: past simple, past perfect, first conditional, present perfect.','مراجعة القواعد: الماضي البسيط، الماضي التام، الشرط الأول، المضارع التام.'],
+['Write one timed essay today. Plan for five minutes before you start.','اكتبي مقالًا بوقت محدد اليوم، وخططي له خمس دقائق قبل البدء.'],
+['English exam tomorrow. Light review and an early night.','اختبار الإنجليزية غدًا. مراجعة خفيفة ونوم مبكر.'],
+['English exam today. Read the questions carefully and leave time to check.','اليوم اختبار الإنجليزية. اقرئي الأسئلة بعناية واتركي وقتًا للمراجعة.'],
+['Last stretch: Chemistry only now. Start with the calculations.','المرحلة الأخيرة: الكيمياء فقط. ابدئي بالمسائل الحسابية.'],
+['Organic reactions: draw them, don\u2019t just read them.','التفاعلات العضوية: ارسميها ولا تكتفي بقراءتها.'],
+['Last exam tomorrow. Light review, early sleep. You have almost done it.','آخر اختبار غدًا. مراجعة خفيفة ونوم مبكر. أوشكتِ على النهاية.'],
+['Chemistry exam today, your last one. Bismillah. We are so proud of you, Ghada.','اليوم اختبار الكيمياء، آخر اختبار. بسم الله، نحن فخورون بك جدًا يا غادة.']
+];
+/* ---------- date helpers ---------- */
+function D(s){var p=s.split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));}
+function S(d){return d.toISOString().slice(0,10);}
+function add(s,n){var d=D(s);d.setUTCDate(d.getUTCDate()+n);return S(d);}
+function dow(s){return D(s).getUTCDay();}
+function weekend(s){var w=dow(s);return w===5||w===6;}
+function schoolDay(s){return !weekend(s)&&s>=SCHOOL_S&&s<=SCHOOL_E;}
+function range(a,b){var o=[];for(var x=a;x<=b;x=add(x,1))o.push(x);return o;}
+function diff(a,b){return Math.round((D(b)-D(a))/864e5);}
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var DOWL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function localToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function phaseOf(s){for(var i=0;i<PHASES.length;i++)if(s>=PHASES[i].start&&s<=PHASES[i].end)return PHASES[i];if(s>=CATCH_S&&s<=CATCH_E)return{key:'catch',label:'Catch-up & light review',short:'Catch-up'};var ex=examOn(s);if(ex)return{key:'exam',label:'Exam day',short:'Exam'};if(s>=FINAL_S&&s<=FINAL_E)return{key:'final',label:'Exam season: final revision',short:'Exams'};return null;}
+
+/* ---------- planner ---------- */
+function quotas(days,n){
+  var caps=days.map(function(d){return schoolDay(d)?3:6;});
+  var tot=caps.reduce(function(a,b){return a+b;},0),cum=0,prev=0;
+  return caps.map(function(c){cum+=c;var r=Math.round(n*cum/tot);var q=r-prev;prev=r;return q;});
+}
+function spread(items,days,mk){
+  if(!days.length||!items.length)return[];
+  var q=quotas(days,items.length),queues={},order=[],init={},kinit={},krem={};
+  items.forEach(function(it){var qk=it.subj+'|'+it.kind;if(!queues[qk]){queues[qk]=[];order.push(qk);}queues[qk].push(it);kinit[it.kind]=(kinit[it.kind]||0)+1;});
+  order.forEach(function(s){init[s]=queues[s].length;});
+  Object.keys(kinit).forEach(function(k){krem[k]=kinit[k];});
+  var out=[],last={};
+  days.forEach(function(d,i){
+    var today={},used={},slots=schoolDay(d)?WD_SLOTS:WE_SLOTS;
+    for(var k=0;k<q[i];k++){
+      var live=Object.keys(krem).filter(function(x){return krem[x]>0;});
+      if(!live.length)break;
+      live.sort(function(a,b){var ua=used[a]||0,ub=used[b]||0;if(ua!==ub)return ua-ub;return krem[b]/kinit[b]-krem[a]/kinit[a];});
+      var kind=live[0];
+      var c=order.filter(function(s){return queues[s].length&&s.split('|')[1]===kind;});
+      c=c.map(function(x){return x.split('|')[0];});
+      c.sort(function(a,b){a=a;b=b;var qa=queues[a+'|'+kind],qb=queues[b+'|'+kind];
+        var pa=(today[a]?2:0)+(last[a]?1:0),pb=(today[b]?2:0)+(last[b]?1:0);
+        if(pa!==pb)return pa-pb;
+        var ra=qa.length/init[a+'|'+kind],rb=qb.length/init[b+'|'+kind];
+        if(ra!==rb)return rb-ra;
+        return qb.length-qa.length;
+      });
+      var s=c[0],it=queues[s+'|'+kind].shift();today[s]=1;used[kind]=(used[kind]||0)+1;krem[kind]--;
+      out.push(mk(it,d,slots[k]||'Extra'));
+    }
+    last=today;
+  });
+  return out;
+}
+function memoPlan(memo){
+  /* fixed by calendar: 3 days per item, then review rounds */
+  var days=range(START,MEMO_E),out=[],n=memo.length,groups=[];
+  for(var g=0;g<n;g+=3)groups.push([g,Math.min(g+2,n-1)]);
+  days.forEach(function(d,i){
+    var t;
+    if(i<n*3){var it=Math.floor(i/3),st=i%3;t={key:'memo|'+it+'|'+st,item:it,title:MEMO_STEPS[st]};}
+    else{var r=(i-n*3)%(groups.length+1);
+      if(r<groups.length)t={key:'rev|'+i,item:-1,group:groups[r],title:'Review items '+(groups[r][0]+1)+'–'+(groups[r][1]+1)};
+      else t={key:'rev|'+i,item:-1,group:[0,n-1],title:'Recite all '+n+' from memory · ask someone to listen'};}
+    t.date=d;t.time=schoolDay(d)?'5:45 AM · 15 min':(examOn(d)?'6:00 AM · 15 min':'8:00 AM · 20 min');t.kind=t.item>=0?'memo':'review';t.subj='isl';
+    out.push(t);
+  });
+  return out;
+}
+function buildPlan(st,from){
+  var kept=st.tasks?st.tasks.filter(function(t){return t.status!=='pending'||t.date<from;}):[];
+  var have={};kept.forEach(function(t){have[t.key]=1;});
+  var seq=st.seq||1,tasks=kept.slice();
+  function mk(it,d,time){return{id:'t'+(seq++),key:it.key,date:d,time:time,subj:it.subj,kind:it.kind,title:it.title,status:'pending'};}
+  PHASES.forEach(function(ph){
+    var items=[];
+    st.subjects.forEach(function(sb){
+      ph.kinds.forEach(function(kd){
+        var list=kd==='practice'?PRACTICE:(sb[kd]||[]);
+        list.forEach(function(title){var key=sb.id+'|'+kd+'|'+title;if(!have[key])items.push({key:key,subj:sb.id,kind:kd,title:title});});
+      });
+    });
+    var s=ph.start<from?from:ph.start,days=s<=ph.end?range(s,ph.end):[];
+    if(!days.length){var cs=CATCH_S<from?from:CATCH_S;days=cs<=CATCH_E?range(cs,CATCH_E):[];}
+    tasks=tasks.concat(spread(items,days,mk));
+  });
+  var cnt={};
+  FINALS.forEach(function(f){
+    var key='final|'+f[1]+'|'+f[0]+'|'+f[2];if(have[key]||f[0]<from)return;
+    var k=cnt[f[0]]=(cnt[f[0]]||0),slots=examOn(f[0])?['4:00 PM','5:30 PM','7:30 PM']:WE_SLOTS;cnt[f[0]]++;
+    if(/^Exam eve/.test(f[2]))slots=['8:30 PM','8:30 PM','8:30 PM','8:30 PM','8:30 PM'];
+    tasks.push({id:'t'+(seq++),key:key,date:f[0],time:slots[k]||'Extra',subj:f[1],kind:'final',title:f[2],status:'pending'});
+  });
+  memoPlan(st.memo).forEach(function(m){
+    if(have[m.key]||m.date<from)return;
+    tasks.push({id:'t'+(seq++),key:m.key,date:m.date,time:m.time,subj:'isl',kind:m.kind,title:m.title,item:m.item,group:m.group,status:'pending'});
+  });
+  st.seq=seq;
+  tasks.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.kind==='memo'||a.kind==='review'?-1:0)-(b.kind==='memo'||b.kind==='review'?-1:0);});
+  st.tasks=tasks;return st;
+}
+if(typeof module!=='undefined'&&typeof window==='undefined'){module.exports={buildPlan:buildPlan,PHASES:PHASES,KINDS:KINDS};return;}
+
+/* ---------- state & saving ---------- */
+var stateEl=document.getElementById('state');
+var state=JSON.parse(stateEl.textContent);
+try{var ls=JSON.parse(localStorage.getItem('ghada-tracker')||'null');if(ls&&ls.plan===state.plan&&ls.savedAt>(state.savedAt||0))state=ls;else if(ls&&ls.plan!==state.plan)localStorage.removeItem('ghada-tracker');}catch(e){}
+var lang=null;try{lang=localStorage.getItem('ghada-lang');}catch(e){}
+if(lang!=='en'&&lang!=='ar')lang=state.lang||null;
+function L(en,ar){return lang==='ar'?ar:en;}
+var artifact=null,canWrite=true,saveTimer=null,saveKey='';
+function docFor(st){
+  var css=document.getElementById('st').textContent,app=document.getElementById('app').textContent;
+  var js=JSON.stringify(st).replace(/</g,'\\u003c');
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>'+HEAD+'<style id="st">'+css+'</style></head>\n<body><div id="root"></div>\n<script id="state" type="application/json">'+js+'<\/script>\n<script id="app">'+app+'<\/script>\n</body>\n</html>\n';
+}
+var SAVE_TXT={saving:['Saving…','جارٍ الحفظ…'],local:['Saved on this device','حُفظ على هذا الجهاز'],ro:['View only','للعرض فقط'],saved:['Saved','تم الحفظ'],ro2:['View only · changes are not kept','للعرض فقط · لن تُحفظ التغييرات'],conf:['Updated elsewhere · reloading','تم التحديث من جهاز آخر · إعادة تحميل'],err:['Could not save · try again','تعذّر الحفظ · حاولي مرة أخرى']};
+function save(){
+  state.savedAt=Date.now();
+  try{localStorage.setItem('ghada-tracker',JSON.stringify(state));}catch(e){}
+  setSave('saving');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(function(){
+    if(!artifact){setSave(canWrite?'local':'ro');return;}
+    artifact.publish(docFor(state)).then(function(){setSave('saved');},function(err){
+      var m=String(err&&(err.code||err.message)||err);
+      if(/not_granted|not_writer/.test(m)){canWrite=false;setSave('ro2');}
+      else if(/conflict/.test(m))setSave('conf');
+      else setSave('err');
+    });
+  },1200);
+}
+function saveText(){var x=SAVE_TXT[saveKey];return x?L(x[0],x[1]):'';}
+function setSave(k){saveKey=k;var el=document.getElementById('savebadge');if(el)el.textContent=saveText();}
+if(window.claude&&window.claude.use){window.claude.use('artifact').then(function(a){artifact=a;},function(){});}
+
+/* ---------- language ---------- */
+var MON_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var DOW_AR=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+var DOWS_AR=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+var PRACTICE_AR=['اختبار سابق 1 (بوقت محدد)','تصحيح الاختبار 1 · تحديد نقاط الضعف','اختبار سابق 2 (بوقت محدد)','تصحيح الاختبار 2 · معالجة نقاط الضعف','اختبار سابق 3 (بوقت محدد)','تصحيح الاختبار 3 · تحديد نقاط الضعف','مراجعة جميع نقاط الضعف','ورقة ملخص من صفحة واحدة'];
+var REASONS_AR=['نفد الوقت','تعب أو مرض','واجبات أو اختبار مدرسي','الدرس صعب · أحتاج مساعدة','مناسبة عائلية أو اجتماعية','تشتت (الهاتف)','سبب آخر'];
+var MEMO_AR=['قراءة وفهم وحفظ النصف الأول','حفظ النصف الثاني','تسميع النص كاملًا غيبًا'];
+var KIND_AR={old:'درس قديم',new:'درس جديد',practice:'تدريب على الاختبار',final:'مراجعة نهائية',memo:'حفظ',review:'مراجعة الحفظ'};
+var KSHORT_AR={old:'قديم',new:'جديد',practice:'تدريب',final:'مراجعة'};
+var FINAL_AR={'End-of-unit review exercises':'تمارين مراجعة نهاية الوحدات','Summary of both units · maps and dates':'ملخص الوحدتين · الخرائط والتواريخ','Grammar review: all four themes':'مراجعة القواعد في المحاور الأربعة','Writing practice: one timed essay':'تدريب على الكتابة: مقال واحد بوقت محدد','Revise grammar (النحو)':'مراجعة النحو','Revise morphology (الصرف)':'مراجعة الصرف','Revise rhetoric (البلاغة)':'مراجعة البلاغة','Revise prosody (العروض)':'مراجعة العروض','Revise المؤنس lessons 1–9':'مراجعة دروس المؤنس 1–9','Revise المؤنس lessons 10–17':'مراجعة دروس المؤنس 10–17','Timed past paper':'اختبار سابق بوقت محدد','Timed past paper 2':'اختبار سابق 2 بوقت محدد','Timed past paper 3':'اختبار سابق 3 بوقت محدد','Mark the paper · fix weak points':'تصحيح الاختبار · معالجة نقاط الضعف','Recite all verses & Hadith':'تسميع جميع الآيات والأحاديث','Exam eve: summary sheet, early sleep':'ليلة الاختبار: ورقة الملخص ونوم مبكر','Calculations drill: pH, Ka, electrolysis, Born–Haber':'تدريب على المسائل الحسابية: pH وKa والتحليل الكهربائي وبورن-هابر','Organic reactions summary':'ملخص التفاعلات العضوية','Quick quiz on units 1–2':'اختبار قصير على الوحدتين 1–2','Revise all weak topics':'مراجعة جميع نقاط الضعف','One-page summary sheet':'ورقة ملخص من صفحة واحدة'};
+var PH_AR={final:['الاختبارات','موسم الاختبارات: مراجعة نهائية'],exam:['اختبار','يوم اختبار'],study:['قديم + جديد','دروس قديمة وجديدة مدمجة يوميًا'],practice:['تدريب','التدريب على الاختبارات النهائية'],catch:['تعويض','يوم تعويض ومراجعة خفيفة'],exam:['اختبار','يوم اختبار']};
+function nice(s){var d=D(s);return lang==='ar'?DOW_AR[d.getUTCDay()]+' '+d.getUTCDate()+' '+MON_AR[d.getUTCMonth()]:DOW[d.getUTCDay()]+' '+d.getUTCDate()+' '+MON[d.getUTCMonth()];}
+function dm(s){var d=D(s);return d.getUTCDate()+' '+(lang==='ar'?MON_AR:MON)[d.getUTCMonth()];}
+function niceLong(s){var d=D(s);return lang==='ar'?DOW_AR[d.getUTCDay()]+'، '+d.getUTCDate()+' '+MON_AR[d.getUTCMonth()]:DOWL[d.getUTCDay()]+', '+d.getUTCDate()+' '+MON[d.getUTCMonth()];}
+function tm(s){if(lang!=='ar'||!s)return s||'';return s.replace(/AM/g,'ص').replace(/PM/g,'م').replace('min','دقيقة').replace('Extra','إضافي');}
+function phLabel(ph){return lang==='ar'&&PH_AR[ph.key]?PH_AR[ph.key][1]:ph.label;}
+function phShort(ph){return lang==='ar'&&PH_AR[ph.key]?PH_AR[ph.key][0]:ph.short;}
+function kindLabel(k){return lang==='ar'?KIND_AR[k]:KIND_LABEL[k];}
+function kShort(k){return lang==='ar'?KSHORT_AR[k.key]:k.short;}
+function reasonTxt(r){var i=REASONS.indexOf(r);return lang==='ar'&&i>=0?REASONS_AR[i]:r;}
+function sName(s){return lang==='ar'?(s.ar||s.name):s.name;}
+function stepTxt(t){var i=MEMO_STEPS.indexOf(t.title);return lang==='ar'&&i>=0?MEMO_AR[i]:t.title;}
+function reviewTxt(t){
+  if(lang!=='ar')return t.title;
+  var m=/^Review items (\d+)–(\d+)/.exec(t.title);if(m)return 'مراجعة النصوص '+m[1]+'–'+m[2];
+  if(/^Recite all/.test(t.title))return 'تسميع النصوص كلها غيبًا · اطلبي من أحد أن يستمع';
+  return t.title;
+}
+function applyDir(){document.documentElement.lang=lang==='ar'?'ar':'en';document.documentElement.dir=lang==='ar'?'rtl':'ltr';}
+function setLang(l){lang=l;try{localStorage.setItem('ghada-lang',l);}catch(e){}if(state.lang!==l){state.lang=l;save();}applyDir();render();}
+
+/* ---------- ui state ---------- */
+var TABS=[['today','Day plan','خطة اليوم'],['calendar','Calendar','التقويم'],['subjects','Subjects','المواد'],['memorize','Memorization','الحفظ'],['makeup','Missed & makeup','الفائت والتعويض'],['lessons','Edit lessons','تعديل الدروس']];
+function tab(){var h=(location.hash||'').slice(1);return TABS.some(function(t){return t[0]===h;})?h:'today';}
+var sel=null;try{sel=sessionStorage.getItem('selDay');}catch(e){}
+if(!sel){var lt=localToday();sel=lt<START?START:lt>LAST?LAST:lt;}
+var openForm=null,msgOpen=false;
+function msgDay(){var d=today();return d<START?START:d>LAST?LAST:d;}
+function afterNow(){var md=msgDay(),n=new Date();return !!(AFTER[md]&&md===today()&&(n.getHours()*60+n.getMinutes())>=690);}
+function msgKey(){return msgDay()+(afterNow()?'-after':'');}
+function seen(){try{return localStorage.getItem('ghada-msg-seen')===msgKey();}catch(e){return false;}}
+function setSel(d){sel=d;try{sessionStorage.setItem('selDay',d);}catch(e){}}
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function subj(id){for(var i=0;i<state.subjects.length;i++)if(state.subjects[i].id===id)return state.subjects[i];return{name:id,ar:'',color:'#888'};}
+function isDone(t){return t.status==='done'||t.status==='madeup';}
+function byId(id){for(var i=0;i<state.tasks.length;i++)if(state.tasks[i].id===id)return state.tasks[i];}
+function tasksOn(d){return state.tasks.filter(function(t){return t.date===d;});}
+function makeupsOn(d){return state.tasks.filter(function(t){return t.status==='missed'&&t.makeupDate===d;});}
+function today(){return localToday();}
+function load(d){return tasksOn(d).filter(function(t){return t.kind!=='memo'&&t.kind!=='review';}).length+makeupsOn(d).length;}
+function suggest(t){
+  var ex=EXAMS.filter(function(e){return e.subj===t.subj;})[0],best=null,from=add(t.date,1),lim=t.date>=FINAL_S&&ex?add(ex.date,-1):CATCH_E;if(from<today())from=today();if(from>lim)from=lim;
+  for(var i=0;i<5;i++){var d=add(from,i);if(d>lim)break;var l=load(d)-(schoolDay(d)?0:2);if(!best||l<best.l)best={d:d,l:l};}
+  var d0=best?best.d:lim;return{date:d0,time:schoolDay(d0)?'8:45 PM':'6:30 PM'};
+}
+function title(t){
+  if(t.kind==='memo'){var m=state.memo[t.item];return m?m.title+' · '+m.lesson:'#'+(t.item+1);}
+  if(t.kind==='review')return reviewTxt(t);
+  if(t.kind==='practice'&&lang==='ar'){var i=PRACTICE.indexOf(t.title);if(i>=0)return PRACTICE_AR[i];}
+  if(t.kind==='final'){var un=unitName(t);if(lang==='ar'){if(FINAL_AR[t.title])return FINAL_AR[t.title];var a=/^Revise lessons (.+)$/.exec(t.title);if(a)return 'مراجعة الدروس '+a[1];var b=/^Revise unit (\d+)$/.exec(t.title);if(b)return 'مراجعة الوحدة '+b[1]+(un?': '+un:'');var c=/^Revise theme (\d+)$/.exec(t.title);if(c)return 'مراجعة المحور '+c[1]+(un?': '+un:'');var e=/^Revise units (.+)$/.exec(t.title);if(e)return 'مراجعة الوحدات '+e[1];}else if(un)return t.title+': '+un;}
+  return t.title;
+}
+function unitName(t){var m=/^Revise (?:unit|theme) (\d+)$/.exec(t.title),s=subj(t.subj);return m&&s.units?s.units[+m[1]-1]||'':'';}
+function pct(a,b){return b?Math.round(100*a/b):0;}
+
+/* ---------- timer state ---------- */
+var TKEY='ghada-timer',audio=null;
+function tSet(o){tState=o;try{if(o)localStorage.setItem(TKEY,JSON.stringify(o));else localStorage.removeItem(TKEY);}catch(e){}}
+var tState=null;try{tState=JSON.parse(localStorage.getItem(TKEY)||'null');}catch(e){}
+function durFor(t){var m=/(\d+) min/.exec(t.time||'');if(m)return +m[1];if(/timed|Timed/.test(t.title))return 180;if(t.kind==='practice'||t.kind==='final')return 60;return 50;}
+function leftMs(){if(!tState)return 0;return tState.left!=null?tState.left:Math.max(0,tState.end-Date.now());}
+function fmt(ms){var s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):String(m))+':'+String(x).padStart(2,'0');}
+function startTimer(t){try{var C=window.AudioContext||window.webkitAudioContext;if(C&&!audio)audio=new C();if(audio&&audio.resume)audio.resume();}catch(e){}var ms=durFor(t)*60000;tSet({id:t.id,total:ms,end:Date.now()+ms,left:null,done:false});drawTimer();}
+function beep(){try{var C=window.AudioContext||window.webkitAudioContext;if(!audio&&C)audio=new C();if(!audio)return;[0,0.4,0.8].forEach(function(o){var os=audio.createOscillator(),g=audio.createGain(),t0=audio.currentTime+o;os.frequency.value=880;os.connect(g);g.connect(audio.destination);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.3,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.3);os.start(t0);os.stop(t0+0.32);});}catch(e){}}
+var bar=document.createElement('div');bar.id='timerbar';bar.setAttribute('role','region');bar.setAttribute('aria-label','Session timer');document.body.appendChild(bar);
+
+function isMorning(){var h=new Date().getHours();return h>=4&&h<12;}
+function greet(){return isMorning()?L('Good morning, beautiful','صباح الخير يا جميلة'):L('Good evening, beautiful','مساء الخير يا جميلة');}
+function clockHTML(){
+  var n=new Date(),h=n.getHours(),mi=String(n.getMinutes()).padStart(2,'0'),se=String(n.getSeconds()).padStart(2,'0'),pm=h>=12,h12=h%12||12;
+  var ld=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+  return '<span class="ck-t" dir="ltr">'+h12+':'+mi+'<span class="ck-s">:'+se+'</span> <span class="ck-ap">'+(lang==='ar'?(pm?'م':'ص'):(pm?'PM':'AM'))+'</span></span><span class="ck-d">'+nice(ld)+'</span>';
+}
+var lastKey=null;setInterval(function(){var c=document.getElementById('clock');if(c)c.innerHTML=clockHTML();var k=msgKey()+(isMorning()?'m':'e');if(lastKey!==null&&k!==lastKey&&!openForm)render();lastKey=k;},1000);
+/* ---------- render ---------- */
+var root=document.getElementById('root');
+function langSwitch(){
+  return '<div class="lang" role="group" aria-label="Language / اللغة"><button data-a="lang" data-l="en" class="'+(lang==='en'?'on':'')+'" aria-pressed="'+(lang==='en')+'">English</button><button data-a="lang" data-l="ar" class="'+(lang==='ar'?'on':'')+'" aria-pressed="'+(lang==='ar')+'" lang="ar">العربية</button></div>';
+}
+function render(){
+  if(!lang){
+    root.innerHTML='<div class="chooser"><h1>Choose your language</h1><h1 lang="ar" dir="rtl">اختاري لغتك</h1><p class="hint">You can change it any time from the top of the page. · يمكنك تغييرها في أي وقت من أعلى الصفحة.</p><div class="chs"><button class="b big" data-a="lang" data-l="en">English</button><button class="b big" data-a="lang" data-l="ar" lang="ar">العربية</button></div></div>';
+    return;
+  }
+  var t=tab(),all=state.tasks,done=all.filter(isDone).length,missed=all.filter(function(x){return x.status==='missed';}).length,
+      nx=EXAMS.filter(function(e){return e.date>today()||(e.date===today()&&!afterNow());})[0],left=nx?diff(today()<START?START:today(),nx.date):0,lt=today(),overdue=all.filter(function(x){return x.status==='pending'&&x.date<lt;}).length;
+  var p=pct(done,all.length);
+  var md=msgDay(),mi=Math.min(Math.max(diff('2026-11-14',md),0),MSGS.length-1),mm=afterNow()?AFTER[md]:MSGS[mi];
+  var h='<div class="topright"><div class="clock" id="clock" aria-live="off">'+clockHTML()+'</div>'+langSwitch()+'<button class="motd'+(seen()?'':' new')+'" data-a="msg" aria-label="'+L('Today’s motivational message','رسالة اليوم التحفيزية')+'"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l2.4 5.6 6.1.5-4.6 4 1.4 6-5.3-3.2-5.3 3.2 1.4-6-4.6-4 6.1-.5z" fill="currentColor"/></svg><span>'+L('Message','رسالتك')+'</span></button></div>';
+  if(msgOpen){
+    var big=lang==='ar'?mm[1]:mm[0],small=lang==='ar'?mm[0]:mm[1];
+    h+='<div class="mo-back" data-a="msgclose"></div><div class="mo" role="dialog" aria-modal="true" aria-labelledby="mot"><div class="mo-top"><span class="eyebrow">'+(afterNow()?L('After the exam · ','بعد الاختبار · '):'')+niceLong(md)+' · '+(nx?Math.max(diff(md,nx.date),0)+' '+L('days to next exam','يومًا على الاختبار القادم'):L('Exams finished','انتهت الاختبارات'))+'</span><button class="b ghost" data-a="msgclose" aria-label="'+L('Close','إغلاق')+'">✕</button></div><h2 id="mot" dir="auto">'+esc(big)+'</h2><p dir="auto" class="mo-ar">'+esc(small)+'</p><p class="hint">'+L('A new message appears every day.','تظهر رسالة جديدة كل يوم.')+'</p></div>';
+  }
+  h+='<header class="top"><div class="brand"><p class="greet" id="greet">'+greet()+'</p><div class="eyebrow">'+L('Grade 12 · Semester 1 finals · 28 Dec – 17 Jan','الصف الثاني عشر · اختبارات الفصل الأول · 28 ديسمبر – 17 يناير')+'</div><h1>'+(lang==='ar'?'متابعة اختبارات '+esc(state.student==='Ghada'?'غادة':state.student):esc(state.student)+'’s Finals Tracker')+'</h1>'+
+    '<div class="phasebar">'+PHASES.map(function(ph){var n=diff(ph.start,ph.end)+1;return '<span class="ph ph-'+ph.key+(lt>=ph.start&&lt<=ph.end?' on':'')+'" style="flex:'+n+'"><b>'+phShort(ph)+'</b> '+dm(ph.start)+' – '+dm(ph.end)+'</span>';}).join('')+'<span class="ph ph-catch" style="flex:4"><b>'+L('Catch-up','تعويض')+'</b> '+dm(CATCH_S)+' – '+dm(CATCH_E)+'</span><span class="ph ph-final'+(lt>=FINAL_S&&lt<=LAST?' on':'')+'" style="flex:19"><b>'+L('Exams','الاختبارات')+'</b> '+dm(EXAMS[0].date)+' – '+dm(LAST)+'</span></div></div>'+
+    '<div class="kpis"><div class="ring" style="--p:'+p+'"><span>'+p+'%</span><small>'+L('done','منجز')+'</small></div>'+
+    '<div class="kpi"><b>'+done+'</b><span>'+L('of '+all.length+' tasks done','من '+all.length+' مهمة منجزة')+'</span></div>'+
+    '<div class="kpi warn"><b>'+missed+'</b><span>'+L('missed · need makeup','فائتة · تحتاج تعويض')+'</span></div>'+
+    '<div class="kpi"><b>'+overdue+'</b><span>'+L('overdue, not marked','متأخرة لم تُحدَّد')+'</span></div>'+
+    (nx?'<div class="kpi exam"><b>'+Math.max(left,0)+'</b><span>'+L('days to next exam: '+sName(subj(nx.subj))+' · '+dm(nx.date),'يومًا على الاختبار القادم: '+sName(subj(nx.subj))+' · '+dm(nx.date))+'</span></div>':'')+'</div></header>';
+  h+=strip();
+  h+='<nav class="tabs" role="tablist">'+TABS.map(function(x){return '<a role="tab" href="#'+x[0]+'" class="'+(x[0]===t?'on':'')+'">'+L(x[1],x[2])+(x[0]==='makeup'&&missed?' <i class="cnt">'+missed+'</i>':'')+'</a>';}).join('')+'<span id="savebadge" class="save">'+esc(saveText())+'</span></nav>';
+  h+='<main>'+({today:vToday,calendar:vCal,subjects:vSubj,memorize:vMemo,makeup:vMake,lessons:vEdit}[t])()+'</main>';
+  root.innerHTML=h;
+}
+function strip(){
+  return '<section class="vstrip" aria-label="'+L('Progress in each subject','التقدم في كل مادة')+'">'+state.subjects.map(function(s){
+    var ts=state.tasks.filter(function(t){return t.subj===s.id&&t.kind!=='memo'&&t.kind!=='review';}),n=ts.length,d=ts.filter(isDone).length,m=ts.filter(function(t){return t.status==='missed';}).length,p=pct(d,n);
+    var ex=EXAMS.filter(function(e){return e.subj===s.id;})[0];
+    var ticks=[],acc=0;KINDS.forEach(function(k,ix){acc+=ts.filter(function(t){return t.kind===k.key;}).length;if(ix<KINDS.length-1&&n)ticks.push('<i class="vt" style="bottom:'+(100*acc/n)+'%" title="'+kShort(k)+'"></i>');});
+    var parts=KINDS.map(function(k){var x=ts.filter(function(t){return t.kind===k.key;});return '<span>'+kShort(k)+' '+x.filter(isDone).length+'/'+x.length+'</span>';}).join('');
+    return '<a class="vp'+(p===100?' full':'')+'" href="#subjects" style="--c:'+s.color+'" title="'+esc(sName(s))+': '+d+'/'+n+'"><b class="vpc">'+p+'%</b>'+
+      '<span class="tube" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+p+'" aria-label="'+esc(sName(s))+'"><span class="fill" style="height:'+p+'%"></span>'+ticks.join('')+'</span>'+
+      '<span class="vpn">'+esc(sName(s))+'</span><small class="vcount">'+d+'/'+n+(m?' · <em>'+m+' '+L('missed','فائتة')+'</em>':'')+'</small>'+(ex?'<small class="vex">'+L('Exam ','الاختبار ')+dm(ex.date)+'</small>':'')+'<small class="vparts">'+parts+'</small></a>';
+  }).join('')+'</section>';
+}
+function chip(t){var s=subj(t.subj);return '<span class="sb" style="--c:'+s.color+'">'+esc(sName(s))+'</span>';}
+function statusPill(t){
+  if(t.status==='done')return '<span class="pill ok">'+L('Done','منجز')+'</span>';
+  if(t.status==='madeup')return '<span class="pill mu">'+L('Made up','تم التعويض')+' '+(t.makeupDate?dm(t.makeupDate):'')+'</span>';
+  if(t.status==='missed')return '<span class="pill bad">'+L('Not done','لم يُنجز')+'</span>';
+  if(t.date<today())return '<span class="pill late">'+L('Overdue','متأخر')+'</span>';
+  return '';
+}
+function row(t,ctx){
+  var s=subj(t.subj);
+  var h='<li class="task st-'+t.status+'" style="--c:'+s.color+'"><div class="tm">'+esc(tm(ctx==='mk'?t.makeupTime||'':t.time))+'</div><div class="body">'+
+    '<div class="meta">'+chip(t)+'<span class="kind k-'+t.kind+'">'+(ctx==='mk'?L('Makeup · ','تعويض · '):'')+kindLabel(t.kind)+(t.kind==='memo'?' · '+esc(stepTxt(t)):'')+'</span>'+statusPill(t)+(ctx==='mk'?'<span class="from">'+L('planned ','كان مقررًا ')+nice(t.date)+'</span>':'')+'</div>'+
+    '<div class="tt" dir="auto">'+esc(title(t))+'</div>';
+  if(t.status==='missed'&&ctx!=='mk')h+='<div class="why">'+esc(reasonTxt(t.reason||''))+(t.note?' · '+esc(t.note):'')+(t.makeupDate?' → '+L('makeup','التعويض')+' <b>'+nice(t.makeupDate)+' '+esc(tm(t.makeupTime||''))+'</b>':' · <b>'+L('no makeup time set','لم يُحدَّد وقت للتعويض')+'</b>')+'</div>';
+  h+='</div><div class="act">';
+  if(ctx==='mk')h+='<button class="b ok" data-a="madeup" data-id="'+t.id+'">'+L('Done in makeup','أُنجز في التعويض')+'</button><button class="b ghost" data-a="form" data-id="'+t.id+'">'+L('Change','تغيير')+'</button>';
+  else if(t.status==='pending')h+='<button class="b tmr'+(tState&&tState.id===t.id?' run':'')+'" data-a="timer" data-id="'+t.id+'" aria-label="'+L('Start timer','ابدئي المؤقت')+'" title="'+L('Start timer','ابدئي المؤقت')+'">⏱ '+durFor(t)+L(' min',' د')+'</button><button class="b ok" data-a="done" data-id="'+t.id+'">✓ '+L('Done','تم')+'</button><button class="b no" data-a="form" data-id="'+t.id+'">✕ '+L('Not done','لم يتم')+'</button>';
+  else h+='<button class="b ghost" data-a="undo" data-id="'+t.id+'">'+L('Undo','تراجع')+'</button>'+(t.status==='missed'?'<button class="b ghost" data-a="form" data-id="'+t.id+'">'+L('Edit','تعديل')+'</button>':'');
+  h+='</div>';
+  if(openForm===t.id)h+=form(t);
+  return h+'</li>';
+}
+function form(t){
+  var sg=t.makeupDate?{date:t.makeupDate,time:t.makeupTime}:suggest(t),r=t.reason||'';
+  return '<form class="nd" data-id="'+t.id+'"><fieldset><legend>'+L('Why wasn’t it done?','لماذا لم يتم؟')+'</legend><div class="reasons">'+REASONS.map(function(x,i){return '<label class="rc"><input type="radio" name="r" id="r'+t.id+i+'" value="'+esc(x)+'"'+(x===r?' checked':'')+'><span>'+esc(reasonTxt(x))+'</span></label>';}).join('')+'</div></fieldset>'+
+    '<div class="frow"><label for="n'+t.id+'">'+L('Note (optional)','ملاحظة (اختياري)')+'</label><input id="n'+t.id+'" name="note" dir="auto" maxlength="140" value="'+esc(t.note||'')+'" placeholder="'+L('e.g. stuck on Born–Haber cycle questions','مثال: صعوبة في أسئلة دورة بورن-هابر')+'"></div>'+
+    '<div class="frow two"><div><label for="d'+t.id+'">'+L('Makeup day','يوم التعويض')+'</label><input type="date" id="d'+t.id+'" name="md" min="'+add(t.date,1)+'" max="'+FINAL_E+'" value="'+sg.date+'"></div>'+
+    '<div><label for="h'+t.id+'">'+L('Makeup time','وقت التعويض')+'</label><input id="h'+t.id+'" name="mt" value="'+esc(sg.time)+'" maxlength="20"></div></div>'+
+    '<p class="hint">'+L('Suggested: the lightest day soon after. Catch-up days 26–29 Dec are kept free for this.','المقترح: أخف يوم قريب. أيام 26–29 ديسمبر متروكة فارغة للتعويض.')+'</p>'+
+    '<div class="frow btns"><button class="b no" type="submit">'+L('Save as not done','حفظ كغير منجز')+'</button><button class="b ghost" type="button" data-a="close">'+L('Cancel','إلغاء')+'</button></div></form>';
+}
+function vToday(){
+  var d=sel,ph=phaseOf(d),ts=tasksOn(d),mk=makeupsOn(d);
+  var study=ts.filter(function(t){return t.kind!=='memo'&&t.kind!=='review';}),memo=ts.filter(function(t){return t.kind==='memo'||t.kind==='review';});
+  var dn=ts.filter(isDone).length,prevA=L('‹','›'),nextA=L('›','‹');
+  var h='<section class="day"><div class="dayhead"><button class="b ghost nav" data-a="day" data-d="'+add(d,-1)+'"'+(d<=START?' disabled':'')+' aria-label="'+L('Previous day','اليوم السابق')+'">'+prevA+'</button>'+
+    '<div><h2>'+niceLong(d)+(d===today()?' <span class="pill now">'+L('Today','اليوم')+'</span>':'')+'</h2><div class="sub">'+(ph?'<span class="ph-tag ph-'+ph.key+'">'+phLabel(ph)+'</span>':L('Outside the study plan','خارج خطة المذاكرة'))+(ts.length?' · '+L(dn+' of '+ts.length+' done',dn+' من '+ts.length+' منجزة'):'')+(schoolDay(d)?' · '+L('school day: study after 2 PM','يوم دراسي: المذاكرة بعد 2 ظهرًا'):(d<=END?' · '+L('home day: longer study day','يوم في البيت: مذاكرة أطول'):''))+'</div></div>'+
+    '<button class="b ghost nav" data-a="day" data-d="'+add(d,1)+'"'+(d>=LAST?' disabled':'')+' aria-label="'+L('Next day','اليوم التالي')+'">'+nextA+'</button>'+
+    '<label class="jump" for="jump">'+L('Go to','انتقلي إلى')+'</label><input type="date" id="jump" min="'+START+'" max="'+LAST+'" value="'+d+'"><button class="b ghost" data-a="day" data-d="'+(today()<START?START:today()>LAST?LAST:today())+'">'+L('Today','اليوم')+'</button></div>';
+  if(schoolDay(d))h+='<div class="school"><b>'+L('School','المدرسة')+'</b> '+tm('7:00 AM – 2:00 PM')+' <span>· '+L('then lunch &amp; rest until 4:00 PM','ثم الغداء والراحة حتى 4:00 م')+'</span></div>';
+  var ex=examOn(d);if(ex)h+='<div class="examday" style="--c:'+subj(ex.subj).color+'"><b>'+L('Exam today: ','اختبار اليوم: ')+esc(sName(subj(ex.subj)))+'</b> '+tm('8:00 – 11:00 AM')+'<span>'+L('Eat breakfast, take two pens and your ID. Read every question twice. You prepared for this.','تناولي الفطور، وخذي قلمين وبطاقتك. اقرئي كل سؤال مرتين. لقد استعددتِ جيدًا.')+'</span></div>';
+  if(AFTER[d]&&(d<today()||(d===today()&&afterNow())))h+='<div class="afterx"><b>'+L('After the exam','بعد الاختبار')+'</b><p dir="auto">'+esc(lang==='ar'?AFTER[d][1]:AFTER[d][0])+'</p></div>';
+  if(memo.length)h+='<h3>'+L('Verses &amp; Hadith','الآيات والأحاديث')+'</h3><ul class="list">'+memo.map(function(t){return row(t);}).join('')+'</ul>';
+  if(study.length)h+='<h3>'+L('Study sessions','جلسات المذاكرة')+'</h3><ul class="list">'+study.map(function(t){return row(t);}).join('')+'</ul>';
+  if(mk.length)h+='<h3>'+L('Makeup sessions','جلسات التعويض')+'</h3><ul class="list">'+mk.map(function(t){return row(t,'mk');}).join('')+'</ul>';
+  if(!study.length&&!mk.length&&d>=CATCH_S&&d<=CATCH_E)h+='<div class="empty">'+L('Catch-up day. Nothing is planned here so missed sessions can be made up. If you are on track, use it for light review of weak topics.','يوم تعويض. لا توجد جلسات مخططة حتى تعوّضي ما فاتك. إن لم يفتك شيء فراجعي نقاط الضعف مراجعة خفيفة.')+'</div>';
+  if(!ts.length&&!mk.length&&!(d>=CATCH_S&&d<=CATCH_E)&&!ex)h+='<div class="empty">'+L('No sessions on this day.','لا توجد جلسات في هذا اليوم.')+'</div>';
+  return h+'</section>';
+}
+function vCal(){
+  var first='2026-11-08',h='<section><p class="lede">'+L('Each bar is one session in its subject colour. Solid = done, outlined = still to do, red stripes = not done. Tap a day to open it.','كل شريط جلسة بلون مادتها. ممتلئ = منجز، مفرّغ = لم يحن بعد، خطوط حمراء = لم يُنجز. اضغطي على أي يوم لفتحه.')+'</p><div class="cal"><div class="cw">'+(lang==='ar'?DOWS_AR:DOW).map(function(x){return '<span>'+x+'</span>';}).join('')+'</div><div class="grid">';
+  for(var i=0;i<77;i++){
+    var d=add(first,i),ts=tasksOn(d),ph=phaseOf(d),out=d<START||d>LAST,mk=makeupsOn(d).length,dd=D(d);
+    h+='<button class="cell'+(out?' out':'')+(ph?' ph-'+ph.key:'')+(d===today()?' now':'')+(d===sel?' sel':'')+'" data-a="open" data-d="'+d+'"'+(out?' disabled':'')+'><span class="dn">'+dd.getUTCDate()+(dd.getUTCDate()===1||i===0?' '+(lang==='ar'?MON_AR:MON)[dd.getUTCMonth()]:'')+'</span>';
+    var ex=examOn(d);if(ex)h+='<span class="ex">'+L('EXAM','اختبار')+' · '+esc(sName(subj(ex.subj)))+'</span>';
+    h+='<span class="bars">'+ts.map(function(t){return '<i class="bar s-'+t.status+(t.status==='pending'&&t.date<today()?' late':'')+'" style="--c:'+subj(t.subj).color+'" title="'+esc(sName(subj(t.subj))+': '+title(t))+'"></i>';}).join('')+'</span>'+(mk?'<span class="mkn">+'+mk+' '+L('makeup','تعويض')+'</span>':'')+'</button>';
+  }
+  h+='</div></div><div class="legend">'+state.subjects.map(function(s){return '<span class="lg" style="--c:'+s.color+'"><i></i>'+esc(sName(s))+'</span>';}).join('')+'</div></section>';
+  return h;
+}
+function vSubj(){
+  var h='<section class="cards">';
+  state.subjects.forEach(function(s){
+    var ts=state.tasks.filter(function(t){return t.subj===s.id&&t.kind!=='memo'&&t.kind!=='review';});
+    var d=ts.filter(isDone).length,m=ts.filter(function(t){return t.status==='missed';}).length;
+    h+='<article class="card" style="--c:'+s.color+'"><header><h3>'+esc(sName(s))+'</h3><span class="ar" dir="auto">'+esc(lang==='ar'?s.name:s.ar)+'</span></header>'+
+      '<div class="big">'+pct(d,ts.length)+'%<small>'+L(d+'/'+ts.length+' sessions',d+'/'+ts.length+' جلسة')+(m?' · <em>'+m+' '+L('missed','فائتة')+'</em>':'')+'</small></div>';
+    KINDS.forEach(function(k){var x=ts.filter(function(t){return t.kind===k.key;}),xd=x.filter(isDone).length,xm=x.filter(function(t){return t.status==='missed';}).length;
+      h+='<div class="seg"><span>'+kShort(k)+'</span><div class="track"><i style="width:'+pct(xd,x.length)+'%"></i><i class="m" style="width:'+pct(xm,x.length)+'%"></i></div><b>'+xd+'/'+x.length+'</b></div>';});
+    h+='<details><summary>'+L('Lessons','الدروس')+'</summary><ol>'+ts.map(function(t){return '<li class="li-'+t.status+'"><span dir="auto">'+esc(title(t))+'</span><small>'+nice(t.date)+' '+statusPill(t)+'</small></li>';}).join('')+'</ol></details>'+(s.note&&lang==='en'?'<p class="note">'+esc(s.note)+'</p>':'')+'</article>';
+  });
+  return h+'</section>';
+}
+function vMemo(){
+  var h='<section><p class="lede">'+L('Nine “أفهم وأحفظ” texts from the Islamic Education book. Each gets three mornings (understand, memorize, recite), then review rounds run until 25 Dec. Type the verse or hadith in each card so it is always at hand.','تسعة نصوص من فقرة “أفهم وأحفظ” في كتاب التربية الإسلامية. لكل نص ثلاثة صباحات (فهم، حفظ، تسميع)، ثم جولات مراجعة حتى 25 ديسمبر. اكتبي نص الآية أو الحديث في كل بطاقة ليكون أمامك دائمًا.')+'</p><div class="mgrid">';
+  state.memo.forEach(function(m,i){
+    var ts=state.tasks.filter(function(t){return t.kind==='memo'&&t.item===i;}),d=ts.filter(isDone).length;
+    var revs=state.tasks.filter(function(t){return t.kind==='review'&&t.group&&i>=t.group[0]&&i<=t.group[1];}),rd=revs.filter(isDone).length;
+    h+='<article class="mcard'+(d===3?' full':'')+'"><div class="mn">'+(i+1)+'</div><div class="mb"><h3 dir="rtl">'+esc(m.title)+'</h3><div class="sub" dir="rtl">'+esc(m.lesson)+'</div>'+
+      '<div class="dots">'+ts.map(function(t){return '<span class="dot s-'+t.status+'" title="'+esc(nice(t.date)+': '+stepTxt(t))+'"></span>';}).join('')+'<small>'+L('memorized '+d+'/3 · reviewed '+rd+'/'+revs.length+' · starts ','الحفظ '+d+'/3 · المراجعة '+rd+'/'+revs.length+' · يبدأ ')+(ts[0]?nice(ts[0].date):'')+'</small></div>'+
+      '<label class="vis" for="mt'+i+'">'+L('Verse / Hadith text','نص الآية / الحديث')+'</label><textarea id="mt'+i+'" dir="rtl" rows="2" data-memo="'+i+'" placeholder="اكتبي نص الآيات أو الحديث هنا">'+esc(m.text||'')+'</textarea></div></article>';
+  });
+  return h+'</div><p class="hint">'+L('Text saves when you leave the box.','يُحفظ النص عند الخروج من المربع.')+'</p></section>';
+}
+function vMake(){
+  var ms=state.tasks.filter(function(t){return t.status==='missed';}).sort(function(a,b){return (a.makeupDate||'9')<(b.makeupDate||'9')?-1:1;});
+  var lt=today(),od=state.tasks.filter(function(t){return t.status==='pending'&&t.date<lt;});
+  var cnt={};state.tasks.forEach(function(t){if((t.status==='missed'||t.status==='madeup')&&t.reason)cnt[t.reason]=(cnt[t.reason]||0)+1;});
+  var mx=Math.max.apply(null,[1].concat(Object.keys(cnt).map(function(k){return cnt[k];})));
+  var mu=state.tasks.filter(function(t){return t.status==='madeup';}).length,hard=cnt['Lesson too hard · need help'];
+  var h='<section class="mk"><div class="mkcols"><div><h3>'+L('Missed sessions waiting for makeup','جلسات فائتة بانتظار التعويض')+'</h3>';
+  h+=ms.length?'<ul class="list">'+ms.map(function(t){return row(t,'mk');}).join('')+'</ul>':'<div class="empty">'+L('Nothing missed. Keep it up.','لم يفتك شيء. استمري!')+'</div>';
+  if(od.length)h+='<h3>'+L('Overdue, not marked yet','متأخرة ولم تُحدَّد بعد')+'</h3><ul class="list">'+od.map(function(t){return row(t);}).join('')+'</ul>';
+  h+='</div><aside class="why-box"><h3>'+L('Why sessions get missed','أسباب فوات الجلسات')+'</h3>';
+  h+=Object.keys(cnt).length?REASONS.filter(function(r){return cnt[r];}).map(function(r){return '<div class="rb"><span>'+esc(reasonTxt(r))+'</span><div class="track"><i style="width:'+pct(cnt[r],mx)+'%"></i></div><b>'+cnt[r]+'</b></div>';}).join(''):'<p class="hint">'+L('Reasons will show here once a session is marked not done.','ستظهر الأسباب هنا عند تحديد جلسة كغير منجزة.')+'</p>';
+  if(hard)h+='<p class="flag">'+L(hard+' session(s) marked too hard. Worth asking the teacher or a study partner.',hard+' جلسة وُصفت بأنها صعبة. يفضّل سؤال المعلمة أو زميلة.')+'</p>';
+  h+='<p class="hint">'+L(mu+' session(s) made up so far.','تم تعويض '+mu+' جلسة حتى الآن.')+'</p></aside></div></section>';
+  return h;
+}
+function vEdit(){
+  var h='<section><p class="lede">'+L('Rename a subject or change its lesson list (one lesson per line). Saving re-plans all sessions not yet marked, starting tomorrow. Done and missed sessions stay as they are.','غيّري اسم المادة أو قائمة دروسها (درس في كل سطر). عند الحفظ يُعاد توزيع الجلسات غير المحددة بدءًا من الغد، وتبقى الجلسات المنجزة والفائتة كما هي.')+'</p>'+
+    '<form id="edit"><div class="frow"><label for="stu">'+L('Student name','اسم الطالبة')+'</label><input id="stu" name="stu" value="'+esc(state.student)+'"></div><div class="egrid">';
+  state.subjects.forEach(function(s,i){
+    h+='<fieldset class="ecard" style="--c:'+s.color+'"><legend><span class="sw"></span>'+esc(sName(s))+'</legend>'+
+      '<div class="frow two"><div><label for="en'+i+'">'+L('English name','الاسم بالإنجليزية')+'</label><input id="en'+i+'" name="name'+i+'" value="'+esc(s.name)+'"></div><div><label for="ea'+i+'">'+L('Arabic name','الاسم بالعربية')+'</label><input id="ea'+i+'" name="ar'+i+'" dir="rtl" value="'+esc(s.ar)+'"></div></div>'+
+      '<label for="eo'+i+'">'+L('Old lessons (Sep–Oct)','الدروس القديمة (سبتمبر–أكتوبر)')+'</label><textarea id="eo'+i+'" name="old'+i+'" dir="auto" rows="5">'+esc(s.old.join('\n'))+'</textarea>'+
+      '<label for="ew'+i+'">'+L('New lessons','الدروس الجديدة')+'</label><textarea id="ew'+i+'" name="new'+i+'" dir="auto" rows="4">'+esc(s.new.join('\n'))+'</textarea></fieldset>';
+  });
+  h+='</div><div class="frow btns sticky"><button class="b ok" type="submit">'+L('Save lessons &amp; re-plan','حفظ الدروس وإعادة التوزيع')+'</button><span class="hint" id="editmsg"></span></div></form></section>';
+  return h;
+}
+
+/* ---------- events ---------- */
+root.addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a'),id=b.getAttribute('data-id'),t=id&&byId(id);
+  if(a==='lang'){setLang(b.getAttribute('data-l'));drawTimer();return;}
+  if(a==='timer'&&t){startTimer(t);render();return;}
+  if(a==='msg'){msgOpen=true;try{localStorage.setItem('ghada-msg-seen',msgKey());}catch(e2){}render();var c=root.querySelector('.mo button');if(c)c.focus();return;}
+  if(a==='msgclose'){msgOpen=false;render();return;}
+  if(a==='done'&&t){t.status='done';t.doneAt=today();openForm=null;save();render();}
+  else if(a==='form'&&t){openForm=openForm===id?null:id;render();var f=root.querySelector('form.nd input[name=r]');if(f)f.focus();}
+  else if(a==='close'){openForm=null;render();}
+  else if(a==='undo'&&t){t.status='pending';delete t.reason;delete t.note;delete t.makeupDate;delete t.makeupTime;save();render();}
+  else if(a==='madeup'&&t){t.status='madeup';t.doneAt=today();save();render();}
+  else if(a==='day'){setSel(b.getAttribute('data-d'));openForm=null;render();}
+  else if(a==='open'){setSel(b.getAttribute('data-d'));location.hash='today';}
+});
+root.addEventListener('change',function(e){
+  if(e.target.id==='jump'&&e.target.value){setSel(e.target.value<START?START:e.target.value>LAST?LAST:e.target.value);render();}
+  var mi=e.target.getAttribute('data-memo');
+  if(mi!=null){state.memo[+mi].text=e.target.value;save();}
+});
+root.addEventListener('submit',function(e){
+  e.preventDefault();var f=e.target;
+  if(f.classList.contains('nd')){
+    var t=byId(f.getAttribute('data-id')),r=f.querySelector('input[name=r]:checked');
+    if(!r){var lg=f.querySelector('legend');lg.textContent=L('Pick a reason first','اختاري السبب أولًا');lg.classList.add('err');return;}
+    t.status='missed';t.reason=r.value;t.note=f.note.value.trim();t.makeupDate=f.md.value||'';t.makeupTime=f.mt.value.trim();
+    openForm=null;save();render();
+  } else if(f.id==='edit'){
+    state.student=f.stu.value.trim()||state.student;
+    state.subjects.forEach(function(s,i){
+      s.name=f['name'+i].value.trim()||s.name;s.ar=f['ar'+i].value.trim();
+      s.old=f['old'+i].value.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+      s.new=f['new'+i].value.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+    });
+    var from=add(today(),1);if(from<START)from=START;
+    buildPlan(state,from);save();render();var m=document.getElementById('editmsg');if(m)m.textContent=L('Saved. Sessions from '+nice(from)+' were re-planned.','تم الحفظ. أُعيد توزيع الجلسات بدءًا من '+nice(from)+'.');
+  }
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&msgOpen){msgOpen=false;render();}});
+window.addEventListener('hashchange',function(){openForm=null;render();window.scrollTo(0,0);});
+/* ---------- session timer ---------- */
+function drawTimer(){
+  if(!tState){bar.className='';bar.innerHTML='';return;}
+  var t=byId(tState.id);if(!t){tSet(null);bar.className='';bar.innerHTML='';return;}
+  var ms=leftMs(),fin=ms<=0,paused=tState.left!=null&&!fin,p=Math.min(100,Math.max(0,100-Math.round(100*ms/tState.total)));
+  if(fin&&!tState.done){tState.done=true;tSet(tState);beep();try{if(navigator.vibrate)navigator.vibrate([300,150,300]);}catch(e){}}
+  bar.className='on'+(fin?' fin':'');
+  bar.style.setProperty('--c',subj(t.subj).color);
+  bar.innerHTML='<div class="tb-prog" style="width:'+p+'%"></div><div class="tb-in"><div class="tb-info"><span class="tb-s">⏱ '+esc(sName(subj(t.subj)))+' · '+kindLabel(t.kind)+'</span><span class="tb-t" dir="auto">'+esc(title(t))+'</span></div><div class="tb-clock">'+(fin?L('Time’s up!','انتهى الوقت!'):fmt(ms))+'</div><div class="tb-act">'+
+    (fin?'<span class="tb-msg">'+L('Great work. Take a 10-minute break.','أحسنتِ! خذي استراحة 10 دقائق.')+'</span><button class="b ok" data-t="done">✓ '+L('Mark done','تم الإنجاز')+'</button>':
+    '<button class="b ghost" data-t="minus" aria-label="'+L('5 minutes less','أقل بخمس دقائق')+'">−5</button><button class="b ghost" data-t="plus" aria-label="'+L('5 minutes more','أكثر بخمس دقائق')+'">+5</button><button class="b" data-t="pause">'+(paused?L('Resume','استئناف'):L('Pause','إيقاف مؤقت'))+'</button>')+
+    '<button class="b ghost" data-t="stop" aria-label="'+L('Close timer','إغلاق المؤقت')+'">✕</button></div></div>';
+}
+bar.addEventListener('click',function(e){
+  var b=e.target.closest('[data-t]');if(!b||!tState)return;var a=b.getAttribute('data-t');
+  if(a==='pause'){if(tState.left!=null){tState.end=Date.now()+tState.left;tState.left=null;}else tState.left=leftMs();tSet(tState);}
+  else if(a==='plus'||a==='minus'){var d=(a==='plus'?5:-5)*60000;if(tState.left!=null)tState.left=Math.max(60000,tState.left+d);else tState.end=Math.max(Date.now()+60000,tState.end+d);tState.total=Math.max(60000,tState.total+d);tState.done=false;tSet(tState);}
+  else if(a==='stop'){tSet(null);render();}
+  else if(a==='done'){var t=byId(tState.id);tSet(null);if(t&&t.status==='pending'){t.status='done';t.doneAt=today();save();}render();}
+  drawTimer();
+});
+setInterval(function(){if(tState&&tState.left==null&&!tState.done)drawTimer();},1000);
+applyDir();
+render();
+drawTimer();
+})();
+</script>
+</body>
+</html>
