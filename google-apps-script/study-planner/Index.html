@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Grade 12 Study Planner · منظّم المذاكرة</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"><style id="st">:root{
+/* layout: summary header → tabs → one working view; subject colour carries identity, form carries status */
+--bg:#F3F5F9;--surface:#FFFFFF;--ink:#18202E;--muted:#5D6779;--line:#DFE4EC;--accent:#0B6E79;
+--ok:#15803D;--bad:#D92D20;--mu:#2563EB;--late:#B54708;
+--old:#7C5CFA;--new:#0EA5A4;--study:#6366F1;--practice:#F59E0B;--catch:#94A3B8;
+--display:'Bricolage Grotesque','IBM Plex Sans Arabic',system-ui,sans-serif;
+--body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,system-ui,sans-serif;
+color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F141C;--surface:#18202B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2A3442;--accent:#3FC1CD;--ok:#4ADE80;--bad:#F87171;--mu:#7AA7FF;--late:#F5A35C;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F141C;--surface:#18202B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2A3442;--accent:#3FC1CD;--ok:#4ADE80;--bad:#F87171;--mu:#7AA7FF;--late:#F5A35C;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+#root{max-width:1180px;margin:0 auto;padding:20px 18px 60px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:22px}
+h3{font-size:16px;margin:22px 0 10px}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.top{display:grid;grid-template-columns:1fr;gap:16px}
+.phasebar{display:flex;gap:4px;margin-top:14px;font-size:12px}
+.ph{border-radius:8px;padding:6px 8px;background:color-mix(in srgb,var(--c,#888) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--c,#888) 35%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ph b{color:var(--c)}
+.ph.on{box-shadow:0 0 0 2px var(--c)}
+.ph-study{--c:var(--study)}.ph-final{--c:#E11D48}.k-final{color:#E11D48;font-weight:600}.ph-old{--c:var(--old)}.ph-new{--c:var(--new)}.ph-practice{--c:var(--practice)}.ph-catch{--c:var(--catch)}.ph-exam{--c:var(--bad)}
+.kpis{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:150px;justify-content:center;display:flex;flex-direction:column}
+.kpi b{font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:12px;color:var(--muted)}
+.kpi.warn b{color:var(--bad)}.kpi.exam b{color:var(--accent)}
+.ring{--p:0;width:74px;height:74px;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;position:relative;align-content:center}
+.ring::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg)}
+.ring span,.ring small{position:relative;line-height:1}
+.ring span{font-family:var(--display);font-weight:800;font-size:18px}
+.ring small{font-size:10px;color:var(--muted)}
+.tabs{display:flex;gap:4px;margin:22px 0 18px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.tabs a{padding:10px 14px;color:var(--muted);text-decoration:none;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs a.on{color:var(--ink);border-color:var(--accent)}
+.tabs a:hover{color:var(--ink)}
+.cnt{font-style:normal;background:var(--bad);color:#fff;border-radius:99px;padding:0 7px;font-size:12px}
+.save{margin-inline-start:auto;font-size:12px;color:var(--muted)}
+.lede{color:var(--muted);max-width:70ch;margin:0 0 16px}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0}
+/* day */
+.dayhead{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.dayhead>div{flex:1;min-width:200px}
+.sub{color:var(--muted);font-size:13.5px}
+.ph-tag{display:inline-block;border-radius:99px;padding:1px 9px;font-weight:600;font-size:12.5px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.nav{font-size:22px;line-height:1;padding:4px 12px}
+.jump{font-size:12px;color:var(--muted)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%}
+#jump{width:auto}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.task{display:grid;grid-template-columns:86px 1fr auto;gap:4px 12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-inline-start:6px solid var(--c);border-radius:12px;padding:10px 12px}
+.task.st-done,.task.st-madeup{background:color-mix(in srgb,var(--ok) 7%,var(--surface))}
+.task.st-done .tt,.task.st-madeup .tt{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent);color:var(--muted)}
+.task.st-missed{background:color-mix(in srgb,var(--bad) 7%,var(--surface))}
+.tm{font-size:12.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px}
+.sb{color:var(--c);font-weight:700}
+.kind{color:var(--muted)}
+.from{color:var(--muted)}
+.tt{font-size:16px;font-weight:600;margin-top:2px}
+.why{font-size:12.5px;color:var(--bad);margin-top:3px}
+.act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.b{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:7px 12px;font-weight:600;font-size:13.5px}
+.b:hover{border-color:var(--ink)}
+.b:disabled{opacity:.35;cursor:default}
+.b.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.b.no{background:var(--surface);border-color:var(--bad);color:var(--bad)}
+.b.ghost{background:transparent}
+.pill{display:inline-block;border-radius:99px;padding:0 8px;font-size:11.5px;font-weight:700;line-height:19px}
+.pill.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.pill.mu{background:color-mix(in srgb,var(--mu) 16%,transparent);color:var(--mu)}
+.pill.late{background:color-mix(in srgb,var(--late) 16%,transparent);color:var(--late)}
+.pill.now{background:var(--accent);color:var(--surface);vertical-align:middle;font-family:var(--body)}
+.nd{grid-column:1/-1;border-top:1px dashed var(--line);margin-top:8px;padding-top:10px;display:grid;gap:10px}
+.nd fieldset{border:0;padding:0;margin:0}
+.nd legend{font-weight:700;font-size:13.5px;margin-bottom:6px}
+.nd legend.err{color:var(--bad)}
+.reasons{display:flex;flex-wrap:wrap;gap:6px}
+.rc input{position:absolute;opacity:0;width:1px;height:1px}
+.rc span{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}
+.rc input:checked+span{background:var(--bad);border-color:var(--bad);color:#fff}
+.rc input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.frow{display:grid;gap:4px}
+.frow label,.ecard>label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.frow.two{grid-template-columns:1fr 1fr;gap:10px}
+.frow.btns{display:flex;gap:8px;align-items:center}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:18px;color:var(--muted);margin-top:16px}
+.empty.exam{border-color:var(--bad);color:var(--ink)}
+/* calendar */
+.cal{overflow-x:auto}
+.cw,.grid{display:grid;grid-template-columns:repeat(7,minmax(84px,1fr));gap:5px;min-width:620px}
+.cw span{font-size:12px;font-weight:700;color:var(--muted);padding:0 4px}
+.grid{margin-top:4px}
+.cell{text-align:start;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c,var(--line));border-radius:10px;min-height:84px;padding:6px;display:flex;flex-direction:column;gap:5px;color:var(--ink)}
+.cell.out{opacity:.35;border-top-color:var(--line)}
+.cell.now{box-shadow:0 0 0 2px var(--accent)}
+.cell.sel{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.cell.ph-exam{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--surface))}
+.dn{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.ex{font-size:11px;font-weight:800;color:var(--bad);letter-spacing:.06em}
+.bars{display:flex;flex-wrap:wrap;gap:3px}
+.bar{display:block;width:14px;height:8px;border-radius:3px;border:1.5px solid var(--c);background:transparent}
+.bar.s-done,.bar.s-madeup{background:var(--c)}
+.bar.s-missed{border-color:var(--bad);background:repeating-linear-gradient(45deg,var(--bad) 0 2px,transparent 2px 4px)}
+.bar.late{border-style:dashed}
+.mkn{font-size:10.5px;color:var(--mu);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;font-size:13px}
+.lg i{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--c);margin-inline-end:6px;vertical-align:-1px}
+/* subjects */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--c);border-radius:14px;padding:14px;display:grid;gap:8px;align-content:start}
+.card header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card h3{margin:0;color:var(--c)}
+.ar{font-size:13px;color:var(--muted)}
+.big{font-family:var(--display);font-size:30px;font-weight:800;line-height:1}
+.big small{display:block;font-family:var(--body);font-size:12.5px;font-weight:500;color:var(--muted);margin-top:4px}
+.big em{color:var(--bad);font-style:normal}
+.seg{display:grid;grid-template-columns:60px 1fr 40px;gap:8px;align-items:center;font-size:12.5px}
+.seg b{text-align:end;font-variant-numeric:tabular-nums}
+.track{height:8px;background:var(--line);border-radius:99px;overflow:hidden;display:flex}
+.track i{display:block;height:100%;background:var(--c,var(--ok))}
+.track i.m{background:var(--bad)}
+details summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--accent)}
+details ol{margin:8px 0 0;padding-inline-start:20px;display:grid;gap:5px;font-size:13.5px}
+details li small{display:block;color:var(--muted);font-size:11.5px}
+.li-done span,.li-madeup span{text-decoration:line-through;color:var(--muted)}
+.note{font-size:12.5px;color:var(--late);margin:0;border-top:1px dashed var(--line);padding-top:8px}
+/* memo */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.mcard{display:grid;grid-template-columns:44px 1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;--c:#0E8F6E}
+.mcard.full{border-color:var(--c)}
+.mn{width:44px;height:44px;border-radius:12px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:20px}
+.mcard h3{margin:0;font-size:17px}
+.mb{display:grid;gap:6px}
+.dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--c)}
+.dot.s-done,.dot.s-madeup{background:var(--c)}
+.dot.s-missed{border-color:var(--bad);background:var(--bad)}
+.dots small{color:var(--muted);font-size:12px;margin-inline-start:4px}
+.vis{font-size:12px;color:var(--muted);font-weight:600}
+/* makeup */
+.mkcols{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+.mkcols h3:first-child{margin-top:0}
+.why-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.rb{display:grid;grid-template-columns:1fr 90px 22px;gap:8px;align-items:center;font-size:13px;margin:6px 0}
+.rb .track i{background:var(--bad)}
+.flag{background:color-mix(in srgb,var(--late) 12%,transparent);color:var(--late);border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600}
+/* edit */
+.egrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;margin-top:14px}
+.ecard{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:14px;padding:12px;display:grid;gap:6px;margin:0}
+.ecard legend{font-weight:800;font-family:var(--display);padding:0 4px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-inline-end:6px}
+.sticky{position:sticky;bottom:0;background:var(--bg);padding:12px 0;margin-top:12px;border-top:1px solid var(--line)}
+#stu{max-width:280px}
+@media (max-width:820px){.top{grid-template-columns:1fr}.kpis{justify-content:flex-start}.mkcols{grid-template-columns:1fr}}
+@media (max-width:560px){
+ .task{grid-template-columns:1fr}.tm{order:-1}.act{justify-content:flex-start}
+ .phasebar{flex-wrap:wrap}.ph{flex:1 1 45%!important}
+ .frow.two{grid-template-columns:1fr}
+ .kpi{min-width:0;flex:1 1 40%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:16px}
+.sp{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-inline-start:5px solid var(--c);border-radius:10px;padding:8px 10px;color:var(--ink);text-decoration:none}
+.sp:hover{border-color:var(--c)}
+.spn{font-weight:700;color:var(--c);font-size:13.5px}
+.sp b{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums}
+.sbar{grid-column:1/-1;display:flex;gap:2px;height:8px}
+.sg{display:block;background:color-mix(in srgb,var(--c) 18%,var(--line));border-radius:3px;overflow:hidden;min-width:4px}
+.sg i{display:block;height:100%;background:var(--c)}
+.sg.k-new i{background:color-mix(in srgb,var(--c) 70%,#000)}
+.sg.k-practice i{background:repeating-linear-gradient(45deg,var(--c) 0 3px,color-mix(in srgb,var(--c) 60%,#fff) 3px 6px)}
+.sp small{grid-column:1/-1;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sp em{color:var(--bad);font-style:normal}
+.k-old{color:var(--old);font-weight:600}.k-new{color:var(--new);font-weight:600}.k-practice{color:var(--late);font-weight:600}
+
+.school{margin-top:14px;background:repeating-linear-gradient(135deg,var(--surface) 0 10px,color-mix(in srgb,var(--muted) 8%,var(--surface)) 10px 20px);border:1px dashed var(--line);border-radius:12px;padding:10px 14px;font-size:14px}
+.school span{color:var(--muted)}
+
+#root{position:relative}
+.topright{position:absolute;top:18px;inset-inline-end:18px;display:flex;gap:10px;align-items:center;z-index:5}
+.motd{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:linear-gradient(145deg,#FFB020,#FF6B6B);color:#fff;border-radius:16px;padding:8px 12px;font-weight:700;font-size:11px;box-shadow:0 6px 16px rgba(255,107,107,.35)}
+.motd:hover{transform:translateY(-1px)}
+.motd.new::after{content:"";position:absolute;top:-4px;inset-inline-end:-4px;width:14px;height:14px;border-radius:50%;background:var(--bad);border:2px solid var(--bg)}
+.motd.new svg{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.18)}}
+.mo-back{position:fixed;inset:0;background:rgba(10,14,22,.45);z-index:20}
+.mo{position:fixed;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100% - 32px));background:var(--surface);border-radius:20px;padding:20px 22px 16px;border-top:8px solid #FFB020;box-shadow:0 20px 50px rgba(0,0,0,.25);display:grid;gap:10px}
+.mo-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mo h2{font-size:24px;line-height:1.3}
+.mo-ar{font-size:20px;font-weight:600;color:var(--accent);margin:0}
+.brand{padding-inline-end:260px}
+
+.lang{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.lang button{border:0;background:transparent;color:var(--muted);padding:7px 11px;font-weight:700;font-size:13px}
+.lang button.on{background:var(--accent);color:var(--surface)}
+.chooser{min-height:70vh;display:grid;place-content:center;text-align:center;gap:10px}
+.chs{display:flex;gap:14px;justify-content:center;margin-top:12px}
+.b.big{font-size:20px;padding:16px 32px;border-radius:14px;border:2px solid var(--accent);color:var(--accent)}
+.b.big:hover{background:var(--accent);color:var(--surface)}
+html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3{font-family:var(--body)}
+html[dir="rtl"] .eyebrow{letter-spacing:0}
+@media (max-width:640px){.topright{position:static;justify-content:flex-end;margin-bottom:10px}.brand{padding-inline-end:0}}
+
+.examday{margin-top:14px;border-radius:14px;padding:14px 16px;background:color-mix(in srgb,var(--c) 14%,var(--surface));border:2px solid var(--c);display:grid;gap:4px;font-size:15px}
+.examday b{color:var(--c);font-size:18px}
+.examday span{color:var(--muted);font-size:13.5px}
+.cell.ph-final{border-top-color:#E11D48}
+#timerbar{display:none}
+#timerbar.on{display:block;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--surface);border-top:3px solid var(--c);box-shadow:0 -8px 24px rgba(0,0,0,.14)}
+.tb-prog{position:absolute;top:-3px;inset-inline-start:0;height:3px;background:var(--ink);opacity:.35}
+.tb-in{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.tb-info{flex:1;min-width:180px;display:grid}
+.tb-s{font-size:12px;color:var(--c);font-weight:700}
+.tb-t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-clock{font-family:var(--display);font-size:32px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);min-width:110px;text-align:center}
+#timerbar.fin .tb-clock{color:var(--ok);font-size:22px}
+.tb-act{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tb-msg{font-size:13px;color:var(--muted)}
+.b.tmr{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line));font-variant-numeric:tabular-nums}
+.b.tmr.run{background:var(--accent);color:var(--surface)}
+body:has(#timerbar.on) #root{padding-bottom:120px}
+
+.vstrip{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;margin-top:18px;align-items:stretch}
+.vp{display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 6px 8px;text-align:center;min-width:0}
+.vp:hover{border-color:var(--c)}
+.vpc{font-family:var(--display);font-size:20px;font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;line-height:1}
+.tube{position:relative;display:block;width:34px;height:150px;border-radius:17px;background:color-mix(in srgb,var(--c) 14%,var(--bg));border:2px solid color-mix(in srgb,var(--c) 45%,transparent);overflow:hidden}
+.fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(to top,var(--c),color-mix(in srgb,var(--c) 70%,#fff));transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.vp.full .tube{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent)}
+.vt{position:absolute;left:0;right:0;height:0;border-top:1.5px dashed color-mix(in srgb,var(--ink) 35%,transparent)}
+.vpn{font-weight:700;font-size:13px;color:var(--c);line-height:1.25;overflow-wrap:anywhere}
+.vcount{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.vcount em{color:var(--bad);font-style:normal}
+.vex{font-size:11.5px;font-weight:700;color:var(--ink);background:color-mix(in srgb,var(--c) 12%,transparent);border-radius:99px;padding:1px 8px}
+.vparts{display:none}
+.vp:hover .vparts,.vp:focus .vparts{display:grid;font-size:11px;color:var(--muted);gap:1px}
+.clock{display:grid;justify-items:end;line-height:1.15;padding:4px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.ck-t{font-family:var(--display);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.ck-s{font-size:14px;color:var(--muted)}
+.ck-ap{font-size:12px;color:var(--accent);font-family:var(--body)}
+.ck-d{font-size:11.5px;color:var(--muted)}
+.brand{padding-inline-end:400px}
+@media (max-width:900px){.vstrip{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.tube{height:100px;width:28px}.vpn{font-size:12px}.vex{font-size:10.5px;padding:1px 5px}}
+@media (max-width:820px){.brand{padding-inline-end:0}.topright{position:static;justify-content:flex-end;flex-wrap:wrap;margin-bottom:10px}}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+
+.afterx{margin-top:10px;border-radius:14px;padding:12px 16px;background:color-mix(in srgb,var(--ok) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--ok) 40%,transparent)}
+.afterx b{color:var(--ok)}
+.afterx p{margin:4px 0 0;font-size:15px}
+
+.top{grid-template-columns:minmax(0,1fr)}
+.brand{min-width:0}
+.greet{margin:0 0 4px;font-family:var(--display);font-size:clamp(18px,2.6vw,24px);font-weight:600;background:linear-gradient(90deg,#FF6B6B,#FFB020);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+html[dir="rtl"] .greet{font-family:var(--body);font-weight:700}
+.ck-t{direction:ltr;unicode-bidi:isolate}
+
+.setup{max-width:860px;margin:24px auto 40px;display:grid;gap:18px}
+.setup.inedit{margin:0;max-width:none}
+.sp-hero h1{margin:4px 0 8px}
+.setup input#sname{font-size:18px;padding:12px 14px;max-width:420px;width:100%}
+.pick{border:0;padding:0;margin:0}
+.pick legend{font-weight:700;margin-bottom:10px}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.pk{position:relative;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;border:2px solid color-mix(in srgb,var(--c) 30%,var(--line));background:var(--surface);cursor:pointer;transition:background .15s,border-color .15s}
+.pk:hover{border-color:var(--c)}
+.pk>input{accent-color:var(--c);width:20px;height:20px;margin:2px 0 0;flex:none}
+.pk-b{display:grid;gap:2px}
+.pk-b b{color:var(--c)}
+.pk-b small{color:var(--muted);font-size:12px}
+.pk:has(>input:checked){background:color-mix(in srgb,var(--c) 12%,var(--surface));border-color:var(--c)}
+.pk:has(>input:focus-visible){outline:3px solid var(--c);outline-offset:2px}
+.b.ok.big{font-size:18px;padding:13px 30px;color:#fff;background:var(--ok);border-color:var(--ok)}
+.b.ok.big:hover{filter:brightness(1.08);color:#fff;background:var(--ok)}
+.sp-hero h1{background:linear-gradient(90deg,#6A3FD1,#C93A84,#E07400);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content;font-size:clamp(32px,5vw,48px)}
+.hint.err{color:#C2362B}
+.box{border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:18px 0;background:var(--surface)}
+.box h3{margin-top:0}
+.box.danger{border-color:#f1c4c0}
+.b.no.sure{background:#C2362B;color:#fff}
+
+.pk-d{display:grid;gap:3px;margin-top:6px;font-size:12px;color:var(--muted)}
+.pk-d input{width:100%;font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:170px}
+
+#breakpop{display:none}
+#breakpop.on{display:block;position:fixed;inset:0;z-index:60}
+.bp-back{position:absolute;inset:0;background:rgba(15,23,42,.45)}
+.bp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:var(--surface);border-radius:20px;padding:22px;border-top:6px solid var(--c);box-shadow:0 20px 50px rgba(0,0,0,.25);display:grid;gap:14px;animation:bpin .35s ease-out}
+@keyframes bpin{from{transform:translate(-50%,-44%);opacity:0}to{transform:translate(-50%,-50%);opacity:1}}
+.bp-head{display:flex;gap:12px;align-items:center}
+.bp-ic{font-size:34px;animation:ring 1s ease-in-out 3}
+@keyframes ring{0%,100%{transform:rotate(0)}20%{transform:rotate(-18deg)}40%{transform:rotate(16deg)}60%{transform:rotate(-10deg)}80%{transform:rotate(6deg)}}
+.bp h2{margin:0;font-size:21px}
+.bp-sub{margin:2px 0 0;color:var(--muted);font-size:13px}
+.bp-water{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:#E3F2FD;color:#0D47A1}
+.bp-water span{font-size:30px}
+.bp-water b{display:block;font-size:17px}
+.bp-water small{color:#1565C0}
+.bp-move{padding:12px 14px;border-radius:14px;background:#FFF3E0;color:#7A3E00}
+.bp-move b{font-size:16px}
+.bp-move ol{margin:8px 0 0;padding-inline-start:22px;display:grid;gap:6px;line-height:1.5}
+.bp-act{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bp .b.ok.big{font-size:16px;padding:11px 20px;color:#fff;background:var(--ok);border:2px solid var(--ok);border-radius:12px}
+@media (prefers-reduced-motion:reduce){.bp,.bp-ic{animation:none}}
+
+.credit{margin:36px 0 18px;padding-top:12px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);letter-spacing:.2px}
+body:has(#timerbar.on) .credit{margin-bottom:96px}
+
+.gnd{border:0;padding:0;margin:0;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.gnd legend{font-weight:700;margin-bottom:8px;width:100%}
+.gnd label{display:flex;align-items:center;gap:8px;padding:9px 16px;border:2px solid var(--line);border-radius:999px;background:var(--surface);cursor:pointer;font-weight:600}
+.gnd label:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.gnd input{accent-color:var(--accent)}
+
+.loc select{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.loc select:disabled{opacity:.5}
+</style></head>
+<body><div id="root"></div>
+<script id="catalog" type="application/json">{"plan":"sp-g12-s1-v1","subjects":[{"id":"art","name":"Art","ar":"الفنون التشكيلية","color":"#E07400","units":["فن الكاريكاتير والكارتون","فن الفسيفساء","الفن الحديث","مجسمات ورقية","منتجات حرفية عمانية","تشكيلات حروفية"],"old":["الوحدة 1: فن الكاريكاتير والكارتون (4 دروس)","الوحدة 2: فن الفسيفساء (4 دروس)","الوحدة 3: الفن الحديث (4 دروس)"],"new":["الوحدة 4: مجسمات ورقية (4 دروس)","الوحدة 5: منتجات حرفية عمانية (3 دروس)","الوحدة 6: تشكيلات حروفية (4 دروس)"],"note":"Each session covers one unit of the art book."},{"id":"mat","name":"Advanced Maths","ar":"الرياضيات المتقدمة","color":"#6A3FD1","units":["القياس الدائري","حساب المثلثات","مقدمة في النهايات والاتصال","التفاضل"],"old":["1-1 الراديان","1-2 طول القوس","1-3 مساحة القطاع الدائري","2-1 الزوايا العامة","2-2 زاوية الأساس (الزاوية المرجعية)","2-3 النسب المثلثية للزوايا العامة","2-4 التمثيلات البيانية للدوال المثلثية","2-5 الدوال المثلثية العكسية","2-6 المعادلات المثلثية","2-7 المتطابقات المثلثية","2-8 المزيد من المعادلات المثلثية"],"new":["3-1 نهاية الدالة عند نقطة (كثيرة الحدود، النسبية، متعددة القاعدة)","3-2 نهاية الدالة النسبية عند اللانهاية","3-3 خواص النهايات","3-4 الاتصال","4-1 المشتقة وعلاقتها بالميل","4-2 مشتقة دالة القوة","4-3 قاعدة السلسلة","4-4 المماس والعمودي","4-5 الدوال المتزايدة والمتناقصة","4-6 النقاط الحرجة"]},{"id":"bma","name":"Basic Mathematics","ar":"الرياضيات الأساسية","color":"#7B1FA2","gen":true,"old":["1-1 الدالة الأسية الطبيعية","1-2 الدالة اللوغاريتمية الطبيعية ومعكوسها","1-3 الصيغة الأسية والصيغة اللوغاريتمية للأساس هـ","1-4 حل المعادلات الأسية واللوغاريتمية الطبيعية","1-5 تحويل علاقة إلى صيغة خطية باستخدام اللوغاريتم الطبيعي","2-1 المشتقة الأولى","2-2 الميل عند نقطة","2-3 معادلة المماس","2-4 المشتقة الثانية","2-5 الدوال المتزايدة والمتناقصة"],"new":["3-1 المتغيرات العشوائية المتقطعة (المنفصلة)","3-2 التوزيع الاحتمالي للمتغير العشوائي المتقطع","3-3 القيمة المتوقعة والتباين للمتغير العشوائي المتقطع","تمارين مراجعة نهاية الوحدة الثالثة"],"fin":[["Revise unit 1: natural exponentials and logarithms","مراجعة الوحدة 1: الأسس واللوغاريتمات الطبيعية"],["Revise units 2–3: differentiation and random variables","مراجعة الوحدتين 2–3: التفاضل والمتغيرات العشوائية"]]},{"id":"wat","name":"Social Studies","ar":"هذا وطني","color":"#9A6A00","units":["عُمان… تاريخ وحضارة","بيئتنا… تنوّع وثراء واستدامة"],"old":["عُمان في عصر النباهنة… حضارة وتواصل","عُمان في عصر اليعاربة… قوة وازدهار","عُمان في عصر البوسعيد… وحدة ومنجزات"],"new":["البيئة… قضية عالمية ويقظة وطنية","البيئة العُمانية… حماية واستدامة","قضايا بيئية… تحديات عالمية وجهود وطنية"]},{"id":"ara","name":"Arabic","ar":"اللغة العربية","color":"#C2362B","old":["النحو: أسلوب التعجب","النحو: الإغراء والتحذير","النحو: المدح والذم","النحو: أسلوب الاختصاص","الصرف: المزيد بحرف","الصرف: المزيد بحرفين","الصرف: المزيد بثلاثة أحرف","المؤنس: عندما جاء المتنبي ملأ الدنيا وشغل الناس","المؤنس: وصف الطبيعة في الشعر الأندلسي","المؤنس: المقامة القريضية","المؤنس: مصطلح السرد في المقامة","المؤنس: قراءة أولى في المقامات","المؤنس: مصادر العقل العربي الإسلامي","المؤنس: المنحى العقلي عند الجاحظ","المؤنس: علاقة ما بين الشريعة والعقل","المؤنس: معاني القرآن الكريم"],"new":["المؤنس: الصنعة الشعرية عند أبي العتاهية","المؤنس: الرثاء في الأدب العربي","المؤنس: خراب القيروان","المؤنس: الغريب","المؤنس: المرأة والمجتمع","المؤنس: منهجية التعبير","المؤنس: التلخيص","المؤنس: الشباب وأوقات الفراغ","البلاغة: المسند والمسند إليه","البلاغة: التقديم والتأخير","البلاغة: الخبر والإنشاء","البلاغة: الخبر أنواعه وأغراضه","العروض: بحر الوافر","العروض: بحر الرمل"],"note":"From the المؤنس book only. Lessons from the uploaded المؤنس book."},{"id":"isl","name":"Islamic Education","ar":"التربية الإسلامية","color":"#0E8F6E","units":["من الأخطاء الشائعة في التلاوة","قيمنا","عقيدتنا","هويتنا","معاملاتنا","من مدرسة النبوة"],"old":["التلاوة: أخطاء عند تطبيق أحكام الميم والنون الساكنتين والتنوين","التلاوة: أخطاء في تطبيق المدود","التلاوة: أخطاء عند تطبيق صفات الحروف","قيمنا: قيم الحضارة الإسلامية","قيمنا: من القيم الاجتماعية (العفة والطهر)","قيمنا: من القيم الصحية (التداوي)","قيمنا: من القيم القيادية","قيمنا: من القيم المهنية","عقيدتنا: عالم الغيب","عقيدتنا: الحياة البرزخية","عقيدتنا: البعث والحشر","عقيدتنا: الحساب","عقيدتنا: نعيم الجنة وعذاب النار"],"new":["هويتنا: الهوية الإسلامية","هويتنا: الهوية وتحويل القبلة","هويتنا: الثابت والمتجدد في الهوية الإسلامية","هويتنا: دور العُمانيين في تأصيل الهوية الإسلامية","معاملاتنا: المعاملات المالية في الإسلام","معاملاتنا: حرمة الغش","معاملاتنا: من البيوع الجائزة","معاملاتنا: من البيوع المنهي عنها","معاملاتنا: الوعيد الشديد في التعامل بالربا","من مدرسة النبوة: فلاحك باتباعك رسولك ﷺ","من مدرسة النبوة: السيدة عائشة أم المؤمنين","من مدرسة النبوة: السيدة حفصة أم المؤمنين","من مدرسة النبوة: أبو ذر الغفاري","من مدرسة النبوة: سعد بن معاذ"]},{"id":"bio","name":"Biology","ar":"الأحياء","color":"#4E9A12","units":["الأحماض النووية وبناء البروتين","الوراثة","التقنية الجينية","الاتزان الداخلي","التحكم والتنسيق"],"old":["1-1 تركيب DNA و RNA","1-2 تضاعف DNA","1-3 الشيفرة الجينية","1-4 بناء البروتين","1-5 الطفرات الجينية","2-1 الأمشاج والتكاثر","2-2 كيف يحدث التباين الجيني؟","2-3 الوراثة","2-4 الوراثة والمخططات الجينية","2-5 الجينات والبروتينات والطراز المظهري","2-6 التحكم في التعبير الجيني","3-1 الهندسة الجينية","3-2 أدوات تقني الجينات","3-3 فصل وتضخيم DNA","3-4 التقنية الجينية والطب","3-5 التقنية الجينية والزراعة"],"new":["4-1 الاتزان الداخلي","4-2 تركيب الكلية","4-3 التحكم في المحتوى المائي","4-4 التحكم في تركيز جلوكوز الدم","4-5 الاتزان الداخلي في النباتات","5-1 مقارنة جهاز الغدد الصماء والجهاز العصبي","5-2 التواصل العصبي","5-3 الانقباض العضلي","5-4 التحكم والتنسيق في النباتات"]},{"id":"eng","name":"English","ar":"اللغة الإنجليزية","color":"#2462D6","units":["Retail Therapy","Starting University","Tourism and Hospitality","Travel and Transport"],"old":["Theme 1 Retail Therapy: reading & grammar (past simple, past simple passive)","Theme 1 Retail Therapy: vocabulary, listening & speaking, writing","Theme 2 Starting University: reading speed & grammar (past perfect)","Theme 2 Starting University: vocabulary, listening & speaking, writing"],"new":["Theme 3 Tourism and Hospitality: reading & grammar (first conditional)","Theme 3 Tourism and Hospitality: vocabulary, listening & speaking, writing","Theme 4 Travel and Transport: timed reading & grammar (present perfect, for/since)","Theme 4 Travel and Transport: vocabulary, listening & speaking, writing"]},{"id":"chm","name":"Chemistry","ar":"الكيمياء","color":"#C93A84","units":["الاتزان في المحاليل المائية","الكيمياء الكهربائية","طاقة الشبكة البلورية","مشتقات الهيدروكربونات (1)"],"old":["1-1 الأحماض والقواعد","1-2 الأحماض والقواعد القوية والضعيفة","1-3 ثابت تأين الماء Kw وحسابات pH","1-4 ثابت تأين الأحماض الضعيفة Ka والقواعد الضعيفة Kb","1-5 معايرة الأحماض والقواعد","1-6 الاتزان والذوبانية","1-7 المحاليل المنظمة","2-1 جهود الأقطاب الكهربائية (E)","2-2 قياس جهود الأقطاب القياسية","2-3 جهود الاختزال القياسية","2-4 تأثير تراكيز الأيونات على قيم جهود الاختزال","2-5 التحليل الكهربائي","2-6 حسابات التحليل الكهربائي"],"new":["3-1 طاقة الشبكة البلورية","3-2 المحتوى الحراري للتذرير والألفة الإلكترونية","3-3 حلقة (دورة) بورن-هابر","3-4 التغيرات في المحتوى الحراري للمحاليل","4-1 السلسلة المتجانسة للكحولات","4-2 الألدهيدات والكيتونات","4-3 الأحماض الكربوكسيلية","4-4 الإسترات","4-5 تفاعلات الكحولات","4-6 تفاعلات تحضير الكحولات"]},{"id":"phy","name":"Physics","ar":"الفيزياء","color":"#0277BD","gen":true,"old":["1-1 تمثيل مجال الجاذبية","1-2 شدة مجال الجاذبية (g)","1-3 الطاقة وجهد الجاذبية","1-4 الدوران تحت تأثير الجاذبية","2-1 المجال الكهربائي","2-2 شدة المجال الكهربائي","2-3 القوة المؤثرة على شحنة كهربائية","2-4 قانون كولوم والمجالات الشعاعية","2-5 الجهد وطاقة الوضع الكهربائية","3-1 التيار الكهربائي","3-2 فرق الجهد الكهربائي","3-3 المقاومة النوعية","3-4 قانونا كيرشوف","3-5 الدوائر العملية"],"new":["4-1 التعرف على المكثفات","4-2 الطاقة المخزنة في مكثف","4-3 توصيل المكثفات على التوازي","4-4 توصيل المكثفات على التوالي","4-5 شبكات المكثفات","4-6 شحن المكثفات وتفريغها","5-1 توليد المجالات المغناطيسية وتمثيلها","5-2 القوة المغناطيسية","5-3 كثافة الفيض المغناطيسي","5-4 المزيد عن القوى على الموصلات الحاملة لتيار كهربائي","5-5 الحث الكهرومغناطيسي","5-6 قانون فاراداي للحث الكهرومغناطيسي","5-7 قانون لنز","5-8 تطبيقات الحث الكهرومغناطيسي"],"fin":[["Revise units 1–3: gravity, electric fields, circuits","مراجعة الوحدات 1–3: الجاذبية والمجالات الكهربائية والدوائر"],["Revise units 4–5: capacitors, magnetism, induction","مراجعة الوحدتين 4–5: المكثفات والمغناطيسية والحث"]]},{"id":"his","name":"History (The World Around Me)","ar":"التاريخ (العالم من حولي)","color":"#8D4E2A","gen":true,"old":["الوحدة 1: إنجازات الأوائل… طريق المستقبل","الوحدة 1: ثورات كبرى… تغيّر وجه العالم","الوحدة 1: عالم الغد… آمال وتحديات","الوحدة 2: الطاقة… حياة العالم","الوحدة 2: النفط بين الاستمرارية والنفاد","الوحدة 2: الطاقة المتجددة… رؤية مستقبلية"],"new":["الوحدة 3: الثقافة الإنسانية، المفهوم والأهمية","الوحدة 3: الأقاليم الثقافية والهوية الوطنية","الوحدة 3: الثقافة الوطنية العمانية والمتغيرات الراهنة"],"fin":[["Revise unit 1: a fast-changing world","مراجعة الوحدة 1: عالمنا… عالم متسارع متغيّر"],["Revise units 2–3: energy and cultures","مراجعة الوحدتين 2–3: الطاقة والثقافات"]]},{"id":"env","name":"Environmental Science","ar":"العلوم البيئية","color":"#00A3A3","gen":true,"old":["1-1 التركيب العام للخلية","1-2 حركة المواد","1-3 تبادل الغازات","1-4 التنظيم الأسموزي","2-1 التمثيل الضوئي","2-2 التمثيل الكيميائي","2-3 التنفّس"],"new":["3-1 الترسيب الحمضي والضباب الدخاني الكيميائي الضوئي","3-2 إدارة تلوث الهواء","3-3 استنفاد الأوزون","4-1 تغير المناخ","4-2 تأثيرات تغير المناخ","4-3 إدارة تغير المناخ"],"fin":[["Revise units 1–2: marine physiology and energy","مراجعة الوحدتين 1–2: فسيولوجيا الكائنات البحرية والطاقة في النظم البيئية البحرية"],["Revise units 3–4: atmosphere and climate change","مراجعة الوحدتين 3–4: إدارة الغلاف الجوي وتغير المناخ"]]},{"id":"geo","name":"Geography & Modern Technologies","ar":"الجغرافيا والتقنيات الحديثة","color":"#3F51B5","gen":true,"old":["1-1 تطور الجغرافيا والخرائط","1-2 الخريطة: عناصرها وأنواعها","1-3 إنتاج الخرائط","2-1 مدخل إلى علم المساحة"],"new":["2-2 المسح الأرضي","2-3 نظام تحديد المواقع العالمي","2-4 المسح الجوي التصويري"],"fin":[["Revise unit 1: cartography","مراجعة الوحدة 1: علم الخرائط"],["Revise unit 2: surveying and its applications","مراجعة الوحدة 2: علم المساحة وتطبيقاته"]]},{"id":"spo","name":"Physical Education","ar":"الرياضة المدرسية","color":"#F4511E","gen":true,"old":["الوحدة 1: مراجعة عناصر اللياقة البدنية وتدريباتها","الوحدة 1: الجلد العضلي","الوحدة 1: الجلد الدوري التنفسي","الوحدة 2: مسابقات الميدان: دفع الجلة بطريقة الزحف"],"new":["الوحدة 3: كرة القدم: الخطط الهجومية والدفاعية","الوحدة 4: تنظيم المسابقات: الدوري من مرحلة واحدة","الوحدة 4: تنظيم المسابقات: الدوري من مرحلتين"],"noPractice":true,"fin":[["Revise units 1–2: fitness and field events","مراجعة الوحدتين 1–2: اللياقة البدنية ومسابقات الميدان"],["Revise units 3–4: football and competitions","مراجعة الوحدتين 3–4: كرة القدم وتنظيم المسابقات"]]},{"id":"mus","name":"Music","ar":"الموسيقى","color":"#AD1457","gen":true,"old":["الوحدة 1: الطبقات الصوتية","الوحدة 1: التنفس والرنين","الوحدة 1: تدريبات عملية لتربية الصوت","الوحدة 2: قواعد هارمونية","الوحدة 2: مصاحبة هارمونية","الوحدة 2: عزف تآلفات هارمونية"],"new":["الوحدة 3: انتشار الموسيقا في الأندلس","الوحدة 3: زرياب (777–852م)","الوحدة 3: الموشحات الأندلسية","الوحدة 4: تصوير السلالم والألحان","الوحدة 4: الأشكال الإيقاعية غير المألوفة","الوحدة 4: صولفيج غنائي"],"noPractice":true,"fin":[["Revise units 1–2: the voice and harmony","مراجعة الوحدتين 1–2: الصوت البشري والهارموني"],["Revise units 3–4: Andalusian music and theory","مراجعة الوحدتين 3–4: موسيقا الأندلس والقواعد والنظريات"]]}],"memo":[{"title":"سورة النور (30–31)","lesson":"قيمنا: العفة والطهر · ص 39","text":""},{"title":"حديث: إن الله أنزل الداء والدواء","lesson":"قيمنا: التداوي · ص 45","text":"«إنَّ اللهَ أنزلَ الداءَ والدواءَ، وجعلَ لكلِّ داءٍ دواءً، فتداوَوا ولا تداوَوا بحرامٍ» (رواه أبو داود)"},{"title":"حديث: يُحشر الناس يوم القيامة","lesson":"عقيدتنا: البعث والحشر · ص 74","text":"«يُحشَرُ النَّاسُ يومَ القيامةِ على أرضٍ بيضاءَ عَفْراءَ، كقُرصةِ النَّقِيِّ، ليس فيها مَعْلَمٌ لأحدٍ» (متفق عليه)"},{"title":"سورة محمد (12–15)","lesson":"عقيدتنا: نعيم الجنة وعذاب النار · ص 80","text":""},{"title":"سورة البقرة (142–145)","lesson":"هويتنا: الهوية وتحويل القبلة · ص 91","text":""},{"title":"حديث: لو أن أهل عُمان أتيت","lesson":"هويتنا: دور العُمانيين · ص 101","text":"«لو أنَّ أهلَ عُمانَ أتيتَ، ما سبُّوكَ ولا ضربوكَ» (رواه مسلم)"},{"title":"حديث: من غشّ فليس مني","lesson":"معاملاتنا: حرمة الغش · ص 112","text":"«ما هذا يا صاحبَ الطعامِ؟ ... أفلا جعلتَه فوقَ الطعامِ كي يراه الناسُ؟ مَن غشَّ فليس منِّي» (رواه مسلم)"},{"title":"سورة البقرة (275–281)","lesson":"معاملاتنا: الوعيد الشديد في التعامل بالربا · ص 125","text":""},{"title":"سورة الأعراف (157–158)","lesson":"من مدرسة النبوة: فلاحك باتباعك رسولك · ص 133","text":""}]}</script>
+<script id="app">(function(){
+"use strict";
+/* ---------- constants ---------- */
+var START='2026-11-16', END='2026-12-25', CATCH_S='2026-12-24', CATCH_E='2026-12-25', FINAL_S='2026-12-26', FINAL_E='2027-01-16', LAST='2027-01-17', MEMO_E='2027-01-05';
+var ALL_EXAMS=[{date:'2026-12-28',subj:'art'},{date:'2026-12-30',subj:'mat'},{date:'2026-12-31',subj:'wat'},{date:'2027-01-03',subj:'ara'},{date:'2027-01-06',subj:'isl'},{date:'2027-01-07',subj:'bio'},{date:'2027-01-13',subj:'eng'},{date:'2027-01-17',subj:'chm'}];
+ALL_EXAMS=ALL_EXAMS.concat([{date:'2026-12-30',subj:'bma'},{date:'2027-01-04',subj:'his'},{date:'2027-01-10',subj:'phy'},{date:'2027-01-12',subj:'env'},{date:'2027-01-14',subj:'geo'}]).sort(function(a,b){return a.date<b.date?-1:1;});
+var EXAMS=ALL_EXAMS.slice();
+/* final revision before each exam: [date, subject, title] */
+var FINALS=[["2026-12-26", "art", "Revise units 1–3"], ["2026-12-26", "art", "Revise units 4–6"], ["2026-12-26", "mat", "Revise unit 1"], ["2026-12-26", "wat", "Revise unit 1"], ["2026-12-27", "mat", "Revise unit 2"], ["2026-12-27", "mat", "Revise unit 3"], ["2026-12-27", "wat", "Revise unit 2"], ["2026-12-27", "art", "Exam eve: summary sheet, early sleep"], ["2026-12-28", "mat", "Revise unit 4"], ["2026-12-28", "mat", "Timed past paper"], ["2026-12-29", "mat", "Mark the paper · fix weak points"], ["2026-12-29", "mat", "End-of-unit review exercises"], ["2026-12-29", "wat", "Timed past paper"], ["2026-12-29", "mat", "Exam eve: summary sheet, early sleep"], ["2026-12-30", "wat", "Summary of both units · maps and dates"], ["2026-12-30", "wat", "Exam eve: summary sheet, early sleep"], ["2026-12-31", "ara", "Revise grammar (النحو)"], ["2026-12-31", "ara", "Revise morphology (الصرف)"], ["2027-01-01", "ara", "Revise rhetoric (البلاغة)"], ["2027-01-01", "ara", "Revise prosody (العروض)"], ["2027-01-01", "ara", "Revise المؤنس lessons 1–9"], ["2027-01-01", "bio", "Revise unit 1"], ["2027-01-02", "ara", "Revise المؤنس lessons 10–17"], ["2027-01-02", "ara", "Timed past paper"], ["2027-01-02", "bio", "Revise unit 2"], ["2027-01-02", "ara", "Exam eve: summary sheet, early sleep"], ["2027-01-03", "isl", "Revise unit 1"], ["2027-01-03", "isl", "Revise unit 2"], ["2027-01-04", "isl", "Revise unit 3"], ["2027-01-04", "isl", "Revise unit 4"], ["2027-01-04", "bio", "Revise unit 3"], ["2027-01-04", "isl", "Recite all verses & Hadith"], ["2027-01-05", "isl", "Revise unit 5"], ["2027-01-05", "isl", "Revise unit 6"], ["2027-01-05", "isl", "Timed past paper"], ["2027-01-05", "bio", "Revise unit 4"], ["2027-01-05", "isl", "Exam eve: summary sheet, early sleep"], ["2027-01-06", "bio", "Revise unit 5"], ["2027-01-06", "bio", "Timed past paper"], ["2027-01-06", "bio", "Exam eve: summary sheet, early sleep"], ["2027-01-08", "eng", "Revise theme 1"], ["2027-01-08", "eng", "Revise theme 2"], ["2027-01-08", "chm", "Revise unit 1"], ["2027-01-09", "eng", "Revise theme 3"], ["2027-01-09", "eng", "Revise theme 4"], ["2027-01-09", "chm", "Revise unit 2"], ["2027-01-10", "eng", "Grammar review: all four themes"], ["2027-01-10", "eng", "Timed past paper"], ["2027-01-10", "chm", "Revise unit 3"], ["2027-01-11", "eng", "Mark the paper · fix weak points"], ["2027-01-11", "eng", "Writing practice: one timed essay"], ["2027-01-11", "chm", "Revise unit 4"], ["2027-01-12", "eng", "Timed past paper 2"], ["2027-01-12", "eng", "Exam eve: summary sheet, early sleep"], ["2027-01-13", "chm", "Timed past paper"], ["2027-01-14", "chm", "Mark the paper · fix weak points"], ["2027-01-14", "chm", "Calculations drill: pH, Ka, electrolysis, Born–Haber"], ["2027-01-15", "chm", "Organic reactions summary"], ["2027-01-15", "chm", "Timed past paper 2"], ["2027-01-16", "chm", "Revise all weak topics"], ["2027-01-16", "chm", "One-page summary sheet"], ["2027-01-16", "chm", "Exam eve: summary sheet, early sleep"]];
+function examOn(d){for(var i=0;i<EXAMS.length;i++)if(EXAMS[i].date===d)return EXAMS[i];return null;}
+var PHASES=[
+  {key:'study',kinds:['old','new'],start:'2026-11-16',end:'2026-12-18',label:'Old + new lessons, mixed every day',short:'Old + New'},
+  {key:'practice',kinds:['practice'],start:'2026-12-19',end:'2026-12-23',label:'Final test practice',short:'Practice'}
+];
+var KINDS=[{key:'old',short:'Old'},{key:'new',short:'New'},{key:'practice',short:'Practice'},{key:'final',short:'Final'}];
+var SCHOOL_S='2026-11-15',SCHOOL_E='2026-12-08';
+var WD_SLOTS=['4:00 PM','5:15 PM','7:30 PM','8:45 PM','9:30 PM'];
+var WE_SLOTS=['9:00 AM','10:30 AM','12:00 PM','4:00 PM','5:30 PM','7:30 PM','8:45 PM'];
+var PRACTICE=['Past exam paper 1 (timed)','Mark paper 1 · list weak topics','Past exam paper 2 (timed)'];
+var REASONS=['Ran out of time','Tired or unwell','School homework or test','Lesson too hard · need help','Family or social event','Distracted (phone)','Other'];
+var MEMO_STEPS=['Read, understand, memorize first half','Memorize second half','Recite the whole text from memory'];
+var KIND_LABEL={old:'Old lesson',new:'New lesson',practice:'Test practice',final:'Final revision',memo:'Memorize',review:'Memorize'};
+var HEAD='<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Grade 12 Study Planner · منظّم المذاكرة</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">';
+
+var MSGS=[
+['A good start is half the work. Today is day one, and you showed up.','بداية موفقة يا غادة، والخطوة الأولى هي الأصعب.'],
+['You do not have to study everything today. Just today’s three sessions.','ركّزي على جلسات اليوم فقط، والباقي سيأتي في وقته.'],
+['Small steps every day add up to big results in December.','قليلٌ دائم خيرٌ من كثيرٍ منقطع.'],
+['Here and now, Ghada.','هنا والآن يا غادة'],
+['Every lesson you review now is one less worry in exam week.','كل درس تراجعينه اليوم يخفف عنك يوم الامتحان.'],
+['Mistakes in practice are gifts. They show you exactly what to fix.','الخطأ في التدريب فرصة للتعلّم.'],
+['\u201cFor indeed, with hardship comes ease. Indeed, with hardship comes ease.\u201d (94:5–6)','\u0641\u064e\u0625\u0650\u0646\u0651\u064e \u0645\u064e\u0639\u064e \u0627\u0644\u0652\u0639\u064f\u0633\u0652\u0631\u0650 \u064a\u064f\u0633\u0652\u0631\u064b\u0627 \u060c \u0625\u0650\u0646\u0651\u064e \u0645\u064e\u0639\u064e \u0627\u0644\u0652\u0639\u064f\u0633\u0652\u0631\u0650 \u064a\u064f\u0633\u0652\u0631\u064b\u0627'],
+['One week done. Look at how many ticks you already have.','أسبوع كامل من الجهد، فخورون بك.'],
+['\u201cAnd that his effort is going to be seen, then he will be rewarded with the fullest reward.\u201d (53:40–41)','\u0648\u064e\u0623\u064e\u0646\u0651\u064e \u0633\u064e\u0639\u0652\u064a\u064e\u0647\u064f \u0633\u064e\u0648\u0652\u0641\u064e \u064a\u064f\u0631\u064e\u0649\u0670 \u060c \u062b\u064f\u0645\u0651\u064e \u064a\u064f\u062c\u0652\u0632\u064e\u0627\u0647\u064f \u0627\u0644\u0652\u062c\u064e\u0632\u064e\u0627\u0621\u064e \u0627\u0644\u0652\u0623\u064e\u0648\u0652\u0641\u064e\u0649\u0670'],
+['Your phone can wait 60 minutes. Your future cannot.','أبعدي الهاتف قليلًا، وستنجزين أكثر.'],
+['Drink water, sit up straight, and give this session your full attention.','اشربي الماء وركّزي، أنت قادرة.'],
+['Missed a session? No guilt. Just pick a makeup time and move on.','فاتتك جلسة؟ لا بأس، حدّدي وقتًا لتعويضها.'],
+['“Their Lord answered them: I will not let the work of any of you be lost, male or female.” (3:195)','فَاسْتَجَابَ لَهُمْ رَبُّهُمْ أَنِّي لَا أُضِيعُ عَمَلَ عَامِلٍ مِّنكُم مِّن ذَكَرٍ أَوْ أُنثَىٰ'],
+['Explain one idea aloud today as if you were the teacher.','اشرحي فكرة بصوت عالٍ كأنك المعلمة.'],
+['Two weeks in. Halfway through the review season. Keep the pace.','أنتِ في منتصف الطريق، استمري.'],
+['“And say: My Lord, increase me in knowledge.” (20:114)','وَقُل رَّبِّ زِدْنِي عِلْمًا'],
+['Focus beats hours. One focused hour is worth three distracted ones.','ساعة تركيز تعادل ثلاث ساعات تشتت.'],
+['Be proud of the girl who keeps going even on slow days.','افخري بنفسك لأنك تستمرين حتى في الأيام الصعبة.'],
+['Sleep is part of studying. Your brain saves today’s lessons at night.','النوم الجيد يساعد على الحفظ.'],
+['Review what you memorized this morning once more before bed.','راجعي محفوظك قبل النوم ليثبت.'],
+['Celebrate small wins. Every tick on this page is real progress.','احتفلي بكل إنجاز صغير.'],
+['Three weeks of effort. Your future self is already thankful.','ثلاثة أسابيع من الاجتهاد، أحسنت.'],
+['When it feels heavy, do just ten minutes. Starting is the hardest part.','ابدئي بعشر دقائق فقط، والباقي يأتي.'],
+['You are more prepared today than you were yesterday.','أنتِ اليوم أقوى من الأمس.'],
+['Last school day before home study. You handled the school weeks so well.','آخر يوم في المدرسة قبل المذاكرة في البيت، أحسنتِ التحمّل.'],
+['Home days now. More time, so take proper breaks between sessions.','أيام المنزل بدأت، نظّمي وقتك واستريحي بين الجلسات.'],
+['“Allah does not burden a soul beyond that it can bear.” (2:286)','لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا'],
+['Trust the plan. It was built so you finish everything on time.','ثقي بالخطة، فهي مصمَّمة لتنجحي.'],
+['Every expert was once a beginner who did not give up.','كل متميّز كان مبتدئًا لم يستسلم.'],
+['“And your Lord is going to give you, and you will be satisfied.” (93:5)','وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ'],
+['Read the question twice, answer once. Start practising that habit now.','اقرئي السؤال مرتين قبل الإجابة.'],
+['You have already done more than most people think you can.','لقد أنجزتِ أكثر مما تتوقعين.'],
+['Strong finish on the lessons. Keep going.','اقتربتِ من إنهاء الدروس، استمري.'],
+['Today and tomorrow are the last lesson days. Keep the same energy.','اليوم وغدًا آخر أيام الدروس، استمري بنفس الهمّة.'],
+['All lessons covered by today. That is a huge achievement.','أنهيتِ الدروس، إنجاز كبير!'],
+['Here and now, Ghada.','هنا والآن يا غادة'],
+['Practice week: treat each past paper like the real exam.','أسبوع التدريب: تعاملي مع كل اختبار سابق كأنه الامتحان الحقيقي.'],
+['Keep your summary sheets short. One page per subject is enough.','ورقة ملخص واحدة لكل مادة تكفي.'],
+['“So remember Me; I will remember you.” (2:152)','فَاذْكُرُونِي أَذْكُرْكُمْ'],
+['\u201cAnd that his effort is going to be seen, then he will be rewarded with the fullest reward.\u201d (53:40–41)','\u0648\u064e\u0623\u064e\u0646\u0651\u064e \u0633\u064e\u0639\u0652\u064a\u064e\u0647\u064f \u0633\u064e\u0648\u0652\u0641\u064e \u064a\u064f\u0631\u064e\u0649\u0670 \u060c \u062b\u064f\u0645\u0651\u064e \u064a\u064f\u062c\u0652\u0632\u064e\u0627\u0647\u064f \u0627\u0644\u0652\u062c\u064e\u0632\u064e\u0627\u0621\u064e \u0627\u0644\u0652\u0623\u064e\u0648\u0652\u0641\u064e\u0649\u0670'],
+['Practice week done. Today and tomorrow are for catching up on anything you missed.','انتهى أسبوع التدريب. اليوم والغد لتعويض ما فاتك.'],
+['Last catch-up day. Clear your list, then rest. Exam season starts tomorrow.','آخر يوم تعويض. أنهي ما تبقى ثم استريحي، فموسم الاختبارات يبدأ غدًا.'],
+['Final revision begins: Art first, then Maths and Social Studies. One step at a time.','بدأت المراجعة النهائية: الفنون أولًا ثم الرياضيات وهذا وطني. خطوة بخطوة.'],
+['Art exam tomorrow. Review your terms and artists, then sleep early.','اختبار الفنون غدًا. راجعي المصطلحات والفنانين ونامي مبكرًا.'],
+['Art exam today. Bismillah. Then a calm afternoon of Maths.','بسم الله، اليوم اختبار الفنون، وبعده مراجعة هادئة للرياضيات.'],
+['Maths tomorrow. Practise, check your formulas, and get to bed early.','الرياضيات غدًا. تدربي وراجعي القوانين ونامي مبكرًا.'],
+['Maths exam today. Show every step and check your answers.','اليوم اختبار الرياضيات. اكتبي كل الخطوات وراجعي إجاباتك.'],
+['Social Studies exam today. Three exams done after this.','اليوم اختبار هذا وطني، وبعده تكونين أنهيتِ ثلاثة اختبارات.'],
+['A new year and a new start. Arabic revision today: rhetoric and prosody.','عام جديد وبداية جديدة. مراجعة العربية اليوم: البلاغة والعروض.'],
+['Arabic exam tomorrow. Read your summary once, then rest. Sleep early.','اختبار العربية غدًا. راجعي الملخص مرة واحدة ثم استريحي ونامي مبكرًا.'],
+['Arabic exam today. Bismillah. Read each question twice and manage your time.','بسم الله، اليوم اختبار العربية. اقرئي كل سؤال مرتين ونظّمي وقتك.'],
+['Halfway through the exams. Focus on Islamic Education and keep your verses fresh.','أنتِ في منتصف الاختبارات. ركّزي على التربية الإسلامية وراجعي محفوظك.'],
+['Islamic Education tomorrow. Recite your verses and Hadith once more, then sleep early.','التربية الإسلامية غدًا. سمّعي الآيات والأحاديث مرة أخيرة ونامي مبكرًا.'],
+['Islamic Education exam today. \u201cMy Lord, expand for me my breast.\u201d (20:25)','\u0631\u064e\u0628\u0651\u0650 \u0627\u0634\u0652\u0631\u064e\u062d\u0652 \u0644\u0650\u064a \u0635\u064e\u062f\u0652\u0631\u0650\u064a · بالتوفيق في اختبار التربية الإسلامية'],
+['Biology exam today. You have revised every unit. Trust your preparation.','اليوم اختبار الأحياء. راجعتِ كل الوحدات، فثقي بنفسك.'],
+['Six exams done. Two to go: English and Chemistry.','انتهت ستة اختبارات، وبقي اختباران: الإنجليزية والكيمياء.'],
+['English and Chemistry revision. Read one English text aloud today.','مراجعة الإنجليزية والكيمياء. اقرئي نصًا إنجليزيًا بصوت عالٍ اليوم.'],
+['Grammar check: past simple, past perfect, first conditional, present perfect.','مراجعة القواعد: الماضي البسيط، الماضي التام، الشرط الأول، المضارع التام.'],
+['Write one timed essay today. Plan for five minutes before you start.','اكتبي مقالًا بوقت محدد اليوم، وخططي له خمس دقائق قبل البدء.'],
+['English exam tomorrow. Light review and an early night.','اختبار الإنجليزية غدًا. مراجعة خفيفة ونوم مبكر.'],
+['English exam today. Read the questions carefully and leave time to check.','اليوم اختبار الإنجليزية. اقرئي الأسئلة بعناية واتركي وقتًا للمراجعة.'],
+['Last stretch: Chemistry only now. Start with the calculations.','المرحلة الأخيرة: الكيمياء فقط. ابدئي بالمسائل الحسابية.'],
+['Organic reactions: draw them, don\u2019t just read them.','التفاعلات العضوية: ارسميها ولا تكتفي بقراءتها.'],
+['Last exam tomorrow. Light review, early sleep. You have almost done it.','آخر اختبار غدًا. مراجعة خفيفة ونوم مبكر. أوشكتِ على النهاية.'],
+['Chemistry exam today, your last one. Bismillah. We are so proud of you, Ghada.','اليوم اختبار الكيمياء، آخر اختبار. بسم الله، نحن فخورون بك جدًا يا غادة.']
+];
+/* ---------- date helpers ---------- */
+function D(s){var p=s.split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));}
+function S(d){return d.toISOString().slice(0,10);}
+function add(s,n){var d=D(s);d.setUTCDate(d.getUTCDate()+n);return S(d);}
+function dow(s){return D(s).getUTCDay();}
+function weekend(s){var w=dow(s);return w===5||w===6;}
+function schoolDay(s){return !weekend(s)&&s>=SCHOOL_S&&s<=SCHOOL_E;}
+function range(a,b){var o=[];for(var x=a;x<=b;x=add(x,1))o.push(x);return o;}
+function diff(a,b){return Math.round((D(b)-D(a))/864e5);}
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var DOWL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function localToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function phaseOf(s){for(var i=0;i<PHASES.length;i++)if(s>=PHASES[i].start&&s<=PHASES[i].end)return PHASES[i];if(s>=CATCH_S&&s<=CATCH_E)return{key:'catch',label:'Catch-up & light review',short:'Catch-up'};var ex=examOn(s);if(ex)return{key:'exam',label:'Exam day',short:'Exam'};if(s>=FINAL_S&&s<=FINAL_E)return{key:'final',label:'Exam season: final revision',short:'Exams'};return null;}
+
+/* ---------- planner ---------- */
+function quotas(days,n){
+  var caps=days.map(function(d){return schoolDay(d)?3:6;});
+  var tot=caps.reduce(function(a,b){return a+b;},0),cum=0,prev=0;
+  return caps.map(function(c){cum+=c;var r=Math.round(n*cum/tot);var q=r-prev;prev=r;return q;});
+}
+function spread(items,days,mk){
+  if(!days.length||!items.length)return[];
+  var q=quotas(days,items.length),queues={},order=[],init={},kinit={},krem={};
+  items.forEach(function(it){var qk=it.subj+'|'+it.kind;if(!queues[qk]){queues[qk]=[];order.push(qk);}queues[qk].push(it);kinit[it.kind]=(kinit[it.kind]||0)+1;});
+  order.forEach(function(s){init[s]=queues[s].length;});
+  Object.keys(kinit).forEach(function(k){krem[k]=kinit[k];});
+  var out=[],last={};
+  days.forEach(function(d,i){
+    var today={},used={},slots=schoolDay(d)?WD_SLOTS:WE_SLOTS;
+    for(var k=0;k<q[i];k++){
+      var live=Object.keys(krem).filter(function(x){return krem[x]>0;});
+      if(!live.length)break;
+      live.sort(function(a,b){var ua=used[a]||0,ub=used[b]||0;if(ua!==ub)return ua-ub;return krem[b]/kinit[b]-krem[a]/kinit[a];});
+      var kind=live[0];
+      var c=order.filter(function(s){return queues[s].length&&s.split('|')[1]===kind;});
+      c=c.map(function(x){return x.split('|')[0];});
+      c.sort(function(a,b){a=a;b=b;var qa=queues[a+'|'+kind],qb=queues[b+'|'+kind];
+        var pa=(today[a]?2:0)+(last[a]?1:0),pb=(today[b]?2:0)+(last[b]?1:0);
+        if(pa!==pb)return pa-pb;
+        var ra=qa.length/init[a+'|'+kind],rb=qb.length/init[b+'|'+kind];
+        if(ra!==rb)return rb-ra;
+        return qb.length-qa.length;
+      });
+      var s=c[0],it=queues[s+'|'+kind].shift();today[s]=1;used[kind]=(used[kind]||0)+1;krem[kind]--;
+      out.push(mk(it,d,slots[k]||'Extra'));
+    }
+    last=today;
+  });
+  return out;
+}
+function memoPlan(memo){
+  /* fixed by calendar: 3 days per item, then review rounds */
+  var days=range(START,MEMO_E),out=[],n=memo.length,groups=[];
+  for(var g=0;g<n;g+=3)groups.push([g,Math.min(g+2,n-1)]);
+  days.forEach(function(d,i){
+    var t;
+    if(i<n*3){var it=Math.floor(i/3),st=i%3;t={key:'memo|'+it+'|'+st,item:it,title:MEMO_STEPS[st]};}
+    else{var r=(i-n*3)%(groups.length+1);
+      if(r<groups.length)t={key:'rev|'+i,item:-1,group:groups[r],title:'Review items '+(groups[r][0]+1)+'–'+(groups[r][1]+1)};
+      else t={key:'rev|'+i,item:-1,group:[0,n-1],title:'Recite all '+n+' from memory · ask someone to listen'};}
+    t.date=d;t.time=schoolDay(d)?'5:45 AM · 15 min':(examOn(d)?'6:00 AM · 15 min':'8:00 AM · 20 min');t.kind=t.item>=0?'memo':'review';t.subj='isl';
+    out.push(t);
+  });
+  return out;
+}
+function buildPlan(st,from){
+  var kept=st.tasks?st.tasks.filter(function(t){return t.status!=='pending'||t.date<from;}):[];
+  var have={};kept.forEach(function(t){have[t.key]=1;});
+  var seq=st.seq||1,tasks=kept.slice();
+  function mk(it,d,time){return{id:'t'+(seq++),key:it.key,date:d,time:time,subj:it.subj,kind:it.kind,title:it.title,status:'pending'};}
+  PHASES.forEach(function(ph){
+    var items=[];
+    st.subjects.forEach(function(sb){
+      ph.kinds.forEach(function(kd){
+        var list=kd==='practice'?(sb.noPractice?[]:PRACTICE):(sb[kd]||[]);
+        list.forEach(function(title){var key=sb.id+'|'+kd+'|'+title;if(!have[key])items.push({key:key,subj:sb.id,kind:kd,title:title});});
+      });
+    });
+    var s=ph.start<from?from:ph.start,days=s<=ph.end?range(s,ph.end):[];
+    if(!days.length){var cs=CATCH_S<from?from:CATCH_S;days=cs<=CATCH_E?range(cs,CATCH_E):[];}
+    tasks=tasks.concat(spread(items,days,mk));
+  });
+  var GF=[];st.subjects.forEach(function(sb){
+    if(!sb.gen)return;var ex=(st.examDates&&st.examDates[sb.id])||(ALL_EXAMS.filter(function(e){return e.subj===sb.id;})[0]||{}).date;if(!ex)return;
+    var n=sb.old.length+sb.new.length,h=Math.ceil(n/2);
+    if(sb.fin&&sb.fin.length){sb.fin.forEach(function(x,k){if(typeof FINAL_AR!=='undefined')FINAL_AR[x[0]]=x[1];GF.push([add(ex,-(sb.fin.length+1-k)),sb.id,x[0]]);});}
+    else{if(n)GF.push([add(ex,-3),sb.id,n>1?'Revise lessons 1–'+h:'Revise lessons 1']);
+    if(n>1)GF.push([add(ex,-2),sb.id,'Revise lessons '+(h+1)+'–'+n]);}
+    GF.push([add(ex,-1),sb.id,sb.noPractice?'End-of-unit review exercises':'Timed past paper']);
+    GF.push([add(ex,-1),sb.id,'Exam eve: summary sheet, early sleep']);
+  });
+  var cnt={};
+  FINALS.concat(GF).forEach(function(f){
+    var key='final|'+f[1]+'|'+f[0]+'|'+f[2];if(have[key]||f[0]<from||!st.subjects.some(function(x){return x.id===f[1];}))return;
+    var k=cnt[f[0]]=(cnt[f[0]]||0),slots=examOn(f[0])?['4:00 PM','5:30 PM','7:30 PM']:WE_SLOTS;cnt[f[0]]++;
+    if(/^Exam eve/.test(f[2]))slots=['8:30 PM','8:30 PM','8:30 PM','8:30 PM','8:30 PM'];
+    tasks.push({id:'t'+(seq++),key:key,date:f[0],time:slots[k]||'Extra',subj:f[1],kind:'final',title:f[2],status:'pending'});
+  });
+  (st.memo&&st.memo.length&&st.subjects.some(function(x){return x.id==='isl';})?memoPlan(st.memo):[]).forEach(function(m){
+    if(have[m.key]||m.date<from)return;
+    tasks.push({id:'t'+(seq++),key:m.key,date:m.date,time:m.time,subj:'isl',kind:m.kind,title:m.title,item:m.item,group:m.group,status:'pending'});
+  });
+  st.seq=seq;
+  tasks.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.kind==='memo'||a.kind==='review'?-1:0)-(b.kind==='memo'||b.kind==='review'?-1:0);});
+  st.tasks=tasks;return st;
+}
+if(typeof module!=='undefined'&&typeof window==='undefined'){module.exports={buildPlan:buildPlan,PHASES:PHASES,KINDS:KINDS};return;}
+
+/* ---------- state & saving ---------- */
+var CAT=JSON.parse(document.getElementById('catalog').textContent),SKEY='sp-state';
+var state=null;try{state=JSON.parse(localStorage.getItem(SKEY)||'null');}catch(e){}
+if(state&&(!state.subjects||!state.subjects.length||!state.tasks))state=null;
+var OMAN=[["مسقط", ["مسقط", "مطرح", "بوشر", "السيب", "العامرات", "قريات"]], ["ظفار", ["صلالة", "طاقة", "مرباط", "رخيوت", "ثمريت", "ضلكوت", "المزيونة", "مقشن", "شليم وجزر الحلانيات", "سدح"]], ["مسندم", ["خصب", "دبا", "بخا", "مدحاء"]], ["البريمي", ["البريمي", "محضة", "السنينة"]], ["الداخلية", ["نزوى", "بهلا", "منح", "الحمراء", "أدم", "إزكي", "سمائل", "بدبد", "الجبل الأخضر"]], ["شمال الباطنة", ["صحار", "شناص", "لوى", "صحم", "الخابورة", "السويق"]], ["جنوب الباطنة", ["الرستاق", "العوابي", "نخل", "وادي المعاول", "بركاء", "المصنعة"]], ["جنوب الشرقية", ["صور", "الكامل والوافي", "جعلان بني بو حسن", "جعلان بني بو علي", "مصيرة"]], ["شمال الشرقية", ["إبراء", "المضيبي", "بدية", "القابل", "وادي بني خالد", "دماء والطائيين", "سناو"]], ["الظاهرة", ["عبري", "ينقل", "ضنك"]], ["الوسطى", ["هيماء", "محوت", "الدقم", "الجازر"]]];
+/* anonymous usage counter: only active when served from Google Apps Script */
+function devId(){var k='sp-dev',v=null;try{v=localStorage.getItem(k);if(!v){v='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem(k,v);}}catch(e){}return v||'anon';}
+function track(ev){try{
+  if(!(window.google&&google.script&&google.script.run))return;
+  var k='sp-sent-'+ev+(ev==='open'?'-'+localToday():'');if(localStorage.getItem(k))return;
+  google.script.run.withSuccessHandler(function(){try{localStorage.setItem(k,'1');}catch(e){}}).withFailureHandler(function(){}).logEvent(ev,devId(),state&&state.gov||'',state&&state.wil||'');
+}catch(e){}}
+function syncExams(){
+  if(typeof FINAL_AR==='object')CAT.subjects.concat(state?state.subjects:[]).forEach(function(s){(s.fin||[]).forEach(function(x){FINAL_AR[x[0]]=x[1];});});
+  EXAMS=ALL_EXAMS.filter(function(e){return !!state&&state.subjects.some(function(s){return s.id===e.subj;});});
+  if(state&&state.examDates)Object.keys(state.examDates).forEach(function(k){var d=state.examDates[k];if(d&&state.subjects.some(function(s){return s.id===k;})&&!EXAMS.some(function(e){return e.subj===k;}))EXAMS.push({date:d,subj:k,own:1});});
+  EXAMS.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+}
+syncExams();
+var lang=null;try{lang=localStorage.getItem('sp-lang');}catch(e){}
+if(lang!=='en'&&lang!=='ar')lang=state&&state.lang||null;
+var GM={"أبعدي": "أبعد", "أحسنتِ": "أحسنت", "أميلي": "أمِل", "أنتِ": "أنت", "أنجزتِ": "أنجزت", "أنشئي": "أنشئ", "أنهي": "أنهِ", "أنهيتِ": "أنهيت", "أوشكتِ": "أوشكت", "ابدئي": "ابدأ", "احتفلي": "احتفل", "اختاري": "اختر", "ارتاحي": "ارتح", "استريحي": "استرح", "استعددتِ": "استعددت", "استمري": "استمر", "اشربي": "اشرب", "اشرحي": "اشرح", "اضغطي": "اضغط", "اطلبي": "اطلب", "افخري": "افخر", "اقتربتِ": "اقتربت", "اقرئي": "اقرأ", "اكتبي": "اكتب", "امشي": "امشِ", "امنحي": "امنح", "انتقلي": "انتقل", "انظري": "انظر", "بذلتِ": "بذلت", "تتوقعين": "تتوقع", "تحسبي": "تحسب", "تدربي": "تدرّب", "تراجعي": "تراجع", "تراجعينه": "تراجعه", "تستمرين": "تستمر", "تعاملي": "تعامل", "تعوّضي": "تعوّض", "تكتفي": "تكتفِ", "تكونين": "تكون", "تناولي": "تناول", "ثقي": "ثق", "حاولي": "حاول", "حدّدي": "حدّد", "حرّكي": "حرّك", "خذي": "خذ", "راجعتِ": "راجعت", "راجعي": "راجع", "ركّزي": "ركّز", "سمّعي": "سمّع", "شبكي": "شبّك", "فثقي": "فثق", "فراجعي": "فراجع", "قفي": "قف", "كوني": "كن", "مدّي": "مدّ", "ميلي": "مِل", "نظّمي": "نظّم", "واتركي": "واترك", "واختاري": "واختر", "وارفعي": "وارفع", "واستريحي": "واسترح", "واسحبي": "واسحب", "وانحني": "وانحنِ", "وخذي": "وخذ", "وخططي": "وخطّط", "وراجعي": "وراجع", "ورمّشي": "ورمّش", "وستنجزين": "وستنجز", "ونامي": "ونم", "ونظّمي": "ونظّم", "اجتهدتِ": "اجتهدت", "لتنجحي": "لتنجح", "ارسميها": "ارسمها", "قادرة": "قادر", "فخورة": "فخورًا", "الطالبة": "الطالب", "المعلمة": "المعلم", "شربت": "شربت", "وتحرّكت": "وتحرّكت"},GMRX=new RegExp('(^|[^\u0600-\u06FF])('+Object.keys(GM).sort(function(a,b){return b.length-a.length;}).join('|')+')(?![\u0600-\u06FF])','g'),pendG='f';
+function isM(){return (state?state.gender:pendG)==='m';}
+function gm(s){return isM()&&typeof s==='string'?s.replace(GMRX,function(_,p,w){return p+GM[w];}):s;}
+function L(en,ar){return lang==='ar'?gm(ar):en;}
+var artifact=null,canWrite=true,saveTimer=null,saveKey='';
+function docFor(st){
+  var css=document.getElementById('st').textContent,app=document.getElementById('app').textContent;
+  var js=JSON.stringify(st).replace(/</g,'\\u003c');
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>'+HEAD+'<style id="st">'+css+'</style></head>\n<body><div id="root"></div>\n<script id="state" type="application/json">'+js+'<\/script>\n<script id="app">'+app+'<\/script>\n</body>\n</html>\n';
+}
+var SAVE_TXT={saving:['Saving…','جارٍ الحفظ…'],local:['Saved on this device','حُفظ على هذا الجهاز'],ro:['View only','للعرض فقط'],saved:['Saved','تم الحفظ'],ro2:['View only · changes are not kept','للعرض فقط · لن تُحفظ التغييرات'],conf:['Updated elsewhere · reloading','تم التحديث من جهاز آخر · إعادة تحميل'],err:['Could not save · try again','تعذّر الحفظ · حاولي مرة أخرى']};
+function save(){if(!state)return;state.savedAt=Date.now();try{localStorage.setItem(SKEY,JSON.stringify(state));setSave('local');}catch(e){setSave('err');}}
+function saveText(){var x=SAVE_TXT[saveKey];return x?L(x[0],x[1]):'';}
+function setSave(k){saveKey=k;var el=document.getElementById('savebadge');if(el)el.textContent=saveText();}
+
+
+/* ---------- language ---------- */
+var MON_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var DOW_AR=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+var DOWS_AR=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+var PRACTICE_AR=['اختبار سابق 1 (بوقت محدد)','تصحيح الاختبار 1 · تحديد نقاط الضعف','اختبار سابق 2 (بوقت محدد)','تصحيح الاختبار 2 · معالجة نقاط الضعف','اختبار سابق 3 (بوقت محدد)','تصحيح الاختبار 3 · تحديد نقاط الضعف','مراجعة جميع نقاط الضعف','ورقة ملخص من صفحة واحدة'];
+var REASONS_AR=['نفد الوقت','تعب أو مرض','واجبات أو اختبار مدرسي','الدرس صعب · أحتاج مساعدة','مناسبة عائلية أو اجتماعية','تشتت (الهاتف)','سبب آخر'];
+var MEMO_AR=['قراءة وفهم وحفظ النصف الأول','حفظ النصف الثاني','تسميع النص كاملًا غيبًا'];
+var KIND_AR={old:'درس قديم',new:'درس جديد',practice:'تدريب على الاختبار',final:'مراجعة نهائية',memo:'حفظ',review:'مراجعة الحفظ'};
+var KSHORT_AR={old:'قديم',new:'جديد',practice:'تدريب',final:'مراجعة'};
+var FINAL_AR={'End-of-unit review exercises':'تمارين مراجعة نهاية الوحدات','Summary of both units · maps and dates':'ملخص الوحدتين · الخرائط والتواريخ','Grammar review: all four themes':'مراجعة القواعد في المحاور الأربعة','Writing practice: one timed essay':'تدريب على الكتابة: مقال واحد بوقت محدد','Revise grammar (النحو)':'مراجعة النحو','Revise morphology (الصرف)':'مراجعة الصرف','Revise rhetoric (البلاغة)':'مراجعة البلاغة','Revise prosody (العروض)':'مراجعة العروض','Revise المؤنس lessons 1–9':'مراجعة دروس المؤنس 1–9','Revise المؤنس lessons 10–17':'مراجعة دروس المؤنس 10–17','Timed past paper':'اختبار سابق بوقت محدد','Timed past paper 2':'اختبار سابق 2 بوقت محدد','Timed past paper 3':'اختبار سابق 3 بوقت محدد','Mark the paper · fix weak points':'تصحيح الاختبار · معالجة نقاط الضعف','Recite all verses & Hadith':'تسميع جميع الآيات والأحاديث','Exam eve: summary sheet, early sleep':'ليلة الاختبار: ورقة الملخص ونوم مبكر','Calculations drill: pH, Ka, electrolysis, Born–Haber':'تدريب على المسائل الحسابية: pH وKa والتحليل الكهربائي وبورن-هابر','Organic reactions summary':'ملخص التفاعلات العضوية','Quick quiz on units 1–2':'اختبار قصير على الوحدتين 1–2','Revise all weak topics':'مراجعة جميع نقاط الضعف','One-page summary sheet':'ورقة ملخص من صفحة واحدة'};
+syncExams();
+var PH_AR={final:['الاختبارات','موسم الاختبارات: مراجعة نهائية'],exam:['اختبار','يوم اختبار'],study:['قديم + جديد','دروس قديمة وجديدة مدمجة يوميًا'],practice:['تدريب','التدريب على الاختبارات النهائية'],catch:['تعويض','يوم تعويض ومراجعة خفيفة'],exam:['اختبار','يوم اختبار']};
+function nice(s){var d=D(s);return lang==='ar'?DOW_AR[d.getUTCDay()]+' '+d.getUTCDate()+' '+MON_AR[d.getUTCMonth()]:DOW[d.getUTCDay()]+' '+d.getUTCDate()+' '+MON[d.getUTCMonth()];}
+function dm(s){var d=D(s);return d.getUTCDate()+' '+(lang==='ar'?MON_AR:MON)[d.getUTCMonth()];}
+function niceLong(s){var d=D(s);return lang==='ar'?DOW_AR[d.getUTCDay()]+'، '+d.getUTCDate()+' '+MON_AR[d.getUTCMonth()]:DOWL[d.getUTCDay()]+', '+d.getUTCDate()+' '+MON[d.getUTCMonth()];}
+function tm(s){if(lang!=='ar'||!s)return s||'';return s.replace(/AM/g,'ص').replace(/PM/g,'م').replace('min','دقيقة').replace('Extra','إضافي');}
+function phLabel(){return gm(phLabel0.apply(null,arguments));}
+function phLabel0(ph){return lang==='ar'&&PH_AR[ph.key]?PH_AR[ph.key][1]:ph.label;}
+function phShort(){return gm(phShort0.apply(null,arguments));}
+function phShort0(ph){return lang==='ar'&&PH_AR[ph.key]?PH_AR[ph.key][0]:ph.short;}
+function kindLabel(){return gm(kindLabel0.apply(null,arguments));}
+function kindLabel0(k){return lang==='ar'?KIND_AR[k]:KIND_LABEL[k];}
+function kShort(k){return lang==='ar'?KSHORT_AR[k.key]:k.short;}
+function reasonTxt(){return gm(reasonTxt0.apply(null,arguments));}
+function reasonTxt0(r){var i=REASONS.indexOf(r);return lang==='ar'&&i>=0?REASONS_AR[i]:r;}
+function sName(s){return lang==='ar'?(s.ar||s.name):s.name;}
+function stepTxt(){return gm(stepTxt0.apply(null,arguments));}
+function stepTxt0(t){var i=MEMO_STEPS.indexOf(t.title);return lang==='ar'&&i>=0?MEMO_AR[i]:t.title;}
+function reviewTxt(t){
+  if(lang!=='ar')return t.title;
+  var m=/^Review items (\d+)–(\d+)/.exec(t.title);if(m)return 'مراجعة النصوص '+m[1]+'–'+m[2];
+  if(/^Recite all/.test(t.title))return 'تسميع النصوص كلها غيبًا · اطلبي من أحد أن يستمع';
+  return t.title;
+}
+function applyDir(){document.documentElement.lang=lang==='ar'?'ar':'en';document.documentElement.dir=lang==='ar'?'rtl':'ltr';}
+function setLang(l){lang=l;try{localStorage.setItem('sp-lang',l);}catch(e){}if(state&&state.lang!==l){state.lang=l;save();}applyDir();render();}
+
+/* ---------- ui state ---------- */
+var TABS=[['today','Day plan','خطة اليوم'],['calendar','Calendar','التقويم'],['subjects','Subjects','المواد'],['memorize','Memorization','الحفظ'],['makeup','Missed & makeup','الفائت والتعويض'],['lessons','My subjects','موادي ودروسي']];
+function hasIsl(){return !!state&&state.subjects.some(function(s){return s.id==='isl';});}
+function tab(){var h=(location.hash||'').slice(1);if(h==='memorize'&&!hasIsl())h='';return TABS.some(function(t){return t[0]===h;})?h:'today';}
+var sel=null;try{sel=sessionStorage.getItem('selDay');}catch(e){}
+if(!sel){var lt=localToday();sel=lt<START?START:lt>LAST?LAST:lt;}
+var openForm=null,msgOpen=false;
+function msgDay(){var d=today();return d<START?START:d>LAST?LAST:d;}
+function afterNow(){var md=msgDay(),n=new Date();return !!(examOn(md)&&md===today()&&(n.getHours()*60+n.getMinutes())>=690);}
+function nm(){return state&&state.student||'';}
+function pers(m){var n=nm();return [m[0].replace(/Ghada/g,n),m[1].replace(/غادة/g,n)];}
+function arDays(n){return n===1?'غدًا':n===2?'بعد يومين':n<=10?'بعد '+n+' أيام':'بعد '+n+' يومًا';}
+var AFTER_POOL=[
+ ['Well done, {n}! That exam is behind you now, so do not go over your answers. Rest a little, then start {x} calmly.','أحسنتِ يا {n}! انتهى الاختبار وصار خلفك، فلا تراجعي إجاباتك بقلق. استريحي قليلًا ثم ابدئي مراجعة {x} بهدوء.'],
+ ['Exam done, well done! Do not count mistakes now; you gave it your best. Have lunch and rest, then move on to {x}.','انتهى الاختبار، أحسنتِ! لا تحسبي الأخطاء الآن، فقد بذلتِ جهدك. تناولي غداءك واستريحي، ثم انتقلي إلى {x}.'],
+ ['What is done is done, and what comes next can be even better. Rest now, then give {x} the same effort.','ما مضى لا يعود، والقادم أجمل. ارتاحي الآن ثم امنحي {x} نفس الهمّة.'],
+ ['May Allah accept your effort! Take an hour off, then a calm first look at {x}.','تقبّل الله جهدك! استريحي ساعة، ثم نظرة هادئة على {x}.']
+];
+function afterMsg(d){
+  var i=-1;EXAMS.forEach(function(e,k){if(e.date===d)i=k;});if(i<0)return null;
+  var nx=EXAMS[i+1],n=nm();
+  if(!nx)return ['Congratulations, '+n+'! You have finished every exam. Be proud of every hour you worked. Now rest and celebrate.','مبروك يا '+n+'! أنهيتِ كل الاختبارات. كوني فخورة بكل ساعة اجتهدتِ فيها. الآن وقت الراحة والفرح.'];
+  var p=AFTER_POOL[i%AFTER_POOL.length],dd=diff(d,nx.date),s=subj(nx.subj),last=i+2===EXAMS.length;
+  return [p[0].replace('{n}',n).replace('{x}',s.name)+' Next exam: '+s.name+(dd===1?' tomorrow':' in '+dd+' days')+(last?', your last one.':'.'),
+          p[1].replace('{n}',n).replace('{x}',s.ar)+' الاختبار القادم: '+s.ar+' '+arDays(dd)+(last?'، وهو الأخير.':'.')];
+}
+var GEN=[5,29,3,11,6,12,19,8,23,35,31,39];
+function dailyMsg(md){
+  var i=Math.max(diff('2026-11-14',md),0);
+  if(md<FINAL_S)return pers(MSGS[Math.min(i,MSGS.length-1)]);
+  var ex=examOn(md),nx=EXAMS.filter(function(e){return e.date>md;})[0],n=nm(),s;
+  if(ex){s=subj(ex.subj);return [s.name+' exam today. Bismillah. Read every question twice and manage your time.'+(nx?'':' It is your last one. Be proud of yourself, '+n+'.'),'بسم الله، اليوم اختبار '+s.ar+'. اقرئي كل سؤال مرتين ونظّمي وقتك.'+(nx?'':' إنه آخر اختبار، كوني فخورة بنفسك يا '+n+'.')];}
+  if(!nx)return ['All your exams are finished. Well done, '+n+'!','انتهت كل اختباراتك. أحسنتِ يا '+n+'!'];
+  s=subj(nx.subj);
+  if(diff(md,nx.date)===1)return [s.name+' exam tomorrow. Read your summary once, then rest and sleep early.','اختبار '+s.ar+' غدًا. راجعي الملخص مرة واحدة ثم استريحي ونامي مبكرًا.'];
+  var g=pers(MSGS[GEN[i%GEN.length]]);
+  return [g[0]+' Next exam: '+s.name+', '+diff(md,nx.date)+' days away.',g[1]+' الاختبار القادم: '+s.ar+' '+arDays(diff(md,nx.date))+'.'];
+}
+function msgKey(){return msgDay()+(afterNow()?'-after':'');}
+function seen(){try{return localStorage.getItem('sp-msg-seen')===msgKey();}catch(e){return false;}}
+function setSel(d){sel=d;try{sessionStorage.setItem('selDay',d);}catch(e){}}
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function subj(id){for(var i=0;i<state.subjects.length;i++)if(state.subjects[i].id===id)return state.subjects[i];return{name:id,ar:'',color:'#888'};}
+function isDone(t){return t.status==='done'||t.status==='madeup';}
+function byId(id){if(!state)return null;for(var i=0;i<state.tasks.length;i++)if(state.tasks[i].id===id)return state.tasks[i];}
+function tasksOn(d){return state.tasks.filter(function(t){return t.date===d;});}
+function makeupsOn(d){return state.tasks.filter(function(t){return t.status==='missed'&&t.makeupDate===d;});}
+function today(){return localToday();}
+function load(d){return tasksOn(d).filter(function(t){return t.kind!=='memo'&&t.kind!=='review';}).length+makeupsOn(d).length;}
+function suggest(t){
+  var ex=EXAMS.filter(function(e){return e.subj===t.subj;})[0],best=null,from=add(t.date,1),lim=t.date>=FINAL_S&&ex?add(ex.date,-1):CATCH_E;if(from<today())from=today();if(from>lim)from=lim;
+  for(var i=0;i<5;i++){var d=add(from,i);if(d>lim)break;var l=load(d)-(schoolDay(d)?0:2);if(!best||l<best.l)best={d:d,l:l};}
+  var d0=best?best.d:lim;return{date:d0,time:schoolDay(d0)?'8:45 PM':'6:30 PM'};
+}
+function title(t){return gm(title0(t));}
+function title0(t){
+  if(t.kind==='memo'){var m=state.memo[t.item];return m?m.title+' · '+m.lesson:'#'+(t.item+1);}
+  if(t.kind==='review')return reviewTxt(t);
+  if(t.kind==='practice'&&lang==='ar'){var i=PRACTICE.indexOf(t.title);if(i>=0)return PRACTICE_AR[i];}
+  if(t.kind==='final'){var un=unitName(t);if(lang==='ar'){if(FINAL_AR[t.title])return FINAL_AR[t.title];var a=/^Revise lessons (.+)$/.exec(t.title);if(a)return 'مراجعة الدروس '+a[1];var b=/^Revise unit (\d+)$/.exec(t.title);if(b)return 'مراجعة الوحدة '+b[1]+(un?': '+un:'');var c=/^Revise theme (\d+)$/.exec(t.title);if(c)return 'مراجعة المحور '+c[1]+(un?': '+un:'');var e=/^Revise units (.+)$/.exec(t.title);if(e)return 'مراجعة الوحدات '+e[1];}else if(un)return t.title+': '+un;}
+  return t.title;
+}
+function unitName(t){var m=/^Revise (?:unit|theme) (\d+)$/.exec(t.title),s=subj(t.subj);return m&&s.units?s.units[+m[1]-1]||'':'';}
+function pct(a,b){return b?Math.round(100*a/b):0;}
+
+/* ---------- timer state ---------- */
+var TKEY='sp-timer',audio=null;
+function tSet(o){tState=o;try{if(o)localStorage.setItem(TKEY,JSON.stringify(o));else localStorage.removeItem(TKEY);}catch(e){}}
+var tState=null;try{tState=JSON.parse(localStorage.getItem(TKEY)||'null');}catch(e){}
+function durFor(t){var m=/(\d+) min/.exec(t.time||'');if(m)return +m[1];if(/timed|Timed/.test(t.title))return 180;if(t.kind==='practice'||t.kind==='final')return 60;return 50;}
+function leftMs(){if(!tState)return 0;return tState.left!=null?tState.left:Math.max(0,tState.end-Date.now());}
+function fmt(ms){var s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):String(m))+':'+String(x).padStart(2,'0');}
+function startTimer(t){try{var C=window.AudioContext||window.webkitAudioContext;if(C&&!audio)audio=new C();if(audio&&audio.resume)audio.resume();}catch(e){}var ms=durFor(t)*60000;tSet({id:t.id,total:ms,end:Date.now()+ms,left:null,done:false});drawTimer();}
+var alarmGain=null;
+function beep(){try{var C=window.AudioContext||window.webkitAudioContext;if(!audio&&C)audio=new C();if(!audio)return;if(audio.resume)audio.resume();
+  stopAlarm();var m=audio.createGain();m.gain.value=1;m.connect(audio.destination);alarmGain=m;
+  for(var r=0;r<5;r++)[[0,784],[0.22,988],[0.44,1175],[0.66,1568]].forEach(function(n){var os=audio.createOscillator(),g=audio.createGain(),t0=audio.currentTime+r*1.8+n[0];os.type='triangle';os.frequency.value=n[1];os.connect(g);g.connect(m);g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(0.45,t0+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+0.5);os.start(t0);os.stop(t0+0.55);});
+}catch(e){}}
+function stopAlarm(){try{if(alarmGain&&audio){alarmGain.gain.setValueAtTime(0,audio.currentTime);}}catch(e){}alarmGain=null;}
+var STRETCH=[
+ ['Neck: tilt your head slowly towards each shoulder, 5 times a side.','الرقبة: أميلي رأسك ببطء نحو كل كتف، 5 مرات لكل جهة.'],
+ ['Shoulders: roll them backwards 10 times, then forwards 10 times.','الكتفان: دوّريهما للخلف 10 مرات ثم للأمام 10 مرات.'],
+ ['Reach up: link your fingers and stretch your arms above your head for 15 seconds.','تمدّد للأعلى: شبكي أصابعك وارفعي ذراعيك فوق رأسك 15 ثانية.'],
+ ['Side bend: lean to the right, then to the left, 15 seconds each.','ميل جانبي: ميلي بجذعك يمينًا ثم يسارًا، 15 ثانية لكل جهة.'],
+ ['Stand up and gently reach towards your toes for 15 seconds.','قفي وانحني بهدوء نحو أصابع قدميك 15 ثانية.'],
+ ['Wrists: stretch one arm out and pull your fingers back gently, 10 seconds each hand.','الرسغان: مدّي ذراعك واسحبي أصابعك برفق للخلف، 10 ثوانٍ لكل يد.'],
+ ['Eyes: look at something far away for 20 seconds and blink slowly.','العينان: انظري إلى شيء بعيد 20 ثانية ورمّشي ببطء.'],
+ ['Walk around the room for two minutes, or march on the spot.','امشي في الغرفة دقيقتين، أو امشي في مكانك.']
+];
+var brk=document.createElement('div');brk.id='breakpop';document.body.appendChild(brk);
+function showBreak(t){
+  var pool=STRETCH.slice(),pick=[];for(var i=0;i<3;i++)pick.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+  var c=t?subj(t.subj).color:'#0E8F6E';
+  brk.style.setProperty('--c',c);
+  brk.innerHTML='<div class="bp-back"></div><div class="bp" role="alertdialog" aria-modal="true" aria-labelledby="bpt"><div class="bp-head"><span class="bp-ic" aria-hidden="true">⏰</span><div><h2 id="bpt">'+L('Session over! Time for a break','انتهت الجلسة! وقت الاستراحة')+'</h2>'+(t?'<p class="bp-sub" dir="auto">'+esc(sName(subj(t.subj)))+' · '+esc(title(t))+'</p>':'')+'</div></div>'+
+    '<div class="bp-water"><span aria-hidden="true">💧</span><div><b>'+L('Drink a glass of water','اشربي كوبًا من الماء')+'</b><small>'+L('Your brain works better when you are hydrated.','الماء يساعد عقلك على التركيز.')+'</small></div></div>'+
+    '<div class="bp-move"><b>🤸 '+L('Move your body','حرّكي جسمك')+'</b><ol>'+pick.map(function(s){return '<li>'+(lang==='ar'?gm(s[1]):s[0])+'</li>';}).join('')+'</ol></div>'+
+    '<div class="bp-act"><button class="b ok big" data-bp="ok">✓ '+L('Done: water and stretch','تم: شربت الماء وتحرّكت')+'</button><button class="b ghost" data-bp="mute">🔕 '+L('Stop the alarm','إيقاف المنبه')+'</button></div><p class="hint">'+L('Then take a 10-minute break before the next session.','ثم خذي استراحة 10 دقائق قبل الجلسة التالية.')+'</p></div>';
+  brk.className='on';var b=brk.querySelector('[data-bp=ok]');if(b)b.focus();
+}
+function hideBreak(){stopAlarm();brk.className='';brk.innerHTML='';}
+brk.addEventListener('click',function(e){var b=e.target.closest('[data-bp]');if(!b)return;if(b.getAttribute('data-bp')==='mute'){stopAlarm();b.disabled=true;return;}hideBreak();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&brk.className==='on')hideBreak();});
+var bar=document.createElement('div');bar.id='timerbar';bar.setAttribute('role','region');bar.setAttribute('aria-label','Session timer');document.body.appendChild(bar);
+
+function isMorning(){var h=new Date().getHours();return h>=4&&h<12;}
+function greet(){return isMorning()?(isM()?L('Good morning, champ','صباح الخير يا بطل'):L('Good morning, beautiful','صباح الخير يا جميلة')):(isM()?L('Good evening, champ','مساء الخير يا بطل'):L('Good evening, beautiful','مساء الخير يا جميلة'));}
+function clockHTML(){
+  var n=new Date(),h=n.getHours(),mi=String(n.getMinutes()).padStart(2,'0'),se=String(n.getSeconds()).padStart(2,'0'),pm=h>=12,h12=h%12||12;
+  var ld=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+  return '<span class="ck-t" dir="ltr">'+h12+':'+mi+'<span class="ck-s">:'+se+'</span> <span class="ck-ap">'+(lang==='ar'?(pm?'م':'ص'):(pm?'PM':'AM'))+'</span></span><span class="ck-d">'+nice(ld)+'</span>';
+}
+var lastKey=null;setInterval(function(){var c=document.getElementById('clock');if(c)c.innerHTML=clockHTML();var k=msgKey()+(isMorning()?'m':'e');if(lastKey!==null&&k!==lastKey&&!openForm)render();lastKey=k;},1000);
+/* ---------- render ---------- */
+var root=document.getElementById('root');
+function langSwitch(){
+  return '<div class="lang" role="group" aria-label="Language / اللغة"><button data-a="lang" data-l="en" class="'+(lang==='en'?'on':'')+'" aria-pressed="'+(lang==='en')+'">English</button><button data-a="lang" data-l="ar" class="'+(lang==='ar'?'on':'')+'" aria-pressed="'+(lang==='ar')+'" lang="ar">العربية</button></div>';
+}
+function render(){
+  if(!lang){
+    root.innerHTML='<div class="chooser"><h1>Choose your language</h1><h1 lang="ar" dir="rtl">اختيار اللغة</h1><p class="hint">You can change it any time from the top of the page. · يمكنك تغييرها في أي وقت من أعلى الصفحة.</p><div class="chs"><button class="b big" data-a="lang" data-l="en">English</button><button class="b big" data-a="lang" data-l="ar" lang="ar">العربية</button></div></div>';
+    return;
+  }
+  if(!state){root.innerHTML='<div class="topright">'+langSwitch()+'</div>'+setupHTML(false)+credit();return;}
+  track('open');
+  var t=tab(),all=state.tasks,done=all.filter(isDone).length,missed=all.filter(function(x){return x.status==='missed';}).length,
+      nx=EXAMS.filter(function(e){return e.date>today()||(e.date===today()&&!afterNow());})[0],left=nx?diff(today()<START?START:today(),nx.date):0,lt=today(),overdue=all.filter(function(x){return x.status==='pending'&&x.date<lt;}).length;
+  var p=pct(done,all.length);
+  var md=msgDay(),mm=afterNow()?afterMsg(md):dailyMsg(md);
+  var h='<div class="topright"><div class="clock" id="clock" aria-live="off">'+clockHTML()+'</div>'+langSwitch()+'<button class="motd'+(seen()?'':' new')+'" data-a="msg" aria-label="'+L('Today’s motivational message','رسالة اليوم التحفيزية')+'"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l2.4 5.6 6.1.5-4.6 4 1.4 6-5.3-3.2-5.3 3.2 1.4-6-4.6-4 6.1-.5z" fill="currentColor"/></svg><span>'+L('Message','رسالتك')+'</span></button></div>';
+  if(msgOpen){
+    var big=lang==='ar'?gm(mm[1]):mm[0],small=lang==='ar'?mm[0]:gm(mm[1]);
+    h+='<div class="mo-back" data-a="msgclose"></div><div class="mo" role="dialog" aria-modal="true" aria-labelledby="mot"><div class="mo-top"><span class="eyebrow">'+(afterNow()?L('After the exam · ','بعد الاختبار · '):'')+niceLong(md)+' · '+(nx?Math.max(diff(md,nx.date),0)+' '+L('days to next exam','يومًا على الاختبار القادم'):L('Exams finished','انتهت الاختبارات'))+'</span><button class="b ghost" data-a="msgclose" aria-label="'+L('Close','إغلاق')+'">✕</button></div><h2 id="mot" dir="auto">'+esc(big)+'</h2><p dir="auto" class="mo-ar">'+esc(small)+'</p><p class="hint">'+L('A new message appears every day.','تظهر رسالة جديدة كل يوم.')+'</p></div>';
+  }
+  h+='<header class="top"><div class="brand"><p class="greet" id="greet">'+greet()+'</p><div class="eyebrow">'+L('Grade 12 · Semester 1 finals','الصف الثاني عشر · اختبارات الفصل الأول')+' · '+dm(EXAMS[0].date)+' – '+dm(EXAMS[EXAMS.length-1].date)+'</div><h1>'+(lang==='ar'?'منظّم مذاكرة '+esc(nm()):esc(nm())+'’s Study Planner')+'</h1>'+
+    '<div class="phasebar">'+PHASES.map(function(ph){var n=diff(ph.start,ph.end)+1;return '<span class="ph ph-'+ph.key+(lt>=ph.start&&lt<=ph.end?' on':'')+'" style="flex:'+n+'"><b>'+phShort(ph)+'</b> '+dm(ph.start)+' – '+dm(ph.end)+'</span>';}).join('')+'<span class="ph ph-catch" style="flex:4"><b>'+L('Catch-up','تعويض')+'</b> '+dm(CATCH_S)+' – '+dm(CATCH_E)+'</span><span class="ph ph-final'+(lt>=FINAL_S&&lt<=LAST?' on':'')+'" style="flex:19"><b>'+L('Exams','الاختبارات')+'</b> '+dm(EXAMS[0].date)+' – '+dm(EXAMS[EXAMS.length-1].date)+'</span></div></div>'+
+    '<div class="kpis"><div class="ring" style="--p:'+p+'"><span>'+p+'%</span><small>'+L('done','منجز')+'</small></div>'+
+    '<div class="kpi"><b>'+done+'</b><span>'+L('of '+all.length+' tasks done','من '+all.length+' مهمة منجزة')+'</span></div>'+
+    '<div class="kpi warn"><b>'+missed+'</b><span>'+L('missed · need makeup','فائتة · تحتاج تعويض')+'</span></div>'+
+    '<div class="kpi"><b>'+overdue+'</b><span>'+L('overdue, not marked','متأخرة لم تُحدَّد')+'</span></div>'+
+    (nx?'<div class="kpi exam"><b>'+Math.max(left,0)+'</b><span>'+L('days to next exam: '+sName(subj(nx.subj))+' · '+dm(nx.date),'يومًا على الاختبار القادم: '+sName(subj(nx.subj))+' · '+dm(nx.date))+'</span></div>':'')+'</div></header>';
+  h+=strip();
+  h+='<nav class="tabs" role="tablist">'+TABS.filter(function(x){return x[0]!=='memorize'||hasIsl();}).map(function(x){return '<a role="tab" href="#'+x[0]+'" class="'+(x[0]===t?'on':'')+'">'+L(x[1],x[2])+(x[0]==='makeup'&&missed?' <i class="cnt">'+missed+'</i>':'')+'</a>';}).join('')+'<span id="savebadge" class="save">'+esc(saveText())+'</span></nav>';
+  h+='<main>'+({today:vToday,calendar:vCal,subjects:vSubj,memorize:vMemo,makeup:vMake,lessons:vEdit}[t])()+'</main>'+credit();
+  root.innerHTML=h;
+}
+function strip(){
+  return '<section class="vstrip" aria-label="'+L('Progress in each subject','التقدم في كل مادة')+'">'+state.subjects.map(function(s){
+    var ts=state.tasks.filter(function(t){return t.subj===s.id&&t.kind!=='memo'&&t.kind!=='review';}),n=ts.length,d=ts.filter(isDone).length,m=ts.filter(function(t){return t.status==='missed';}).length,p=pct(d,n);
+    var ex=EXAMS.filter(function(e){return e.subj===s.id;})[0];
+    var ticks=[],acc=0;KINDS.forEach(function(k,ix){acc+=ts.filter(function(t){return t.kind===k.key;}).length;if(ix<KINDS.length-1&&n)ticks.push('<i class="vt" style="bottom:'+(100*acc/n)+'%" title="'+kShort(k)+'"></i>');});
+    var parts=KINDS.map(function(k){var x=ts.filter(function(t){return t.kind===k.key;});return '<span>'+kShort(k)+' '+x.filter(isDone).length+'/'+x.length+'</span>';}).join('');
+    return '<a class="vp'+(p===100?' full':'')+'" href="#subjects" style="--c:'+s.color+'" title="'+esc(sName(s))+': '+d+'/'+n+'"><b class="vpc">'+p+'%</b>'+
+      '<span class="tube" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+p+'" aria-label="'+esc(sName(s))+'"><span class="fill" style="height:'+p+'%"></span>'+ticks.join('')+'</span>'+
+      '<span class="vpn">'+esc(sName(s))+'</span><small class="vcount">'+d+'/'+n+(m?' · <em>'+m+' '+L('missed','فائتة')+'</em>':'')+'</small>'+(ex?'<small class="vex">'+L('Exam ','الاختبار ')+dm(ex.date)+'</small>':'')+'<small class="vparts">'+parts+'</small></a>';
+  }).join('')+'</section>';
+}
+function chip(t){var s=subj(t.subj);return '<span class="sb" style="--c:'+s.color+'">'+esc(sName(s))+'</span>';}
+function statusPill(t){
+  if(t.status==='done')return '<span class="pill ok">'+L('Done','منجز')+'</span>';
+  if(t.status==='madeup')return '<span class="pill mu">'+L('Made up','تم التعويض')+' '+(t.makeupDate?dm(t.makeupDate):'')+'</span>';
+  if(t.status==='missed')return '<span class="pill bad">'+L('Not done','لم يُنجز')+'</span>';
+  if(t.date<today())return '<span class="pill late">'+L('Overdue','متأخر')+'</span>';
+  return '';
+}
+function row(t,ctx){
+  var s=subj(t.subj);
+  var h='<li class="task st-'+t.status+'" style="--c:'+s.color+'"><div class="tm">'+esc(tm(ctx==='mk'?t.makeupTime||'':t.time))+'</div><div class="body">'+
+    '<div class="meta">'+chip(t)+'<span class="kind k-'+t.kind+'">'+(ctx==='mk'?L('Makeup · ','تعويض · '):'')+kindLabel(t.kind)+(t.kind==='memo'?' · '+esc(stepTxt(t)):'')+'</span>'+statusPill(t)+(ctx==='mk'?'<span class="from">'+L('planned ','كان مقررًا ')+nice(t.date)+'</span>':'')+'</div>'+
+    '<div class="tt" dir="auto">'+esc(title(t))+'</div>';
+  if(t.status==='missed'&&ctx!=='mk')h+='<div class="why">'+esc(reasonTxt(t.reason||''))+(t.note?' · '+esc(t.note):'')+(t.makeupDate?' → '+L('makeup','التعويض')+' <b>'+nice(t.makeupDate)+' '+esc(tm(t.makeupTime||''))+'</b>':' · <b>'+L('no makeup time set','لم يُحدَّد وقت للتعويض')+'</b>')+'</div>';
+  h+='</div><div class="act">';
+  if(ctx==='mk')h+='<button class="b ok" data-a="madeup" data-id="'+t.id+'">'+L('Done in makeup','أُنجز في التعويض')+'</button><button class="b ghost" data-a="form" data-id="'+t.id+'">'+L('Change','تغيير')+'</button>';
+  else if(t.status==='pending')h+='<button class="b tmr'+(tState&&tState.id===t.id?' run':'')+'" data-a="timer" data-id="'+t.id+'" aria-label="'+L('Start timer','ابدئي المؤقت')+'" title="'+L('Start timer','ابدئي المؤقت')+'">⏱ '+durFor(t)+L(' min',' د')+'</button><button class="b ok" data-a="done" data-id="'+t.id+'">✓ '+L('Done','تم')+'</button><button class="b no" data-a="form" data-id="'+t.id+'">✕ '+L('Not done','لم يتم')+'</button>';
+  else h+='<button class="b ghost" data-a="undo" data-id="'+t.id+'">'+L('Undo','تراجع')+'</button>'+(t.status==='missed'?'<button class="b ghost" data-a="form" data-id="'+t.id+'">'+L('Edit','تعديل')+'</button>':'');
+  h+='</div>';
+  if(openForm===t.id)h+=form(t);
+  return h+'</li>';
+}
+function form(t){
+  var sg=t.makeupDate?{date:t.makeupDate,time:t.makeupTime}:suggest(t),r=t.reason||'';
+  return '<form class="nd" data-id="'+t.id+'"><fieldset><legend>'+L('Why wasn’t it done?','لماذا لم يتم؟')+'</legend><div class="reasons">'+REASONS.map(function(x,i){return '<label class="rc"><input type="radio" name="r" id="r'+t.id+i+'" value="'+esc(x)+'"'+(x===r?' checked':'')+'><span>'+esc(reasonTxt(x))+'</span></label>';}).join('')+'</div></fieldset>'+
+    '<div class="frow"><label for="n'+t.id+'">'+L('Note (optional)','ملاحظة (اختياري)')+'</label><input id="n'+t.id+'" name="note" dir="auto" maxlength="140" value="'+esc(t.note||'')+'" placeholder="'+L('e.g. stuck on Born–Haber cycle questions','مثال: صعوبة في أسئلة دورة بورن-هابر')+'"></div>'+
+    '<div class="frow two"><div><label for="d'+t.id+'">'+L('Makeup day','يوم التعويض')+'</label><input type="date" id="d'+t.id+'" name="md" min="'+add(t.date,1)+'" max="'+FINAL_E+'" value="'+sg.date+'"></div>'+
+    '<div><label for="h'+t.id+'">'+L('Makeup time','وقت التعويض')+'</label><input id="h'+t.id+'" name="mt" value="'+esc(sg.time)+'" maxlength="20"></div></div>'+
+    '<p class="hint">'+L('Suggested: the lightest day soon after. Catch-up days 26–29 Dec are kept free for this.','المقترح: أخف يوم قريب. أيام 26–29 ديسمبر متروكة فارغة للتعويض.')+'</p>'+
+    '<div class="frow btns"><button class="b no" type="submit">'+L('Save as not done','حفظ كغير منجز')+'</button><button class="b ghost" type="button" data-a="close">'+L('Cancel','إلغاء')+'</button></div></form>';
+}
+function vToday(){
+  var d=sel,ph=phaseOf(d),ts=tasksOn(d),mk=makeupsOn(d);
+  var study=ts.filter(function(t){return t.kind!=='memo'&&t.kind!=='review';}),memo=ts.filter(function(t){return t.kind==='memo'||t.kind==='review';});
+  var dn=ts.filter(isDone).length,prevA=L('‹','›'),nextA=L('›','‹');
+  var h='<section class="day"><div class="dayhead"><button class="b ghost nav" data-a="day" data-d="'+add(d,-1)+'"'+(d<=START?' disabled':'')+' aria-label="'+L('Previous day','اليوم السابق')+'">'+prevA+'</button>'+
+    '<div><h2>'+niceLong(d)+(d===today()?' <span class="pill now">'+L('Today','اليوم')+'</span>':'')+'</h2><div class="sub">'+(ph?'<span class="ph-tag ph-'+ph.key+'">'+phLabel(ph)+'</span>':L('Outside the study plan','خارج خطة المذاكرة'))+(ts.length?' · '+L(dn+' of '+ts.length+' done',dn+' من '+ts.length+' منجزة'):'')+(schoolDay(d)?' · '+L('school day: study after 2 PM','يوم دراسي: المذاكرة بعد 2 ظهرًا'):(d<=END?' · '+L('home day: longer study day','يوم في البيت: مذاكرة أطول'):''))+'</div></div>'+
+    '<button class="b ghost nav" data-a="day" data-d="'+add(d,1)+'"'+(d>=LAST?' disabled':'')+' aria-label="'+L('Next day','اليوم التالي')+'">'+nextA+'</button>'+
+    '<label class="jump" for="jump">'+L('Go to','انتقلي إلى')+'</label><input type="date" id="jump" min="'+START+'" max="'+LAST+'" value="'+d+'"><button class="b ghost" data-a="day" data-d="'+(today()<START?START:today()>LAST?LAST:today())+'">'+L('Today','اليوم')+'</button></div>';
+  if(schoolDay(d))h+='<div class="school"><b>'+L('School','المدرسة')+'</b> '+tm('7:00 AM – 2:00 PM')+' <span>· '+L('then lunch &amp; rest until 4:00 PM','ثم الغداء والراحة حتى 4:00 م')+'</span></div>';
+  var ex=examOn(d);if(ex)h+='<div class="examday" style="--c:'+subj(ex.subj).color+'"><b>'+L('Exam today: ','اختبار اليوم: ')+esc(sName(subj(ex.subj)))+'</b> '+tm('8:00 – 11:00 AM')+'<span>'+L('Eat breakfast, take two pens and your ID. Read every question twice. You prepared for this.','تناولي الفطور، وخذي قلمين وبطاقتك. اقرئي كل سؤال مرتين. لقد استعددتِ جيدًا.')+'</span></div>';
+  var am=afterMsg(d);if(am&&(d<today()||(d===today()&&afterNow())))h+='<div class="afterx"><b>'+L('After the exam','بعد الاختبار')+'</b><p dir="auto">'+esc(lang==='ar'?gm(am[1]):am[0])+'</p></div>';
+  if(memo.length)h+='<h3>'+L('Verses &amp; Hadith','الآيات والأحاديث')+'</h3><ul class="list">'+memo.map(function(t){return row(t);}).join('')+'</ul>';
+  if(study.length)h+='<h3>'+L('Study sessions','جلسات المذاكرة')+'</h3><ul class="list">'+study.map(function(t){return row(t);}).join('')+'</ul>';
+  if(mk.length)h+='<h3>'+L('Makeup sessions','جلسات التعويض')+'</h3><ul class="list">'+mk.map(function(t){return row(t,'mk');}).join('')+'</ul>';
+  if(!study.length&&!mk.length&&d>=CATCH_S&&d<=CATCH_E)h+='<div class="empty">'+L('Catch-up day. Nothing is planned here so missed sessions can be made up. If you are on track, use it for light review of weak topics.','يوم تعويض. لا توجد جلسات مخططة حتى تعوّضي ما فاتك. إن لم يفتك شيء فراجعي نقاط الضعف مراجعة خفيفة.')+'</div>';
+  if(!ts.length&&!mk.length&&!(d>=CATCH_S&&d<=CATCH_E)&&!ex)h+='<div class="empty">'+L('No sessions on this day.','لا توجد جلسات في هذا اليوم.')+'</div>';
+  return h+'</section>';
+}
+function vCal(){
+  var first='2026-11-08',h='<section><p class="lede">'+L('Each bar is one session in its subject colour. Solid = done, outlined = still to do, red stripes = not done. Tap a day to open it.','كل شريط جلسة بلون مادتها. ممتلئ = منجز، مفرّغ = لم يحن بعد، خطوط حمراء = لم يُنجز. اضغطي على أي يوم لفتحه.')+'</p><div class="cal"><div class="cw">'+(lang==='ar'?DOWS_AR:DOW).map(function(x){return '<span>'+x+'</span>';}).join('')+'</div><div class="grid">';
+  for(var i=0;i<77;i++){
+    var d=add(first,i),ts=tasksOn(d),ph=phaseOf(d),out=d<START||d>LAST,mk=makeupsOn(d).length,dd=D(d);
+    h+='<button class="cell'+(out?' out':'')+(ph?' ph-'+ph.key:'')+(d===today()?' now':'')+(d===sel?' sel':'')+'" data-a="open" data-d="'+d+'"'+(out?' disabled':'')+'><span class="dn">'+dd.getUTCDate()+(dd.getUTCDate()===1||i===0?' '+(lang==='ar'?MON_AR:MON)[dd.getUTCMonth()]:'')+'</span>';
+    var ex=examOn(d);if(ex)h+='<span class="ex">'+L('EXAM','اختبار')+' · '+esc(sName(subj(ex.subj)))+'</span>';
+    h+='<span class="bars">'+ts.map(function(t){return '<i class="bar s-'+t.status+(t.status==='pending'&&t.date<today()?' late':'')+'" style="--c:'+subj(t.subj).color+'" title="'+esc(sName(subj(t.subj))+': '+title(t))+'"></i>';}).join('')+'</span>'+(mk?'<span class="mkn">+'+mk+' '+L('makeup','تعويض')+'</span>':'')+'</button>';
+  }
+  h+='</div></div><div class="legend">'+state.subjects.map(function(s){return '<span class="lg" style="--c:'+s.color+'"><i></i>'+esc(sName(s))+'</span>';}).join('')+'</div></section>';
+  return h;
+}
+function vSubj(){
+  var h='<section class="cards">';
+  state.subjects.forEach(function(s){
+    var ts=state.tasks.filter(function(t){return t.subj===s.id&&t.kind!=='memo'&&t.kind!=='review';});
+    var d=ts.filter(isDone).length,m=ts.filter(function(t){return t.status==='missed';}).length;
+    h+='<article class="card" style="--c:'+s.color+'"><header><h3>'+esc(sName(s))+'</h3><span class="ar" dir="auto">'+esc(lang==='ar'?s.name:s.ar)+'</span></header>'+
+      '<div class="big">'+pct(d,ts.length)+'%<small>'+L(d+'/'+ts.length+' sessions',d+'/'+ts.length+' جلسة')+(m?' · <em>'+m+' '+L('missed','فائتة')+'</em>':'')+'</small></div>';
+    KINDS.forEach(function(k){var x=ts.filter(function(t){return t.kind===k.key;}),xd=x.filter(isDone).length,xm=x.filter(function(t){return t.status==='missed';}).length;
+      h+='<div class="seg"><span>'+kShort(k)+'</span><div class="track"><i style="width:'+pct(xd,x.length)+'%"></i><i class="m" style="width:'+pct(xm,x.length)+'%"></i></div><b>'+xd+'/'+x.length+'</b></div>';});
+    h+='<details><summary>'+L('Lessons','الدروس')+'</summary><ol>'+ts.map(function(t){return '<li class="li-'+t.status+'"><span dir="auto">'+esc(title(t))+'</span><small>'+nice(t.date)+' '+statusPill(t)+'</small></li>';}).join('')+'</ol></details>'+(s.note&&lang==='en'?'<p class="note">'+esc(s.note)+'</p>':'')+'</article>';
+  });
+  return h+'</section>';
+}
+function vMemo(){
+  var h='<section><p class="lede">'+L('Nine “أفهم وأحفظ” texts from the Islamic Education book. Each gets three mornings (understand, memorize, recite), then review rounds run until 25 Dec. Type the verse or hadith in each card so it is always at hand.','تسعة نصوص من فقرة “أفهم وأحفظ” في كتاب التربية الإسلامية. لكل نص ثلاثة صباحات (فهم، حفظ، تسميع)، ثم جولات مراجعة حتى 25 ديسمبر. اكتبي نص الآية أو الحديث في كل بطاقة ليكون أمامك دائمًا.')+'</p><div class="mgrid">';
+  state.memo.forEach(function(m,i){
+    var ts=state.tasks.filter(function(t){return t.kind==='memo'&&t.item===i;}),d=ts.filter(isDone).length;
+    var revs=state.tasks.filter(function(t){return t.kind==='review'&&t.group&&i>=t.group[0]&&i<=t.group[1];}),rd=revs.filter(isDone).length;
+    h+='<article class="mcard'+(d===3?' full':'')+'"><div class="mn">'+(i+1)+'</div><div class="mb"><h3 dir="rtl">'+esc(m.title)+'</h3><div class="sub" dir="rtl">'+esc(m.lesson)+'</div>'+
+      '<div class="dots">'+ts.map(function(t){return '<span class="dot s-'+t.status+'" title="'+esc(nice(t.date)+': '+stepTxt(t))+'"></span>';}).join('')+'<small>'+L('memorized '+d+'/3 · reviewed '+rd+'/'+revs.length+' · starts ','الحفظ '+d+'/3 · المراجعة '+rd+'/'+revs.length+' · يبدأ ')+(ts[0]?nice(ts[0].date):'')+'</small></div>'+
+      '<label class="vis" for="mt'+i+'">'+L('Verse / Hadith text','نص الآية / الحديث')+'</label><textarea id="mt'+i+'" dir="rtl" rows="2" data-memo="'+i+'" placeholder="اكتبي نص الآيات أو الحديث هنا">'+esc(m.text||'')+'</textarea></div></article>';
+  });
+  return h+'</div><p class="hint">'+L('Text saves when you leave the box.','يُحفظ النص عند الخروج من المربع.')+'</p></section>';
+}
+function vMake(){
+  var ms=state.tasks.filter(function(t){return t.status==='missed';}).sort(function(a,b){return (a.makeupDate||'9')<(b.makeupDate||'9')?-1:1;});
+  var lt=today(),od=state.tasks.filter(function(t){return t.status==='pending'&&t.date<lt;});
+  var cnt={};state.tasks.forEach(function(t){if((t.status==='missed'||t.status==='madeup')&&t.reason)cnt[t.reason]=(cnt[t.reason]||0)+1;});
+  var mx=Math.max.apply(null,[1].concat(Object.keys(cnt).map(function(k){return cnt[k];})));
+  var mu=state.tasks.filter(function(t){return t.status==='madeup';}).length,hard=cnt['Lesson too hard · need help'];
+  var h='<section class="mk"><div class="mkcols"><div><h3>'+L('Missed sessions waiting for makeup','جلسات فائتة بانتظار التعويض')+'</h3>';
+  h+=ms.length?'<ul class="list">'+ms.map(function(t){return row(t,'mk');}).join('')+'</ul>':'<div class="empty">'+L('Nothing missed. Keep it up.','لم يفتك شيء. استمري!')+'</div>';
+  if(od.length)h+='<h3>'+L('Overdue, not marked yet','متأخرة ولم تُحدَّد بعد')+'</h3><ul class="list">'+od.map(function(t){return row(t);}).join('')+'</ul>';
+  h+='</div><aside class="why-box"><h3>'+L('Why sessions get missed','أسباب فوات الجلسات')+'</h3>';
+  h+=Object.keys(cnt).length?REASONS.filter(function(r){return cnt[r];}).map(function(r){return '<div class="rb"><span>'+esc(reasonTxt(r))+'</span><div class="track"><i style="width:'+pct(cnt[r],mx)+'%"></i></div><b>'+cnt[r]+'</b></div>';}).join(''):'<p class="hint">'+L('Reasons will show here once a session is marked not done.','ستظهر الأسباب هنا عند تحديد جلسة كغير منجزة.')+'</p>';
+  if(hard)h+='<p class="flag">'+L(hard+' session(s) marked too hard. Worth asking the teacher or a study partner.',hard+' جلسة وُصفت بأنها صعبة. يفضّل سؤال المعلمة أو زميلة.')+'</p>';
+  h+='<p class="hint">'+L(mu+' session(s) made up so far.','تم تعويض '+mu+' جلسة حتى الآن.')+'</p></aside></div></section>';
+  return h;
+}
+function arCount(n){return n+' '+(n>=3&&n<=10?'دروس':n===1?'درس':n===2?'درسان':'درسًا');}
+function credit(){return '<footer class="credit">'+L('Designed by Ms. Shaikha Al Sawai','تصميم: أ. شيخة الصواعي')+'</footer>';}
+function locHTML(){
+  var g=state?state.gov||'':pendLoc.gov,w=state?state.wil||'':pendLoc.wil,wl=[];OMAN.forEach(function(x){if(x[0]===g)wl=x[1];});
+  return '<div class="frow two loc"><div><label for="sgov">'+L('Governorate (optional)','المحافظة (اختياري)')+'</label><select id="sgov" name="sgov"><option value="">'+L('Choose…','اختاري…')+'</option>'+OMAN.map(function(x){return '<option'+(x[0]===g?' selected':'')+'>'+x[0]+'</option>';}).join('')+'</select></div>'+
+    '<div><label for="swil">'+L('Wilayat (optional)','الولاية (اختياري)')+'</label><select id="swil" name="swil"'+(wl.length?'':' disabled')+'><option value="">'+L('Choose…','اختاري…')+'</option>'+wl.map(function(x){return '<option'+(x===w?' selected':'')+'>'+x+'</option>';}).join('')+'</select></div></div>'+
+    '<p class="hint">'+L('Used only to count users by area. Your name is never sent.','تُستخدم فقط لمعرفة عدد المستخدمين في كل منطقة، ولا يُرسل اسمك.')+'</p>';
+}
+var pendLoc={gov:'',wil:''};
+function setupHTML(edit){
+  var ch={};(state?state.subjects:[]).forEach(function(s){ch[s.id]=1;});
+  var h='<form id="setup" class="setup'+(edit?' inedit':'')+'">';
+  if(!edit)h+='<div class="sp-hero"><div class="eyebrow">'+L('Grade 12 · Semester 1 finals','الصف الثاني عشر · اختبارات الفصل الأول')+'</div><h1>'+L('Your study planner','منظّم المذاكرة')+'</h1><p class="lede">'+L('Write your name and pick your subjects. Your plan is built at once: old and new lessons mixed each day, test practice, final revision around your own exam dates, a timer for every session and a daily message. Your progress is saved on this device only.','اكتبي اسمك واختاري موادك، وتُبنى خطتك فورًا: دروس قديمة وجديدة ممزوجة كل يوم، وتدريب على الاختبارات، ومراجعة نهائية حسب مواعيد اختباراتك، ومؤقت لكل جلسة، ورسالة تحفيزية يومية. يُحفظ تقدّمك على هذا الجهاز فقط.')+'</p></div>';
+  h+='<div class="frow"><label for="sname">'+L('Your name','اسمك')+'</label><input id="sname" name="sname" maxlength="30" autocomplete="given-name" dir="auto" value="'+esc(state?state.student:'')+'"></div>'+
+    '<fieldset class="gnd"><legend>'+L('I am a…','أنا…')+'</legend><label><input type="radio" name="gender" value="f"'+(isM()?'':' checked')+'> '+L('Female student','طالبة')+'</label><label><input type="radio" name="gender" value="m"'+(isM()?' checked':'')+'> '+L('Male student','طالب')+'</label></fieldset>'+
+    locHTML()+
+    '<fieldset class="pick"><legend>'+L('Your subjects','موادك')+'</legend><div class="picks">'+CAT.subjects.map(function(s){
+      var ex=ALL_EXAMS.filter(function(e){return e.subj===s.id;})[0];
+      return '<label class="pk" style="--c:'+s.color+'"><input type="checkbox" name="sub" value="'+s.id+'"'+(ch[s.id]?' checked':'')+'><span class="pk-b"><b>'+esc(sName(s))+'</b><small>'+(ex?L('Exam ','الاختبار ')+dm(ex.date)+' · ':L('Exam date set by your school · ','موعد الاختبار تحدده مدرستك · '))+L((s.old.length+s.new.length)+' lessons',arCount(s.old.length+s.new.length))+'</small>'+(ex?'':'<span class="pk-d"><label for="xd_'+s.id+'">'+L('Exam date (optional)','موعد الاختبار (اختياري)')+'</label><input type="date" id="xd_'+s.id+'" name="xd_'+s.id+'" min="2026-12-01" max="2027-01-31" value="'+esc(state&&state.examDates&&state.examDates[s.id]||'')+'"></span>')+'</span></label>';
+    }).join('')+'</div></fieldset>'+
+    '<div class="frow btns"><button class="b ok big" type="submit">'+(edit?L('Update my subjects &amp; re-plan','تحديث موادي وإعادة التوزيع'):L('Build my plan','أنشئي خطتي'))+'</button><span class="hint err" id="setupmsg" role="alert"></span></div></form>';
+  return h;
+}
+function vEdit(){
+  var h='<section><p class="lede">'+L('Rename a subject or change its lesson list (one lesson per line). Saving re-plans all sessions not yet marked, starting tomorrow. Done and missed sessions stay as they are.','غيّري اسم المادة أو قائمة دروسها (درس في كل سطر). عند الحفظ يُعاد توزيع الجلسات غير المحددة بدءًا من الغد، وتبقى الجلسات المنجزة والفائتة كما هي.')+'</p>'+
+    '</section><section class="box"><h3>'+L('Name &amp; subjects','الاسم والمواد')+'</h3>'+setupHTML(true)+'</section><section><h3>'+L('Lessons','الدروس')+'</h3><form id="edit"><div class="egrid">';
+  state.subjects.forEach(function(s,i){
+    h+='<fieldset class="ecard" style="--c:'+s.color+'"><legend><span class="sw"></span>'+esc(sName(s))+'</legend>'+
+      '<div class="frow two"><div><label for="en'+i+'">'+L('English name','الاسم بالإنجليزية')+'</label><input id="en'+i+'" name="name'+i+'" value="'+esc(s.name)+'"></div><div><label for="ea'+i+'">'+L('Arabic name','الاسم بالعربية')+'</label><input id="ea'+i+'" name="ar'+i+'" dir="rtl" value="'+esc(s.ar)+'"></div></div>'+
+      '<label for="eo'+i+'">'+L('Old lessons (Sep–Oct)','الدروس القديمة (سبتمبر–أكتوبر)')+'</label><textarea id="eo'+i+'" name="old'+i+'" dir="auto" rows="5">'+esc(s.old.join('\n'))+'</textarea>'+
+      '<label for="ew'+i+'">'+L('New lessons','الدروس الجديدة')+'</label><textarea id="ew'+i+'" name="new'+i+'" dir="auto" rows="4">'+esc(s.new.join('\n'))+'</textarea></fieldset>';
+  });
+  h+='</div><div class="frow btns sticky"><button class="b ok" type="submit">'+L('Save lessons &amp; re-plan','حفظ الدروس وإعادة التوزيع')+'</button><span class="hint" id="editmsg"></span></div></form></section>'+
+    '<section class="box danger"><h3>'+L('Start over','البدء من جديد')+'</h3><p class="hint">'+L('Deletes your plan and progress from this device.','يحذف خطتك وتقدّمك من هذا الجهاز.')+'</p><button class="b no" data-a="reset">'+L('Delete my plan','حذف خطتي')+'</button></section>';
+  return h;
+}
+
+/* ---------- events ---------- */
+root.addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a'),id=b.getAttribute('data-id'),t=id&&byId(id);
+  if(a==='lang'){setLang(b.getAttribute('data-l'));drawTimer();return;}
+  if(a==='timer'&&t){startTimer(t);render();return;}
+  if(a==='msg'){msgOpen=true;try{localStorage.setItem('sp-msg-seen',msgKey());}catch(e2){}render();var c=root.querySelector('.mo button');if(c)c.focus();return;}
+  if(a==='msgclose'){msgOpen=false;render();return;}
+  if(a==='reset'){if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent=L('Tap again to delete everything','اضغطي مرة أخرى لحذف كل شيء');return;}
+    try{localStorage.removeItem(SKEY);localStorage.removeItem('sp-msg-seen');}catch(e3){}tSet(null);state=null;syncExams();history.replaceState(null,'',location.pathname+location.search);render();drawTimer();window.scrollTo(0,0);return;}
+  if(a==='done'&&t){t.status='done';t.doneAt=today();openForm=null;save();render();}
+  else if(a==='form'&&t){openForm=openForm===id?null:id;render();var f=root.querySelector('form.nd input[name=r]');if(f)f.focus();}
+  else if(a==='close'){openForm=null;render();}
+  else if(a==='undo'&&t){t.status='pending';delete t.reason;delete t.note;delete t.makeupDate;delete t.makeupTime;save();render();}
+  else if(a==='madeup'&&t){t.status='madeup';t.doneAt=today();save();render();}
+  else if(a==='day'){setSel(b.getAttribute('data-d'));openForm=null;render();}
+  else if(a==='open'){setSel(b.getAttribute('data-d'));location.hash='today';}
+});
+root.addEventListener('change',function(e){
+  if(e.target.name==='sub'&&e.target.checked&&(e.target.value==='mat'||e.target.value==='bma')){
+    var o=e.target.form.querySelector('input[name=sub][value='+(e.target.value==='mat'?'bma':'mat')+']');if(o&&o.checked){o.checked=false;var em=e.target.form.querySelector('#setupmsg');if(em)em.textContent=L('Only one Mathematics: both exams are on 30 Dec.','رياضيات واحدة فقط: الاختباران في نفس اليوم 30 ديسمبر.');}
+    return;
+  }
+  if(e.target.id==='sgov'){
+    var ws=root.querySelector('#swil'),wl=[];OMAN.forEach(function(x){if(x[0]===e.target.value)wl=x[1];});
+    ws.innerHTML='<option value="">'+L('Choose…','اختاري…')+'</option>'+wl.map(function(x){return '<option>'+x+'</option>';}).join('');ws.disabled=!wl.length;return;
+  }
+  if(e.target.name==='gender'){
+    var f=e.target.form,keepV={g:f.sgov.value,w:f.swil.value,n:f.sname.value,c:[].slice.call(f.querySelectorAll('input[name=sub]:checked')).map(function(x){return x.value;}),d:{}};
+    [].slice.call(f.querySelectorAll('input[type=date]')).forEach(function(x){keepV.d[x.id]=x.value;});
+    if(state)state.gender=e.target.value;else{pendG=e.target.value;pendLoc={gov:keepV.g,wil:keepV.w};}
+    var id=f.id,inEdit=f.classList.contains('inedit');render();
+    var g=root.querySelector('#setup');if(!g)return;g.sname.value=keepV.n;
+    [].slice.call(g.querySelectorAll('input[name=sub]')).forEach(function(x){x.checked=keepV.c.indexOf(x.value)>=0;});
+    Object.keys(keepV.d).forEach(function(k){var x=g.querySelector('#'+k);if(x)x.value=keepV.d[k];});
+    var r=g.querySelector('input[name=gender]:checked');if(r)r.focus();
+    if(state)save();
+    return;
+  }
+  if(e.target.id==='jump'&&e.target.value){setSel(e.target.value<START?START:e.target.value>LAST?LAST:e.target.value);render();}
+  var mi=e.target.getAttribute('data-memo');
+  if(mi!=null){state.memo[+mi].text=e.target.value;save();}
+});
+root.addEventListener('submit',function(e){
+  e.preventDefault();var f=e.target;
+  if(f.classList.contains('nd')){
+    var t=byId(f.getAttribute('data-id')),r=f.querySelector('input[name=r]:checked');
+    if(!r){var lg=f.querySelector('legend');lg.textContent=L('Pick a reason first','اختاري السبب أولًا');lg.classList.add('err');return;}
+    t.status='missed';t.reason=r.value;t.note=f.note.value.trim();t.makeupDate=f.md.value||'';t.makeupTime=f.mt.value.trim();
+    openForm=null;save();render();
+  } else if(f.id==='setup'){
+    var ids=[].slice.call(f.querySelectorAll('input[name=sub]:checked')).map(function(x){return x.value;}),name=f.sname.value.trim(),em=f.querySelector('#setupmsg');
+    if(!name){em.textContent=L('Write your name first.','اكتبي اسمك أولًا.');f.sname.focus();return;}
+    if(!ids.length){em.textContent=L('Pick at least one subject.','اختاري مادة واحدة على الأقل.');return;}
+    if(ids.indexOf('mat')>=0&&ids.indexOf('bma')>=0){em.textContent=L('Choose either Advanced or Basic Mathematics, not both.','اختاري الرياضيات المتقدمة أو الأساسية، وليس الاثنتين.');return;}
+    var first=!state;
+    if(first)state={gov:'',wil:'',gender:pendG,student:name,subjects:[],memo:JSON.parse(JSON.stringify(CAT.memo)),seq:1,tasks:[],plan:CAT.plan,lang:lang};
+    state.student=name;state.gender=(f.querySelector('input[name=gender]:checked')||{}).value==='m'?'m':'f';state.examDates=state.examDates||{};state.gov=f.sgov.value||'';state.wil=state.gov&&f.swil.value||'';
+    CAT.subjects.forEach(function(s){var x=f['xd_'+s.id];if(x)state.examDates[s.id]=x.value||'';});
+    var keep={};state.subjects.forEach(function(s){keep[s.id]=s;});
+    state.subjects=CAT.subjects.filter(function(s){return ids.indexOf(s.id)>=0;}).map(function(s){return keep[s.id]||JSON.parse(JSON.stringify(s));});
+    state.tasks=state.tasks.filter(function(t){return ids.indexOf(t.subj)>=0;});
+    syncExams();
+    var fr=first?today():add(today(),1);if(fr<START)fr=START;
+    buildPlan(state,fr);save();if(first)track('plan');
+    if(first){location.hash='today';render();window.scrollTo(0,0);}
+    else{render();var m2=document.getElementById('setupmsg');if(m2){m2.classList.remove('err');m2.textContent=L('Updated. Sessions from '+nice(fr)+' were re-planned.','تم التحديث. أُعيد توزيع الجلسات بدءًا من '+nice(fr)+'.');}}
+  } else if(f.id==='edit'){
+    state.subjects.forEach(function(s,i){
+      s.name=f['name'+i].value.trim()||s.name;s.ar=f['ar'+i].value.trim();
+      s.old=f['old'+i].value.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+      s.new=f['new'+i].value.split('\n').map(function(x){return x.trim();}).filter(Boolean);
+    });
+    var from=add(today(),1);if(from<START)from=START;
+    buildPlan(state,from);save();render();var m=document.getElementById('editmsg');if(m)m.textContent=L('Saved. Sessions from '+nice(from)+' were re-planned.','تم الحفظ. أُعيد توزيع الجلسات بدءًا من '+nice(from)+'.');
+  }
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&msgOpen){msgOpen=false;render();}});
+window.addEventListener('hashchange',function(){openForm=null;render();window.scrollTo(0,0);});
+/* ---------- session timer ---------- */
+function drawTimer(){
+  if(!tState){bar.className='';bar.innerHTML='';return;}
+  var t=byId(tState.id);if(!t){tSet(null);bar.className='';bar.innerHTML='';return;}
+  var ms=leftMs(),fin=ms<=0,paused=tState.left!=null&&!fin,p=Math.min(100,Math.max(0,100-Math.round(100*ms/tState.total)));
+  if(fin&&!tState.done){tState.done=true;tSet(tState);beep();showBreak(t);try{if(navigator.vibrate)navigator.vibrate([400,200,400,200,400]);}catch(e){}}
+  bar.className='on'+(fin?' fin':'');
+  bar.style.setProperty('--c',subj(t.subj).color);
+  bar.innerHTML='<div class="tb-prog" style="width:'+p+'%"></div><div class="tb-in"><div class="tb-info"><span class="tb-s">⏱ '+esc(sName(subj(t.subj)))+' · '+kindLabel(t.kind)+'</span><span class="tb-t" dir="auto">'+esc(title(t))+'</span></div><div class="tb-clock">'+(fin?L('Time’s up!','انتهى الوقت!'):fmt(ms))+'</div><div class="tb-act">'+
+    (fin?'<span class="tb-msg">'+L('Great work! Water, stretch, then a 10-minute break.','أحسنتِ! ماء وتمارين خفيفة ثم استراحة 10 دقائق.')+'</span><button class="b ok" data-t="done">✓ '+L('Mark done','تم الإنجاز')+'</button>':
+    '<button class="b ghost" data-t="minus" aria-label="'+L('5 minutes less','أقل بخمس دقائق')+'">−5</button><button class="b ghost" data-t="plus" aria-label="'+L('5 minutes more','أكثر بخمس دقائق')+'">+5</button><button class="b" data-t="pause">'+(paused?L('Resume','استئناف'):L('Pause','إيقاف مؤقت'))+'</button>')+
+    '<button class="b ghost" data-t="stop" aria-label="'+L('Close timer','إغلاق المؤقت')+'">✕</button></div></div>';
+}
+bar.addEventListener('click',function(e){
+  var b=e.target.closest('[data-t]');if(!b||!tState)return;var a=b.getAttribute('data-t');
+  if(a==='pause'){if(tState.left!=null){tState.end=Date.now()+tState.left;tState.left=null;}else tState.left=leftMs();tSet(tState);}
+  else if(a==='plus'||a==='minus'){var d=(a==='plus'?5:-5)*60000;if(tState.left!=null)tState.left=Math.max(60000,tState.left+d);else tState.end=Math.max(Date.now()+60000,tState.end+d);tState.total=Math.max(60000,tState.total+d);tState.done=false;tSet(tState);}
+  else if(a==='stop'){tSet(null);render();}
+  else if(a==='done'){var t=byId(tState.id);tSet(null);if(t&&t.status==='pending'){t.status='done';t.doneAt=today();save();}render();}
+  drawTimer();
+});
+setInterval(function(){if(tState&&tState.left==null&&!tState.done)drawTimer();},1000);
+applyDir();
+render();
+drawTimer();
+})();
+</script>
+</body>
+</html>
