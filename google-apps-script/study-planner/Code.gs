@@ -11,9 +11,15 @@
 function doGet() {
   var html = HtmlService.createHtmlOutputFromFile('Index').getContent();
 
-  // Small safety shim: Google's page frame can block history changes.
+  // Small safety shims for Google's page frame:
+  //  - it can block history changes
+  //  - it can stop in-page links (the tabs) from switching, so switch them here
   var shim = '<script>(function(){var r=history.replaceState;' +
-    'history.replaceState=function(){try{return r.apply(history,arguments);}catch(e){}};})();</script>';
+    'history.replaceState=function(){try{return r.apply(history,arguments);}catch(e){}};' +
+    'document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href^=\'#\']");' +
+    'if(!a)return;e.preventDefault();var h=a.getAttribute("href");' +
+    'if(location.hash!==h)location.hash=h;else window.dispatchEvent(new HashChangeEvent("hashchange"));},true);' +
+    '})();</script>';
   html = html.replace('<script id="app">', shim + '<script id="app">');
 
   return HtmlService.createHtmlOutput(html)
