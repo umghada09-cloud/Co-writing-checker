@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan &amp; Track</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F5F9;--surface:#FFFFFF;--ink:#18202E;--muted:#5D6779;--line:#DFE4EC;--grid:#EEF1F5;
+  --accent:#0B6E79;--accent-soft:#D3ECEE;
+  --good:#15803D;--warn:#B54708;--bad:#D92D20;
+  --display:'Bricolage Grotesque','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141C;--surface:#18202B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2A3442;--grid:#212A36;
+  --accent:#3FC1CD;--accent-soft:#16424A;--good:#4ADE80;--warn:#F5A35C;--bad:#F87171;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141C;--surface:#18202B;--ink:#E8EDF4;--muted:#9AA6B8;--line:#2A3442;--grid:#212A36;
+  --accent:#3FC1CD;--accent-soft:#16424A;--good:#4ADE80;--warn:#F5A35C;--bad:#F87171;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+#root{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+html[dir="rtl"] h1,html[dir="rtl"] h2,html[dir="rtl"] h3{font-family:var(--body)}
+h1{font-size:clamp(24px,4vw,34px);font-weight:800}
+h2{font-size:18px;margin-bottom:12px}
+.eyebrow{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+.muted{color:var(--muted)}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.head p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.lang{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.lang button{border:0;background:transparent;color:var(--muted);padding:7px 12px;font:700 13px var(--body);cursor:pointer}
+.lang button.on{background:var(--accent);color:var(--surface)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.kpi b{display:block;font-family:var(--display);font-size:30px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+/* daily bars */
+.cols{position:relative;display:grid;grid-template-columns:repeat(14,1fr);gap:4px;align-items:end;height:170px;border-bottom:1px solid var(--line);padding-top:18px}
+.col{position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center;cursor:default}
+.col i{display:block;width:70%;max-width:26px;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+.col.zero i{background:var(--line)}
+.col em{position:absolute;bottom:calc(var(--h) + 4px);font-style:normal;font-size:11.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.col:hover i,.col:focus i{filter:brightness(1.15)}
+.xl{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;font-size:11px;color:var(--muted);text-align:center;margin-top:4px;font-variant-numeric:tabular-nums}
+/* hbars */
+.hb{display:grid;grid-template-columns:minmax(80px,140px) 1fr 34px;gap:8px;align-items:center;font-size:13.5px;margin:7px 0}
+.hb .tr{height:10px;background:var(--grid);border-radius:99px;overflow:hidden}
+.hb .tr i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.hb b{text-align:end;font-variant-numeric:tabular-nums}
+button.hb{width:100%;font:inherit;color:inherit;background:transparent;border:0;padding:4px 0;cursor:pointer;text-align:start}
+button.hb:hover .tr i{filter:brightness(1.15)}
+.hb span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl{margin:2px 0 10px;padding-inline-start:18px;border-inline-start:2px solid var(--grid)}
+.hb.sm{font-size:13px;color:var(--muted)}
+.hb.sm .tr{height:7px}
+.hb.sm .tr i{background:color-mix(in srgb,var(--accent) 60%,var(--surface))}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.tbl td{padding:9px 6px;border-bottom:1px solid var(--grid);vertical-align:middle}
+.tbl td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+details summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:13px;margin-top:10px}
+#tip{position:fixed;z-index:9;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12.5px;padding:6px 9px;border-radius:8px;display:none;white-space:nowrap}
+.empty{text-align:center;padding:60px 16px}
+.empty h1{margin-bottom:10px}
+.credit{margin-top:28px;text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="tip" role="tooltip"></div>
+<script>
+(function(){
+"use strict";
+var DATA=/*DATA*/null;
+var root=document.getElementById('root'),tip=document.getElementById('tip');
+var lang='ar',open={};
+try{var sl=localStorage.getItem('pt-dash-lang');if(sl==='en'||sl==='ar')lang=sl;}catch(e){}
+function L(en,ar){return lang==='ar'?ar:en;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var MON_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function dm(s){if(!s)return '';var p=s.slice(0,10).split('-');return +p[2]+' '+(lang==='ar'?MON_AR:MON)[+p[1]-1];}
+function daysAgo(s){if(!s)return 999;var t=new Date(s.replace('T',' ').replace(/-/g,'/')).getTime();return Math.floor((Date.now()-t)/86400000);}
+function langSwitch(){return '<div class="lang" role="group" aria-label="Language / اللغة"><button data-l="ar" class="'+(lang==='ar'?'on':'')+'">العربية</button><button data-l="en" class="'+(lang==='en'?'on':'')+'">English</button></div>';}
+function credit(){return '<p class="credit">'+L('Plan & Track · designed by Ms. Shaikha Al Sawai','Plan & Track · تصميم: أ. شيخة الصواعي')+'</p>';}
+function kpi(v,l){return '<div class="kpi"><b>'+v+'</b><span>'+l+'</span></div>';}
+function noGov(){return L('Not chosen','غير محددة');}
+
+function dashboard(){
+  var D=DATA,U=D.users||[];
+  var today=(D.daily[D.daily.length-1]||{n:0}).n;
+  var a7=U.filter(function(u){return daysAgo(u.last)<7;}).length;
+  var new7=U.filter(function(u){return daysAgo(u.first)<7;}).length;
+  var govs={};U.forEach(function(u){govs[u.gov||noGov()]=1;});
+  var h='<div class="head"><div><div class="eyebrow">Plan &amp; Track</div><h1>'+L('Teacher dashboard','لوحة المعلمة')+'</h1><p>'+L('Anonymous counts: no names are collected. Refresh the page for the latest numbers.','أعداد مجهولة الهوية: لا تُجمع أي أسماء. حدّثي الصفحة لرؤية آخر الأرقام.')+'</p></div>'+langSwitch()+'</div>';
+  h+='<div class="kpis">'+kpi(U.length,L('users in total','مستخدمًا إجمالًا'))+kpi(today,L('active today','نشطون اليوم'))+kpi(a7,L('active in the last 7 days','نشطون آخر 7 أيام'))+kpi(new7,L('new this week','جدد هذا الأسبوع'))+kpi(Object.keys(govs).length,L('governorates','محافظة'))+'</div>';
+  h+='<section class="card"><h2>'+L('Users by governorate','المستخدمون حسب المحافظة')+'</h2><p class="note" style="margin:-6px 0 8px">'+L('Tap a governorate to see its wilayats.','اضغطي على المحافظة لعرض ولاياتها.')+'</p>'+byGov(U)+'</section>';
+  h+='<section class="card"><h2>'+L('Active users per day · last 14 days','المستخدمون النشطون يوميًا · آخر 14 يومًا')+'</h2>'+daily(D.daily)+'</section>'+credit();
+  root.innerHTML=h;
+}
+function count(list,key){var c={};list.forEach(function(u){var g=u[key]||noGov();c[g]=(c[g]||0)+1;});return c;}
+function byGov(U){
+  if(!U.length)return '<p class="muted">'+L('No users yet. Numbers appear once students open the planner.','لا يوجد مستخدمون بعد. ستظهر الأرقام عندما يفتح الطلاب المنظّم.')+'</p>';
+  var c=count(U,'gov'),k=Object.keys(c).sort(function(a,b){return c[b]-c[a]||a.localeCompare(b,'ar');}),max=c[k[0]];
+  return k.map(function(g){
+    var w=count(U.filter(function(u){return (u.gov||noGov())===g;}),'wil'),wk=Object.keys(w).sort(function(a,b){return w[b]-w[a];});
+    var pct=Math.round(100*c[g]/U.length);
+    return '<button class="hb gv" data-g="'+esc(g)+'" aria-expanded="'+(!!open[g])+'" data-tip="'+esc(g+' · '+c[g]+' ('+pct+'%)')+'"><span>'+(open[g]?'▾ ':(lang==='ar'?'◂ ':'▸ '))+esc(g)+'</span><span class="tr"><i style="width:'+Math.round(100*c[g]/max)+'%"></i></span><b>'+c[g]+'</b></button>'+
+      (open[g]?'<div class="wl">'+wk.map(function(x){return '<div class="hb sm"><span>'+esc(x===noGov()?L('Wilayat not chosen','الولاية غير محددة'):x)+'</span><span class="tr"><i style="width:'+Math.round(100*w[x]/c[g])+'%"></i></span><b>'+w[x]+'</b></div>';}).join('')+'</div>':'');
+  }).join('');
+}
+function daily(arr){
+  var max=Math.max(1,Math.max.apply(null,arr.map(function(x){return x.n;})));
+  var maxI=-1,mv=-1;arr.forEach(function(x,i){if(x.n>=mv){mv=x.n;maxI=i;}});
+  var h='<div class="cols" dir="ltr" role="img" aria-label="'+L('Active users per day','المستخدمون النشطون يوميًا')+'">'+arr.map(function(x,i){
+    var pc=Math.round(100*x.n/max),show=(i===arr.length-1||i===maxI)&&x.n>0;
+    return '<div class="col'+(x.n?'':' zero')+'" tabindex="0" data-tip="'+esc(dm(x.d)+' · '+x.n+' '+L('active','نشط'))+'" style="--h:'+pc+'%"><i style="height:'+pc+'%"></i>'+(show?'<em>'+x.n+'</em>':'')+'</div>';
+  }).join('')+'</div><div class="xl" dir="ltr">'+arr.map(function(x,i){return '<span>'+((arr.length-1-i)%2?'':esc(dm(x.d).split(' ')[0]))+'</span>';}).join('')+'</div>';
+  h+='<details><summary>'+L('Show as table','عرض كجدول')+'</summary><table class="tbl"><tbody>'+arr.map(function(x){return '<tr><td>'+esc(dm(x.d))+'</td><td class="n">'+x.n+'</td></tr>';}).join('')+'</tbody></table></details>';
+  return h;
+}
+function locked(){
+  root.innerHTML='<div class="empty"><div style="display:flex;justify-content:center;margin-bottom:16px">'+langSwitch()+'</div><h1>Plan &amp; Track</h1><p class="muted">'+L('This page needs your private dashboard link.','هذه الصفحة تحتاج إلى رابط اللوحة الخاص بك.')+'</p></div>'+credit();
+}
+function render(){
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  if(DATA)dashboard();else locked();
+}
+root.addEventListener('click',function(e){
+  var b=e.target.closest('[data-l]');if(b){lang=b.getAttribute('data-l');try{localStorage.setItem('pt-dash-lang',lang);}catch(x){}render();return;}
+  var g=e.target.closest('[data-g]');if(g){var k=g.getAttribute('data-g');open[k]=!open[k];render();}
+});
+function showTip(e){var t=e.target.closest('[data-tip]');if(!t){tip.style.display='none';return;}tip.textContent=t.getAttribute('data-tip');tip.style.display='block';
+  var r=t.getBoundingClientRect(),x=(e.clientX||r.left+r.width/2),y=(e.clientY||r.top);tip.style.left=Math.min(window.innerWidth-tip.offsetWidth-8,Math.max(8,x-tip.offsetWidth/2))+'px';tip.style.top=Math.max(8,y-tip.offsetHeight-12)+'px';}
+root.addEventListener('mousemove',showTip);root.addEventListener('focusin',showTip);
+root.addEventListener('mouseleave',function(){tip.style.display='none';});root.addEventListener('focusout',function(){tip.style.display='none';});
+render();
+})();
+</script>
+</body>
+</html>

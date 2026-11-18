@@ -532,11 +532,17 @@ var CAT=JSON.parse(document.getElementById('catalog').textContent),SKEY='sp-stat
 var state=null;try{state=JSON.parse(localStorage.getItem(SKEY)||'null');}catch(e){}
 if(state&&(!state.subjects||!state.subjects.length||!state.tasks))state=null;
 var OMAN=[["مسقط", ["مسقط", "مطرح", "بوشر", "السيب", "العامرات", "قريات"]], ["ظفار", ["صلالة", "طاقة", "مرباط", "رخيوت", "ثمريت", "ضلكوت", "المزيونة", "مقشن", "شليم وجزر الحلانيات", "سدح"]], ["مسندم", ["خصب", "دبا", "بخا", "مدحاء"]], ["البريمي", ["البريمي", "محضة", "السنينة"]], ["الداخلية", ["نزوى", "بهلا", "منح", "الحمراء", "أدم", "إزكي", "سمائل", "بدبد", "الجبل الأخضر"]], ["شمال الباطنة", ["صحار", "شناص", "لوى", "صحم", "الخابورة", "السويق"]], ["جنوب الباطنة", ["الرستاق", "العوابي", "نخل", "وادي المعاول", "بركاء", "المصنعة"]], ["جنوب الشرقية", ["صور", "الكامل والوافي", "جعلان بني بو حسن", "جعلان بني بو علي", "مصيرة"]], ["شمال الشرقية", ["إبراء", "المضيبي", "بدية", "القابل", "وادي بني خالد", "دماء والطائيين", "سناو"]], ["الظاهرة", ["عبري", "ينقل", "ضنك"]], ["الوسطى", ["هيماء", "محوت", "الدقم", "الجازر"]]];
-/* anonymous usage counter: only active when served from Google Apps Script */
+/* anonymous usage counter: sends only a random device id + governorate + wilayat */
+var API='PASTE-YOUR-DASHBOARD-LINK-HERE'; // the /exec link of your "Plan & Track Dashboard" Apps Script
 function devId(){var k='sp-dev',v=null;try{v=localStorage.getItem(k);if(!v){v='d'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem(k,v);}}catch(e){}return v||'anon';}
 function track(ev){try{
-  if(!(window.google&&google.script&&google.script.run))return;
   var k='sp-sent-'+ev+(ev==='open'?'-'+localToday():'');if(localStorage.getItem(k))return;
+  if(/^https:\/\/script\.google\.com\/macros\/s\/[^\/]+\/exec$/.test(API)&&window.fetch){
+    try{localStorage.setItem(k,'1');}catch(e){}
+    fetch(API,{method:'POST',mode:'no-cors',keepalive:true,body:JSON.stringify({ev:ev,dev:devId(),gov:state&&state.gov||'',wil:state&&state.wil||''})}).catch(function(){try{localStorage.removeItem(k);}catch(e){}});
+    return;
+  }
+  if(!(window.google&&google.script&&google.script.run))return;
   google.script.run.withSuccessHandler(function(){try{localStorage.setItem(k,'1');}catch(e){}}).withFailureHandler(function(){}).logEvent(ev,devId(),state&&state.gov||'',state&&state.wil||'');
 }catch(e){}}
 function syncExams(){
