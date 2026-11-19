@@ -31,7 +31,7 @@ function setup() {
   us.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
   us.setFrozenRows(1);
   var ac = ss.getSheetByName('Activity') || ss.insertSheet('Activity');
-  ac.getRange(1, 1, 1, 3).setValues([['date', 'dev', 'event']]).setFontWeight('bold');
+  ac.getRange(1, 1, 1, 2).setValues([['date', 'dev']]).setFontWeight('bold');
   ac.setFrozenRows(1);
   ss.getSheets().forEach(function (sh) {
     if (sh.getName() !== 'Users' && sh.getName() !== 'Activity' && ss.getSheets().length > 2) ss.deleteSheet(sh);
@@ -64,7 +64,7 @@ function doPost(e) {
     lock.waitLock(15000);
     try {
       upsertUser(dev, str(p.gov, 40), str(p.wil, 40));
-      logActivity(dev, p.ev === 'plan' ? 'plan' : 'open');
+      logActivity(dev);
     } finally {
       lock.releaseLock();
     }
@@ -91,11 +91,18 @@ function upsertUser(dev, gov, wil) {
   }
 }
 
-function logActivity(dev, ev) {
+/** One row per device per day: "this device used the planner on this date". */
+function logActivity(dev) {
   var day = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
-  var cache = CacheService.getScriptCache(), k = 'a_' + day + '_' + dev + '_' + ev;
+  var cache = CacheService.getScriptCache(), k = 'a_' + day + '_' + dev;
   if (cache.get(k)) return;
-  sheet_('Activity').appendRow([day, dev, ev]);
+  var sh = sheet_('Activity');
+  var hits = sh.getRange('B:B').createTextFinder(dev).matchEntireCell(true).findAll();
+  var already = hits.some(function (c) {
+    var v = sh.getRange(c.getRow(), 1).getValue();
+    return (v instanceof Date ? Utilities.formatDate(v, TZ, 'yyyy-MM-dd') : String(v)) === day;
+  });
+  if (!already) sh.appendRow([day, dev]);
   cache.put(k, '1', 21600);
 }
 
