@@ -33,8 +33,17 @@ function setup() {
   var ac = ss.getSheetByName('Activity') || ss.insertSheet('Activity');
   ac.getRange(1, 1, 1, 2).setValues([['date', 'dev']]).setFontWeight('bold');
   ac.setFrozenRows(1);
+  var su = ss.getSheetByName('Summary') || ss.insertSheet('Summary', 0);
+  su.getRange('A1:B3').setValues([
+    ['إجمالي المستخدمين', '=COUNTA(Users!A2:A)'],
+    ['نشطون اليوم', '=COUNTIF(Activity!A2:A, TEXT(TODAY(), "yyyy-mm-dd"))+COUNTIF(Activity!A2:A, TODAY())'],
+    ['نشطون آخر 7 أيام', '=COUNTIF(Users!E2:E, ">="&(TODAY()-6))']
+  ]);
+  su.getRange('A5').setFormula('=QUERY(Users!A:B, "select B, count(A) where A is not null group by B order by count(A) desc label B \'المحافظة\', count(A) \'عدد المستخدمين\'", 1)');
+  su.getRange('A1:A3').setFontWeight('bold');
+  su.setRightToLeft(true);
   ss.getSheets().forEach(function (sh) {
-    if (sh.getName() !== 'Users' && sh.getName() !== 'Activity' && ss.getSheets().length > 2) ss.deleteSheet(sh);
+    if (['Users', 'Activity', 'Summary'].indexOf(sh.getName()) < 0 && ss.getSheets().length > 3) ss.deleteSheet(sh);
   });
   Logger.log('Data sheet: ' + ss.getUrl());
   Logger.log('Next: Deploy → New deployment → Web app, then run showLinks().');
@@ -110,7 +119,9 @@ function logActivity(dev) {
 
 function doGet(e) {
   var q = (e && e.parameter) || {};
-  var ok = !!q.t && q.t === key_();
+  // ignore spaces and invisible characters that phones add when a link is copied
+  var t = String(q.t || '').replace(/[^A-Za-z0-9]/g, '').toLowerCase();
+  var ok = !!t && t === key_();
   var data = ok ? dashboardData() : null;
   var html = HtmlService.createHtmlOutputFromFile('Dashboard').getContent();
   html = html.replace('/*DATA*/null', JSON.stringify(data).replace(/</g, '\\u003c'));
