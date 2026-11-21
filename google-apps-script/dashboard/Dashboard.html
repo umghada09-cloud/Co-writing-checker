@@ -45,7 +45,12 @@ h2{font-size:18px;margin-bottom:12px}
 /* daily bars */
 .cols{position:relative;display:grid;grid-template-columns:repeat(14,1fr);gap:4px;align-items:end;height:170px;border-bottom:1px solid var(--line);padding-top:18px}
 .col{position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center;cursor:default}
-.col i{display:block;width:70%;max-width:26px;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px}
+.col i{position:relative;display:flex;align-items:flex-end;width:70%;max-width:26px;background:color-mix(in srgb,var(--accent) 38%,var(--surface));border-radius:4px 4px 0 0;min-height:2px;overflow:hidden}
+.col i b{display:block;width:100%;background:var(--accent)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.kpi.hl{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
 .col.zero i{background:var(--line)}
 .col em{position:absolute;bottom:calc(var(--h) + 4px);font-style:normal;font-size:11.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
 .col:hover i,.col:focus i{filter:brightness(1.15)}
@@ -91,7 +96,7 @@ function dm(s){if(!s)return '';var p=s.slice(0,10).split('-');return +p[2]+' '+(
 function daysAgo(s){if(!s)return 999;var t=new Date(s.replace('T',' ').replace(/-/g,'/')).getTime();return Math.floor((Date.now()-t)/86400000);}
 function langSwitch(){return '<div class="lang" role="group" aria-label="Language / اللغة"><button data-l="ar" class="'+(lang==='ar'?'on':'')+'">العربية</button><button data-l="en" class="'+(lang==='en'?'on':'')+'">English</button></div>';}
 function credit(){return '<p class="credit">'+L('Plan & Track · designed by Ms. Shaikha Al Sawai','Plan & Track · تصميم: أ. شيخة الصواعي')+'</p>';}
-function kpi(v,l){return '<div class="kpi"><b>'+v+'</b><span>'+l+'</span></div>';}
+function kpi(v,l,hl){return '<div class="kpi'+(hl?' hl':'')+'"><b>'+v+'</b><span>'+l+'</span></div>';}
 function noGov(){return L('Not chosen','غير محددة');}
 
 function dashboard(){
@@ -99,32 +104,45 @@ function dashboard(){
   var today=(D.daily[D.daily.length-1]||{n:0}).n;
   var a7=U.filter(function(u){return daysAgo(u.last)<7;}).length;
   var new7=U.filter(function(u){return daysAgo(u.first)<7;}).length;
-  var govs={};U.forEach(function(u){govs[u.gov||noGov()]=1;});
+  var govs={};U.forEach(function(u){if(OFFICIAL.indexOf(u.gov)>=0)govs[u.gov]=1;});
   var h='<div class="head"><div><div class="eyebrow">Plan &amp; Track</div><h1>'+L('Teacher dashboard','لوحة المعلمة')+'</h1><p>'+L('Anonymous counts: no names are collected. Refresh the page for the latest numbers.','أعداد مجهولة الهوية: لا تُجمع أي أسماء. حدّثي الصفحة لرؤية آخر الأرقام.')+'</p></div>'+langSwitch()+'</div>';
-  h+='<div class="kpis">'+kpi(U.length,L('users in total','مستخدمًا إجمالًا'))+kpi(today,L('active today','نشطون اليوم'))+kpi(a7,L('active in the last 7 days','نشطون آخر 7 أيام'))+kpi(new7,L('new this week','جدد هذا الأسبوع'))+kpi(Object.keys(govs).length,L('governorates','محافظة'))+'</div>';
+  var R=D.retention||{continuing:0,eligible:0,dist:{one:0,two:0,more:0}},rp=R.eligible?Math.round(100*R.continuing/R.eligible):0;
+  h+='<div class="kpis">'+kpi(U.length,L('users in total','مستخدمًا إجمالًا'))+kpi(R.continuing,L('keep using it (came back on another day) · '+rp+'% of those who started before today','يواصلون الاستخدام (عادوا في يوم آخر) · '+rp+'% ممن بدؤوا قبل اليوم'),true)+kpi(today,L('active today','نشطون اليوم'))+kpi(a7,L('active in the last 7 days','نشطون آخر 7 أيام'))+kpi(new7,L('new this week','جدد هذا الأسبوع'))+kpi(Object.keys(govs).length,L('governorates','محافظة'))+'</div>';
   h+='<section class="card"><h2>'+L('Users by governorate','المستخدمون حسب المحافظة')+'</h2><p class="note" style="margin:-6px 0 8px">'+L('Tap a governorate to see its wilayats.','اضغطي على المحافظة لعرض ولاياتها.')+'</p>'+byGov(U)+'</section>';
+  h+='<section class="card"><h2>'+L('How many days each user has used it','عدد الأيام التي استخدم فيها كل مستخدم المنظّم')+'</h2>'+dist(R.dist)+'</section>';
   h+='<section class="card"><h2>'+L('Active users per day · last 14 days','المستخدمون النشطون يوميًا · آخر 14 يومًا')+'</h2>'+daily(D.daily)+'</section>'+credit();
   root.innerHTML=h;
 }
-function count(list,key){var c={};list.forEach(function(u){var g=u[key]||noGov();c[g]=(c[g]||0)+1;});return c;}
+var OFFICIAL=['مسقط','ظفار','مسندم','البريمي','الداخلية','شمال الباطنة','جنوب الباطنة','جنوب الشرقية','شمال الشرقية','الظاهرة','الوسطى'];
+function badGov(){return L('Invalid entry','إدخال غير صالح');}
+function govOf(u){return !u.gov?noGov():(OFFICIAL.indexOf(u.gov)>=0?u.gov:badGov());}
+function count(list,key){var c={};list.forEach(function(u){var g=key==='gov'?govOf(u):(u[key]||noGov());c[g]=(c[g]||0)+1;});return c;}
 function byGov(U){
   if(!U.length)return '<p class="muted">'+L('No users yet. Numbers appear once students open the planner.','لا يوجد مستخدمون بعد. ستظهر الأرقام عندما يفتح الطلاب المنظّم.')+'</p>';
-  var c=count(U,'gov'),k=Object.keys(c).sort(function(a,b){return c[b]-c[a]||a.localeCompare(b,'ar');}),max=c[k[0]];
+  var c=count(U,'gov'),rank=function(g){return g===noGov()?1:(g===badGov()?2:0);},k=Object.keys(c).sort(function(a,b){return rank(a)-rank(b)||c[b]-c[a]||a.localeCompare(b,'ar');}),max=Math.max.apply(null,k.map(function(g){return c[g];}));
   return k.map(function(g){
-    var w=count(U.filter(function(u){return (u.gov||noGov())===g;}),'wil'),wk=Object.keys(w).sort(function(a,b){return w[b]-w[a];});
+    var w=count(U.filter(function(u){return govOf(u)===g;}),'wil'),wk=Object.keys(w).sort(function(a,b){return w[b]-w[a];});
     var pct=Math.round(100*c[g]/U.length);
     return '<button class="hb gv" data-g="'+esc(g)+'" aria-expanded="'+(!!open[g])+'" data-tip="'+esc(g+' · '+c[g]+' ('+pct+'%)')+'"><span>'+(open[g]?'▾ ':(lang==='ar'?'◂ ':'▸ '))+esc(g)+'</span><span class="tr"><i style="width:'+Math.round(100*c[g]/max)+'%"></i></span><b>'+c[g]+'</b></button>'+
       (open[g]?'<div class="wl">'+wk.map(function(x){return '<div class="hb sm"><span>'+esc(x===noGov()?L('Wilayat not chosen','الولاية غير محددة'):x)+'</span><span class="tr"><i style="width:'+Math.round(100*w[x]/c[g])+'%"></i></span><b>'+w[x]+'</b></div>';}).join('')+'</div>':'');
   }).join('');
+}
+function dist(d){
+  var rows=[[L('1 day only','يوم واحد فقط'),d.one],[L('2 days','يومان'),d.two],[L('3 days or more','3 أيام أو أكثر'),d.more]];
+  var t=d.one+d.two+d.more,max=Math.max(1,d.one,d.two,d.more);
+  return rows.map(function(r){var p=t?Math.round(100*r[1]/t):0;return '<div class="hb" data-tip="'+esc(r[0]+' · '+r[1]+' ('+p+'%)')+'"><span>'+esc(r[0])+'</span><span class="tr"><i style="width:'+Math.round(100*r[1]/max)+'%"></i></span><b>'+r[1]+'</b></div>';}).join('')+
+    '<p class="note">'+L('A user who opens the planner on two or more different days counts as continuing.','من يفتح المنظّم في يومين مختلفين أو أكثر يُحسب ضمن من يواصلون الاستخدام.')+'</p>';
 }
 function daily(arr){
   var max=Math.max(1,Math.max.apply(null,arr.map(function(x){return x.n;})));
   var maxI=-1,mv=-1;arr.forEach(function(x,i){if(x.n>=mv){mv=x.n;maxI=i;}});
   var h='<div class="cols" dir="ltr" role="img" aria-label="'+L('Active users per day','المستخدمون النشطون يوميًا')+'">'+arr.map(function(x,i){
     var pc=Math.round(100*x.n/max),show=(i===arr.length-1||i===maxI)&&x.n>0;
-    return '<div class="col'+(x.n?'':' zero')+'" tabindex="0" data-tip="'+esc(dm(x.d)+' · '+x.n+' '+L('active','نشط'))+'" style="--h:'+pc+'%"><i style="height:'+pc+'%"></i>'+(show?'<em>'+x.n+'</em>':'')+'</div>';
+    var rr=x.n?Math.round(100*(x.ret||0)/x.n):0;
+    return '<div class="col'+(x.n?'':' zero')+'" tabindex="0" data-tip="'+esc(dm(x.d)+' · '+x.n+' '+L('active','نشط')+' · '+(x.ret||0)+' '+L('returning','عائد'))+'" style="--h:'+pc+'%"><i style="height:'+pc+'%"><b style="height:'+rr+'%"></b></i>'+(show?'<em>'+x.n+'</em>':'')+'</div>';
   }).join('')+'</div><div class="xl" dir="ltr">'+arr.map(function(x,i){return '<span>'+((arr.length-1-i)%2?'':esc(dm(x.d).split(' ')[0]))+'</span>';}).join('')+'</div>';
-  h+='<details><summary>'+L('Show as table','عرض كجدول')+'</summary><table class="tbl"><tbody>'+arr.map(function(x){return '<tr><td>'+esc(dm(x.d))+'</td><td class="n">'+x.n+'</td></tr>';}).join('')+'</tbody></table></details>';
+  h+='<div class="legend"><span><i style="background:var(--accent)"></i>'+L('returning users','مستخدمون عائدون')+'</span><span><i style="background:color-mix(in srgb,var(--accent) 38%,var(--surface))"></i>'+L('first day','أول يوم لهم')+'</span></div>';
+  h+='<details><summary>'+L('Show as table','عرض كجدول')+'</summary><table class="tbl"><tbody>'+arr.map(function(x){return '<tr><td>'+esc(dm(x.d))+'</td><td class="n">'+x.n+'</td><td class="n">'+(x.ret||0)+' '+L('returning','عائد')+'</td></tr>';}).join('')+'</tbody></table></details>';
   return h;
 }
 function locked(){

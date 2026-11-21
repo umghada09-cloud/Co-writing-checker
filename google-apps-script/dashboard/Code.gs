@@ -18,6 +18,26 @@
 var TZ = 'Asia/Muscat';
 var COLS = ['dev', 'gov', 'wil', 'firstSeen', 'lastActive'];
 
+var PLACES = {
+  'مسقط': ['مسقط', 'مطرح', 'بوشر', 'السيب', 'العامرات', 'قريات'],
+  'ظفار': ['صلالة', 'طاقة', 'مرباط', 'رخيوت', 'ثمريت', 'ضلكوت', 'المزيونة', 'مقشن', 'شليم وجزر الحلانيات', 'سدح'],
+  'مسندم': ['خصب', 'دبا', 'بخا', 'مدحاء'],
+  'البريمي': ['البريمي', 'محضة', 'السنينة'],
+  'الداخلية': ['نزوى', 'بهلا', 'منح', 'الحمراء', 'أدم', 'إزكي', 'سمائل', 'بدبد', 'الجبل الأخضر'],
+  'شمال الباطنة': ['صحار', 'شناص', 'لوى', 'صحم', 'الخابورة', 'السويق'],
+  'جنوب الباطنة': ['الرستاق', 'العوابي', 'نخل', 'وادي المعاول', 'بركاء', 'المصنعة'],
+  'جنوب الشرقية': ['صور', 'الكامل والوافي', 'جعلان بني بو حسن', 'جعلان بني بو علي', 'مصيرة'],
+  'شمال الشرقية': ['إبراء', 'المضيبي', 'بدية', 'القابل', 'وادي بني خالد', 'دماء والطائيين', 'سناو'],
+  'الظاهرة': ['عبري', 'ينقل', 'ضنك'],
+  'الوسطى': ['هيماء', 'محوت', 'الدقم', 'الجازر']
+};
+
+/** Keeps only real governorate and wilayat names; anything else is stored as "not chosen". */
+function cleanPlace(gov, wil) {
+  if (!PLACES.hasOwnProperty(gov)) return ['', ''];
+  return [gov, PLACES[gov].indexOf(wil) >= 0 ? wil : ''];
+}
+
 /* ---------------- setup ---------------- */
 
 function setup() {
@@ -72,7 +92,8 @@ function doPost(e) {
     var lock = LockService.getScriptLock();
     lock.waitLock(15000);
     try {
-      upsertUser(dev, str(p.gov, 40), str(p.wil, 40));
+      var place = cleanPlace(String(p.gov || '').trim(), String(p.wil || '').trim());
+      upsertUser(dev, place[0], place[1]);
       logActivity(dev);
     } finally {
       lock.releaseLock();
@@ -135,15 +156,35 @@ function dashboardData() {
   var today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   var users = sheet_('Users').getDataRange().getValues().slice(1).filter(function (r) { return r[0]; });
   var act = sheet_('Activity').getDataRange().getValues().slice(1);
-  var days = {};
-  for (var i = 13; i >= 0; i--) days[shift(today, -i)] = {};
+  var dayOf = function (v) { return v instanceof Date ? Utilities.formatDate(v, TZ, 'yyyy-MM-dd') : String(v || '').slice(0, 10); };
+
+  // which days each device used the planner (from Activity), plus its first day (from Users)
+  var seen = {}, first = {};
+  users.forEach(function (r) { first[r[0]] = dayOf(r[3]); seen[r[0]] = {}; seen[r[0]][dayOf(r[3])] = 1; });
   act.forEach(function (a) {
-    var d = a[0] instanceof Date ? Utilities.formatDate(a[0], TZ, 'yyyy-MM-dd') : String(a[0]);
-    if (days[d]) days[d][a[1]] = 1;
+    var d = dayOf(a[0]), dev = a[1];
+    if (!dev || !d) return;
+    (seen[dev] = seen[dev] || {})[d] = 1;
+    if (!first[dev] || d < first[dev]) first[dev] = d;
   });
+
+  var devs = Object.keys(seen), dist = { one: 0, two: 0, more: 0 }, eligible = 0, continuing = 0;
+  devs.forEach(function (dev) {
+    var n = Object.keys(seen[dev]).length;
+    if (n >= 3) dist.more++; else if (n === 2) dist.two++; else dist.one++;
+    if (first[dev] < today) { eligible++; if (n >= 2) continuing++; }
+  });
+
+  var daily = [];
+  for (var i = 13; i >= 0; i--) {
+    var d = shift(today, -i), n = 0, ret = 0;
+    devs.forEach(function (dev) { if (seen[dev][d]) { n++; if (first[dev] < d) ret++; } });
+    daily.push({ d: d, n: n, ret: ret });
+  }
   return {
     today: today,
-    daily: Object.keys(days).map(function (d) { return { d: d, n: Object.keys(days[d]).length }; }),
+    daily: daily,
+    retention: { continuing: continuing, eligible: eligible, dist: dist },
     users: users.map(function (r) { return { gov: r[1], wil: r[2], first: fmt(r[3]), last: fmt(r[4]) }; })
   };
 }
