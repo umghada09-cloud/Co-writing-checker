@@ -74,6 +74,11 @@ button.hb:hover .tr i{filter:brightness(1.15)}
 details summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:13px;margin-top:10px}
 #tip{position:fixed;z-index:9;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12.5px;padding:6px 9px;border-radius:8px;display:none;white-space:nowrap}
 .empty{text-align:center;padding:60px 16px}
+.keyform{display:grid;gap:10px;max-width:340px;margin:18px auto 0;text-align:start}
+.keyform input{font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);letter-spacing:.04em}
+.keyform button{font:inherit;font-weight:700;padding:11px;border:0;border-radius:10px;background:var(--accent);color:var(--surface);cursor:pointer}
+.keyform button[disabled]{opacity:.6}
+.kerr{margin:0;color:var(--bad);font-size:13px}
 .empty h1{margin-bottom:10px}
 .credit{margin-top:28px;text-align:center;font-size:12px;color:var(--muted)}
 </style>
@@ -145,9 +150,25 @@ function daily(arr){
   h+='<details><summary>'+L('Show as table','عرض كجدول')+'</summary><table class="tbl"><tbody>'+arr.map(function(x){return '<tr><td>'+esc(dm(x.d))+'</td><td class="n">'+x.n+'</td><td class="n">'+(x.ret||0)+' '+L('returning','عائد')+'</td></tr>';}).join('')+'</tbody></table></details>';
   return h;
 }
-function locked(){
-  root.innerHTML='<div class="empty"><div style="display:flex;justify-content:center;margin-bottom:16px">'+langSwitch()+'</div><h1>Plan &amp; Track</h1><p class="muted">'+L('This page needs your private dashboard link.','هذه الصفحة تحتاج إلى رابط اللوحة الخاص بك.')+'</p></div>'+credit();
+var KEYSTORE='pt-dash-key',busy=false,keyErr='';
+function cleanKey(k){return String(k||'').replace(/[^A-Za-z0-9]/g,'').toLowerCase();}
+function tryKey(k,silent){
+  k=cleanKey(k);
+  if(!k||busy||!(window.google&&google.script&&google.script.run))return;
+  busy=true;keyErr='';if(!silent)render();
+  google.script.run.withSuccessHandler(function(d){
+    busy=false;
+    if(d){DATA=d;try{localStorage.setItem(KEYSTORE,k);}catch(e){}render();}
+    else{try{localStorage.removeItem(KEYSTORE);}catch(e){}keyErr=silent?'':L('That key is not right. Check it and try again.','المفتاح غير صحيح. تأكدي منه وحاولي مرة أخرى.');render();}
+  }).withFailureHandler(function(){busy=false;keyErr=L('Could not connect. Try again.','تعذّر الاتصال. حاولي مرة أخرى.');render();}).getDashboardData(k);
 }
+function locked(){
+  root.innerHTML='<div class="empty"><div style="display:flex;justify-content:center;margin-bottom:16px">'+langSwitch()+'</div><h1>Plan &amp; Track</h1>'+
+    '<p class="muted">'+L('Enter your dashboard key. This device will remember it.','أدخلي مفتاح اللوحة، وسيتذكّره هذا الجهاز.')+'</p>'+
+    '<form id="keyform" class="keyform"><label for="key" class="muted">'+L('Dashboard key','مفتاح اللوحة')+'</label><input id="key" name="key" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"><button type="submit"'+(busy?' disabled':'')+'>'+(busy?L('Opening…','جارٍ الفتح…'):L('Open dashboard','افتحي اللوحة'))+'</button>'+
+    (keyErr?'<p class="kerr" role="alert">'+esc(keyErr)+'</p>':'')+'</form></div>'+credit();
+}
+root.addEventListener('submit',function(e){if(e.target.id!=='keyform')return;e.preventDefault();tryKey(e.target.key.value,false);});
 function render(){
   document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
   if(DATA)dashboard();else locked();
@@ -161,6 +182,7 @@ function showTip(e){var t=e.target.closest('[data-tip]');if(!t){tip.style.displa
 root.addEventListener('mousemove',showTip);root.addEventListener('focusin',showTip);
 root.addEventListener('mouseleave',function(){tip.style.display='none';});root.addEventListener('focusout',function(){tip.style.display='none';});
 render();
+if(!DATA){var saved=null;try{saved=localStorage.getItem(KEYSTORE);}catch(e){}if(saved)tryKey(saved,true);}
 })();
 </script>
 </body>

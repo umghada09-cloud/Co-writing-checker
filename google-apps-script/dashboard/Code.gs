@@ -152,6 +152,12 @@ function doGet(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+/** Called from the locked page when the teacher types her key (works even when a link loses its key). */
+function getDashboardData(key) {
+  var t = String(key || '').replace(/[^A-Za-z0-9]/g, '').toLowerCase();
+  return t && t === key_() ? dashboardData() : null;
+}
+
 function dashboardData() {
   var today = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
   var users = sheet_('Users').getDataRange().getValues().slice(1).filter(function (r) { return r[0]; });
